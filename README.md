@@ -11,3 +11,5 @@ The Unity Importer project allows you to import the extracted zone content into 
 4. In the top bar, select EQ->Editor->Import Zone or press ALT + Z.
 5. Enter the shortname (e.g. arena, gfaydark) of the zone contents you have added to the ZoneExports folder.
 6. Click ‘Import’
+
+The editor may take a while to import and fix all assets depending on the size of the zone. If you come across a zone that fails to load or looks incorrect, please create an Issue.
