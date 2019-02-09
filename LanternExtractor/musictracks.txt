@@ -1,0 +1,121 @@
+airplane
+0,akanon2,0:59
+1,airplaneunknown,2:32
+2,fanfare,0:16
+3,airplaneunknwon,1:07
+4,airplaneunknown,1:29
+
+akanon
+0,akanon,2:09
+1,kelethin2,1:21
+2,kelethin2,1:21
+3,felwitheintro,0:11
+4,felwithe,1:26
+5,felwithe2,0:46
+6,arena,1:39
+
+butcher
+0,fanfare,0:16
+
+cauldron
+0,fanfare,0:16
+1,fanfare2,0:21
+2,fanfare2,0:21
+3,fanfare,0:16
+
+cobaltscar
+0,cobaltscar,2:46
+
+crushbone
+0,kelethin3(different instruments),1:19
+1,airplaneunknown,2:32
+2,fanfare1,0:16
+3,creepy,0:59
+4,unknown(harp arpeggios),1:07
+
+crystal
+0,crystal,1:51
+1,kelethin2,1:21
+2,cobaltscar,2:46
+
+damage
+0,unknown1 (was in gl),0:03
+1,unknown2 (was in gl),0:14
+2,unknown3 (was in gl),0:12
+
+damage1
+0,unknown1 (was in gl),0:03
+1,unknown2 (was in gl),0:14
+2,unknown3 (was in gl),0:12
+
+damage2
+0,unknown1 (was in gl),0:03
+1,unknown2 (was in gl),0:14
+2,unknown3 (was in gl),0:12
+
+eastkarana
+0,ekunknown,0:14
+
+gfaydark
+0,fanfare,0:16
+1,fanfare2,0:21
+2,fanfare2,0:21
+3,fanfare (pitched),0:16
+4,kelethin,2:08
+
+gl
+0,combat1,1:05
+1,combat2,0:56
+2,combat3,1:06
+3,death,0:12
+4,??,1:22
+5,??,0:05
+6,??,0:06
+7,sneak,0:27
+8,underwater,1:42
+9,??,0:17
+10,??,0:18
+11,(maybe banker),0:21
+12,??,0:21
+13,fishalefragment1,0:10
+14,fishaleframent2,0:39
+15,??,0:16
+16,??,0:16
+17,??,0:12
+18,??,0:14
+19,??,3:12
+20,sea,1:54
+21,merchant,50
+22,eqvariation,3:18
+
+halas
+0,felwithe,1:26
+1,felwitheintro,0:11
+2,felwithe2,0:46
+3,arena,1:39
+4,unknownhalas,1:00
+5,fluteandguitar,1:30
+6,fluemusic,1:01
+7,fishsale,1:05
+8,qeynoshills,1:59
+
+qeynos
+0,arena,1:39
+1,qeynosgates,3:09
+2,eerie,0:50
+3,eerie2,1:18
+4,temple,1:12
+5,qeynosbard,2:22
+6,eqtheme,2:07
+7,gypsies,1:12
+8,lionsmane,1:01
+9,fishale,1:05
+10,qeynoshills,1:59
+11,freeport,1:18
+
+qeynos2
+0,arena,1:39
+1,qeynosgates,3:09
+2,eerie,0:50
+3,eerie2,1:18
+4,temple,1:12
