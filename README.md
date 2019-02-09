@@ -15,6 +15,7 @@ Extracts:
   - Collision meshes
   - Vertex animation meshes
   - Instance list
+- Character data (experimental)
 - Light instances
 - Music and sound instances
 
