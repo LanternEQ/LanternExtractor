@@ -13,7 +13,8 @@ ExtractObjectsFile = true
 
 # Extract the characters file? (e.g. arena_chr.s3d)
 # Contains character models and textures
-ExtractCharactersFile = true
+# This is an experimental feature!
+ExtractCharactersFile = false
 
 # Extract the sound file?
 # This contains information about sound instances in the world.
