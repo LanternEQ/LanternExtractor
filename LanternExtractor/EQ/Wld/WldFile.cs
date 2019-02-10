@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -705,8 +706,11 @@ namespace LanternExtractor.EQ.Wld
         private void ExportObjectLocations()
         {
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
-
+            
             Directory.CreateDirectory(zoneExportFolder);
+            
+            // Used for ensuring the output uses a period for a decimal number
+            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
             
             var objectListExport = new StringBuilder();
 
@@ -723,23 +727,23 @@ namespace LanternExtractor.EQ.Wld
 
                 objectListExport.Append(objectLocation.ObjectName);
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.x);
+                objectListExport.Append(objectLocation.Position.x.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.y);
+                objectListExport.Append(objectLocation.Position.y.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.z);
+                objectListExport.Append(objectLocation.Position.z.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.x);
+                objectListExport.Append(objectLocation.Rotation.x.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.y);
+                objectListExport.Append(objectLocation.Rotation.y.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.z);
+                objectListExport.Append(objectLocation.Rotation.z.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.x);
+                objectListExport.Append(objectLocation.Scale.x.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.y);
+                objectListExport.Append(objectLocation.Scale.y.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.z);
+                objectListExport.Append(objectLocation.Scale.z.ToString(format));
                 objectListExport.AppendLine();
             }
             
@@ -752,6 +756,11 @@ namespace LanternExtractor.EQ.Wld
         private void ExportLightInfo()
         {
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
+
+            Directory.CreateDirectory(zoneExportFolder);
+            
+            // Used for ensuring the output uses a period for a decimal number
+            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
 
             var lightListExport = new StringBuilder();
 
@@ -766,19 +775,19 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                lightListExport.Append(lightInfo.Position.x);
+                lightListExport.Append(lightInfo.Position.x.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.Position.y);
+                lightListExport.Append(lightInfo.Position.y.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.Position.z);
+                lightListExport.Append(lightInfo.Position.z.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.Radius);
+                lightListExport.Append(lightInfo.Radius.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.LightReference.LightSource.Color.r);
+                lightListExport.Append(lightInfo.LightReference.LightSource.Color.r.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.LightReference.LightSource.Color.g);
+                lightListExport.Append(lightInfo.LightReference.LightSource.Color.g.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.LightReference.LightSource.Color.b);
+                lightListExport.Append(lightInfo.LightReference.LightSource.Color.b.ToString(format));
                 lightListExport.AppendLine();
             }
 
