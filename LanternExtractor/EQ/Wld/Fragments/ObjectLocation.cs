@@ -66,26 +66,26 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int unknown2 = reader.ReadInt32();
 
             Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            
+            // Rotation is strange. There is never any x rotation (roll)
+            // The z rotation is negated
+            float value0 = reader.ReadSingle();
+            float value1 = reader.ReadSingle();
+            float value2 = reader.ReadSingle();
 
-            float rotFactor = 1.0f / (512.0f / 360.0f);
+            float modifier = 1.0f / 512.0f * 360.0f;
+            
+            Rotation = new vec3(0f, ( value1 * modifier ), -(value0 * modifier));      
 
-            float x, y, z;
-            z = reader.ReadSingle() * rotFactor;
-            y = reader.ReadSingle() * rotFactor;
-            x = reader.ReadSingle() * rotFactor;
+            // Only scale y is used
+            float scaleX, scaleY, scaleZ;
+            scaleX = reader.ReadSingle();    
+            scaleY = reader.ReadSingle();
+            scaleZ = reader.ReadSingle();
+            
+            Scale = new vec3(scaleY, scaleY, scaleY);
 
-            Rotation = new vec3(x, y, z);
-
-            // unknown
-            float unknown3 = reader.ReadSingle();
-
-            // All the same
-
-            float scale = reader.ReadSingle();
-
-            Scale = new vec3(scale, scale, scale);
-
-            // vertex color
+            // Vertex colors are not used
         }
 
         public override void OutputInfo(ILogger logger)

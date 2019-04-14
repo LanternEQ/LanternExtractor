@@ -437,8 +437,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         vertex = AnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
-                    vertexOutput.AppendLine("v " + (vertex.x + Center.x) + " " + (vertex.y + Center.y) + " " +
-                                            (vertex.z + Center.z));
+                    vertexOutput.AppendLine("v " + -(vertex.x + Center.x) + " " + (vertex.z + Center.z) + " " +
+                                            (vertex.y + Center.y));
 
                     if (objExportType == ObjExportType.Collision)
                     {

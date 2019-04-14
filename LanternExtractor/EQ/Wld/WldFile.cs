@@ -390,11 +390,11 @@ namespace LanternExtractor.EQ.Wld
             }
             else if (_wldType == WldType.ZoneObjects)
             {
-                ExportObjectLocations();
+                ExportObjectInstanceList();
             }
             else if (_wldType == WldType.Lights)
             {
-                ExportLightInfo();
+                ExportLightInstanceList();
             }
             else if (_wldType == WldType.Characters)
             {
@@ -703,7 +703,7 @@ namespace LanternExtractor.EQ.Wld
         /// Exports the list of objects instances
         /// This includes information about position, rotation, and scaling
         /// </summary>
-        private void ExportObjectLocations()
+        private void ExportObjectInstanceList()
         {
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
             
@@ -729,15 +729,15 @@ namespace LanternExtractor.EQ.Wld
                 objectListExport.Append(",");
                 objectListExport.Append(objectLocation.Position.x.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.y.ToString(format));
-                objectListExport.Append(",");
                 objectListExport.Append(objectLocation.Position.z.ToString(format));
+                objectListExport.Append(",");
+                objectListExport.Append(objectLocation.Position.y.ToString(format));
                 objectListExport.Append(",");
                 objectListExport.Append(objectLocation.Rotation.x.ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.y.ToString(format));
+                objectListExport.Append((objectLocation.Rotation.z).ToString(format));
                 objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.z.ToString(format));
+                objectListExport.Append(objectLocation.Rotation.y.ToString(format));
                 objectListExport.Append(",");
                 objectListExport.Append(objectLocation.Scale.x.ToString(format));
                 objectListExport.Append(",");
@@ -753,7 +753,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Exports the list of light instances (contains position, colors, radius)
         /// </summary>
-        private void ExportLightInfo()
+        private void ExportLightInstanceList()
         {
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
 
@@ -777,9 +777,9 @@ namespace LanternExtractor.EQ.Wld
 
                 lightListExport.Append(lightInfo.Position.x.ToString(format));
                 lightListExport.Append(",");
-                lightListExport.Append(lightInfo.Position.y.ToString(format));
-                lightListExport.Append(",");
                 lightListExport.Append(lightInfo.Position.z.ToString(format));
+                lightListExport.Append(",");
+                lightListExport.Append(lightInfo.Position.y.ToString(format));
                 lightListExport.Append(",");
                 lightListExport.Append(lightInfo.Radius.ToString(format));
                 lightListExport.Append(",");
