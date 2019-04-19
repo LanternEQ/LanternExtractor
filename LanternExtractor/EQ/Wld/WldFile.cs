@@ -571,6 +571,7 @@ namespace LanternExtractor.EQ.Wld
             }
 
             // Theoretically, there should only be one texture list here
+            // Exceptions include sky.s3d
             for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
             {
                 if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
@@ -579,7 +580,6 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 materialsExport.Append(materialList.GetMaterialListExport());
-                break;
             }
 
             File.WriteAllText(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension,
