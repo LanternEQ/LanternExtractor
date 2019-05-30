@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LanternExtractor.EQ.Pfs;
@@ -30,49 +31,55 @@ namespace LanternExtractor
         /// </summary>
         /// <param name="args">Run arguments</param>
         static void Main(string[] args)
-        {
-            _logger = new TextFileLogger("log.txt", LogVerbosity.Info);
-
+        {            
+            _logger = new TextFileLogger("log.txt");
             _settings = new Settings("settings.txt", _logger);
             _settings.Initialize();
+            _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
 
+            string shortName;
+            
 #if DEBUG
-            ExtractZone("arena");
+            shortName = "qeynos";          
 #else
             if (args.Length != 1)
             {
-                _logger.LogInfo("Format: lantern.exe <shortname>");
+                Console.WriteLine("Format: lantern.exe <shortname>");
                 return;
             }
+            
+            shortName = args[0];
+#endif
 
-            List<string> eqFiles = GetValidEqFiles(args);
+            List<string> eqFiles = GetValidEqFiles(shortName);
 
             if (eqFiles.Count == 0)
             {
-                _logger.LogError("No valid EQ files found for: '" + args[0] + "' at path: " + _settings.EverQuestDirectory);
+                Console.WriteLine("No valid EQ files found for: '" + shortName + "' at path: " + _settings.EverQuestDirectory);
                 return;
             }      
                         
             foreach (var file in eqFiles)
             {
-                //_logger.LogInfo("Extracting archive: " + eqFiles[i]);
-                //var shortName = eqFiles[i];
                 ExtractZone(file);
             }
-#endif
+            
+            Console.WriteLine("Extraction complete");
         }
 
         /// <summary>
         /// Gets a list of valid EQ archives that aren't OBJ or CHR files
         /// </summary>
-        /// <param name="args">The runtime arguments, if supplied</param>
+        /// <param name="shortName">The shortname to search for</param>
         /// <returns>The list of valid archive names</returns>
-        private static List<string> GetValidEqFiles(string[] args)
+        private static List<string> GetValidEqFiles(string shortName)
         {
+            shortName = shortName.ToLower();
+            
             var validFiles = new List<string>();
 
             // Get all files in the EQ directory
-            if (args[0].ToLower() == "all")
+            if (shortName == "all")
             {
                 List<string> eqFiles = Directory
                     .GetFiles(_settings.EverQuestDirectory, "*" + LanternStrings.PfsFormatExtension).ToList();
@@ -91,14 +98,12 @@ namespace LanternExtractor
             }
             else
             {
-                var fileName = args[0];
-
-                if (!fileName.EndsWith(LanternStrings.PfsFormatExtension))
+                if (!shortName.EndsWith(LanternStrings.PfsFormatExtension))
                 {
-                    fileName += LanternStrings.PfsFormatExtension;
+                    shortName += LanternStrings.PfsFormatExtension;
                 }
 
-                string path = _settings.EverQuestDirectory + fileName;
+                string path = _settings.EverQuestDirectory + shortName;
 
                 if (File.Exists(path))
                 {
@@ -119,7 +124,7 @@ namespace LanternExtractor
             {
                 return;
             }
-
+            
             // Zone - contains geometry, textures
             if (_settings.ExtractZoneFile)
             {
@@ -143,7 +148,7 @@ namespace LanternExtractor
                 ExtractSoundFile(shortName);
             }
 
-            _logger.LogInfo("Extraction complete!");
+            _logger.LogInfo("Extraction complete");
             _logger.LogInfo("");
         }
 

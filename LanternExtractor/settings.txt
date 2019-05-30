@@ -30,3 +30,6 @@ ExtractWld = true
 # If enabled, these regions are exports. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
 
+# The minimum verbosity of the logger
+# 0 = info, 1 = warnings, 2 = errors
+LoggerVerbosity = 0

@@ -56,6 +56,11 @@ namespace LanternExtractor
         /// Adds group separation in the zone mesh export
         /// </summary>
         public bool ExportZoneMeshGroups { get; private set; }
+        
+        /// <summary>
+        /// The verbosity of the logger
+        /// </summary>
+        public int LoggerVerbosity { get; private set; }
 
         /// <summary>
         /// Constructor which caches the settings file path and the logger
@@ -75,6 +80,7 @@ namespace LanternExtractor
             ExtractSoundFile = false;
             ExtractWld = true;
             ExportZoneMeshGroups = false;
+            LoggerVerbosity = 0;
         }
 
         public void Initialize()
@@ -135,8 +141,11 @@ namespace LanternExtractor
             {
                 ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
             }
-
-            _logger.LogInfo("Settings file successfully loaded!");
+            
+            if (parsedSettings.ContainsKey("LoggerVerbosity"))
+            {
+                LoggerVerbosity = Convert.ToInt32(parsedSettings["LoggerVerbosity"]);
+            }
         }
     }
 }
