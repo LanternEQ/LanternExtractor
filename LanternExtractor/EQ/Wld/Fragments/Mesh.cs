@@ -296,7 +296,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.Water)
                 {
-                    if (MaterialList.Materials[textureIndex].IsInvisible)
+                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
                         bitmapValid = false;
@@ -311,7 +311,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.Lava)
                 {
-                    if (MaterialList.Materials[textureIndex].IsInvisible)
+                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
                         bitmapValid = false;
@@ -326,7 +326,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.NoSpecialZones)
                 {
-                    if (MaterialList.Materials[textureIndex].IsInvisible)
+                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
                         bitmapValid = false;
@@ -350,18 +350,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
 
 
-                if (!MaterialList.Materials[textureIndex].IsInvisible && objExportType != ObjExportType.Collision)
+                if (MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible && objExportType != ObjExportType.Collision)
                 {
                     string bitmapName = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
                         .BitmapNames[0].Filename;
                     string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
-                    string materialName =
-                        ImageWriter.GetExportedImageName(pngName, MaterialList.Materials[textureIndex].ShaderType);
 
-                    if (materialName != activeTexture && bitmapValid)
+                    if (pngName != activeTexture && bitmapValid)
                     {
-                        faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialName);
-                        activeTexture = materialName;
+                        string materialPrefix =
+                            MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
+                        faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + pngName);
+                        activeTexture = pngName;
                     }
                 }
 
@@ -505,10 +505,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
 
                 string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
-                string materialName =
-                    ImageWriter.GetExportedImageName(pngName, MaterialList.Materials[group.TextureIndex].ShaderType);
                 
-                export.AppendLine(LanternStrings.ObjUseMtlPrefix + slotName);
+                string materialPrefix =
+                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType);
+                export.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + slotName);
 
                 for (int i = 0; i < group.PolygonCount; ++i)
                 {

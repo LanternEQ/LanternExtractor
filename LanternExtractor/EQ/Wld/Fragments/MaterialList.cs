@@ -346,10 +346,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     continue;
                 }
 
-                string pngName = ImageWriter.GetExportedImageName(bitmapNames[0], material.ShaderType);
-                pngName = pngName.Substring(0, pngName.Length - 4);
+                string pngName = bitmapNames[0].Substring(0, bitmapNames[0].Length - 4);
 
-                materialsExport.AppendLine("newmtl " + pngName);
+                materialsExport.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + GetMaterialPrefix(material.ShaderType) + pngName);
                 materialsExport.AppendLine("Ka 1.000 1.000 1.000");
                 materialsExport.AppendLine("Kd 1.000 1.000 1.000");
                 materialsExport.AppendLine("Ks 0.000 0.000 0.000");
@@ -366,13 +365,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         /// <returns>The list of material file content strings</returns>
         public List<string> GetMaterialSkinExports()
-        {
-
-            if (Name.ToLower().StartsWith("baf"))
-            {
-                
-            }
-            
+        {            
             var materialExports = new List<string>();
             var baseSkinMaterials = new List<string>();
             
@@ -402,10 +395,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         continue;
                     }
 
-                    string pngName = bitmapNames[0];
-                    pngName = pngName.Substring(0, pngName.Length - 4);
+                    string pngName = bitmapNames[0].Substring(0, bitmapNames[0].Length - 4);
 
-                    string textureName = ImageWriter.GetExportedImageName(pngName + ".png", material.ShaderType);
+                    string textureName = pngName + ".png";
 
                     if (Name.ToLower().Contains("baf") && material.Name.ToLower().Contains("bam"))
                     {
@@ -413,13 +405,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     }
 
                     var headerName = material.ExportName;
-                    
-                    if (textureName == "d_brnch0201.png")
-                    {
-                            
-                    }
 
-                    materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName));
+                    materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName, material.ShaderType));
                     
                     if (i == 0)
                     {
@@ -453,7 +440,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         string pngName = materialToAdd.GetAllBitmapNames()[0];
                         pngName = pngName.Substring(0, pngName.Length - 4);
 
-                        string textureName = ImageWriter.GetExportedImageName(pngName + ".png", materialToAdd.ShaderType);
+                        string textureName = pngName + ".png";
 
                         var headerName = materialToAdd.ExportName;
 
@@ -462,7 +449,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                             
                         }
 
-                        materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName));
+                        materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName, materialToAdd.ShaderType));
                     }
                 }
 
@@ -473,11 +460,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     string pngName = materialToAdd.GetAllBitmapNames()[0];
                     pngName = pngName.Substring(0, pngName.Length - 4);
 
-                    string textureName = ImageWriter.GetExportedImageName(pngName + ".png", materialToAdd.ShaderType);
+                    string textureName = pngName + ".png";
 
                     var headerName = materialToAdd.ExportName;
 
-                    materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName));
+                    materialsExport.AppendLine(GetMaterialExportChunk(headerName, textureName, materialToAdd.ShaderType));
                 }
                 
                 
@@ -487,11 +474,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return materialExports;
         }
 
-        // TODO: use this
-        private string GetMaterialExportChunk(string materialName, string textureName)
+        // TODO: Use this
+        private string GetMaterialExportChunk(string materialName, string textureName, ShaderType shaderType)
         {
             StringBuilder chunk = new StringBuilder();
-            chunk.AppendLine("newmtl " + materialName);
+            chunk.AppendLine(LanternStrings.ObjNewMaterialPrefix + GetMaterialPrefix(shaderType) + materialName);
             chunk.AppendLine("Ka 1.000 1.000 1.000");
             chunk.AppendLine("Kd 1.000 1.000 1.000");
             chunk.AppendLine("Ks 0.000 0.000 0.000");
@@ -500,6 +487,35 @@ namespace LanternExtractor.EQ.Wld.Fragments
             chunk.AppendLine("map_Kd " + textureName);
 
             return chunk.ToString();
+        }
+
+        public static string GetMaterialPrefix(ShaderType shaderType)
+        {
+            switch (shaderType)
+            {
+                case ShaderType.Diffuse:
+                    return "d_";
+                case ShaderType.Transparent25:
+                    return "t25_";
+                case ShaderType.Transparent50:
+                    return "t50_";
+                case ShaderType.Transparent75:
+                    return "t75_";
+                case ShaderType.TransparentAdditive:
+                    return "ta_";
+                case ShaderType.TransparentAdditiveUnlit:
+                    return "tau_";
+                case ShaderType.TransparentMasked:
+                    return "tm_";
+                case ShaderType.DiffuseSkydome:
+                    return "ds_";
+                case ShaderType.TransparentSkydome:
+                    return "ts_";
+                case ShaderType.TransparentAdditiveUnlitSkydome:
+                    return "taus_";
+                default:
+                    return "?";
+            }
         }
     }
 }

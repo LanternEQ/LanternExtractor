@@ -114,7 +114,13 @@ namespace LanternExtractor.EQ.Pfs
                     uint deflatedLength = reader.ReadUInt32();
                     uint inflatedLength = reader.ReadUInt32();
 
-
+                    // Sometimes there can be incorrect values 
+                    if (deflatedLength >= reader.BaseStream.Length)
+                    {
+                        _logger.LogError("Corrupted file detected!");
+                        return false;
+                    }
+                    
                     byte[] compressedBytes = reader.ReadBytes((int) deflatedLength);
 
                     byte[] inflatedBytes;
@@ -247,6 +253,11 @@ namespace LanternExtractor.EQ.Pfs
         public void WriteAllFiles(Dictionary<string, List<ShaderType>> textureTypes, string folderName = "",
             bool onlyTextures = false)
         {
+            if (textureTypes == null)
+            {
+                return;
+            }
+            
             for (int i = 0; i < _files.Count; ++i)
             {
                 string filename = _files[i].Name;

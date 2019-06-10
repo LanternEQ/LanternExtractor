@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -264,6 +265,12 @@ namespace LanternExtractor.EQ.Wld
         /// <returns>Dictionary with material to shader mapping</returns>
         public Dictionary<string, List<ShaderType>> GetMaterialTypes()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x31))
+            {
+                _logger.LogWarning("Cannot get material types. No texture list found.");
+                return null;
+            }
+            
             var materialTypes = new Dictionary<string, List<ShaderType>>();
 
             for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
@@ -309,6 +316,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ProcessCharacterSkins()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x31))
+            {
+                _logger.LogWarning("Cannot process character skins. No material list found.");
+                return;
+            }
+            
             List<KeyValuePair<int, MaterialList>> materialListMapping = new List<KeyValuePair<int, MaterialList>>();
             
             foreach (WldFragment materialListFragment in _fragmentTypeDictionary[0x31])
@@ -411,7 +424,10 @@ namespace LanternExtractor.EQ.Wld
         private void ExportZoneMeshes()
         {
             if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            {
+                _logger.LogWarning("Cannot export zone meshes. No meshes found.");
                 return;
+            }
             
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
             Directory.CreateDirectory(zoneExportFolder);
@@ -481,7 +497,7 @@ namespace LanternExtractor.EQ.Wld
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
-                    _logger.LogWarning("Mesh has no valid output: " + zoneMesh);
+                    _logger.LogError("Mesh has no valid output: " + zoneMesh);
                     continue;
                 }
 
@@ -593,7 +609,10 @@ namespace LanternExtractor.EQ.Wld
         private void ExportZoneObjectMeshes()
         {
             if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            {
+                _logger.LogWarning("Cannot export zone object meshes. No meshes found.");
                 return;
+            }
 
             string objectsExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
             Directory.CreateDirectory(objectsExportFolder);
@@ -705,6 +724,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportObjectInstanceList()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x15))
+            {
+                _logger.LogWarning("Cannot export object instance list. No object instances found.");
+                return;
+            }
+            
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
             
             Directory.CreateDirectory(zoneExportFolder);
@@ -717,7 +742,7 @@ namespace LanternExtractor.EQ.Wld
             objectListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");
             objectListExport.AppendLine(LanternStrings.ExportHeaderFormat +
                                         "ModelName, PosX, PosY, PosZ, RotX, RotY, RotZ, ScaleX, ScaleY, ScaleZ");
-
+            
             for (int i = 0; i < _fragmentTypeDictionary[0x15].Count; ++i)
             {
                 if (!(_fragmentTypeDictionary[0x15][i] is ObjectLocation objectLocation))
@@ -755,6 +780,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportLightInstanceList()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x28))
+            {
+                _logger.LogWarning("Unable to export light instance list. No instances found.");
+                return;
+            }
+            
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
 
             Directory.CreateDirectory(zoneExportFolder);
@@ -800,12 +831,18 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportMaterialList()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x31))
+            {
+                _logger.LogWarning("Cannot export material list. No list found.");
+                return;
+            }
+            
             var materialListExport = new StringBuilder();
 
             materialListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
             materialListExport.AppendLine(LanternStrings.ExportHeaderFormat +
                                           "BitmapName, BitmapCount, FrameDelay (optional)");
-
+            
             for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
             {
                 if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
@@ -815,13 +852,18 @@ namespace LanternExtractor.EQ.Wld
 
                 foreach (Material material in materialList.Materials)
                 {
-                    if (material.IsInvisible)
+                    if (material.ShaderType == ShaderType.Invisible)
+                    {
                         continue;
+                    }
 
+                    string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
+                    
                     string textureName = material.TextureInfoReference.TextureInfo.BitmapNames[0]
                         .Filename;
-                    textureName = ImageWriter.GetExportedImageName(textureName, material.ShaderType);
+                    
                     textureName = textureName.Substring(0, textureName.Length - 4);
+                    materialListExport.Append(materialPrefix);
                     materialListExport.Append(textureName);
                     materialListExport.Append(",");
                     materialListExport.Append(material.TextureInfoReference.TextureInfo.BitmapNames.Count);
@@ -868,6 +910,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportCharacterMeshes()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            {
+                _logger.LogWarning("Cannot export character meshes. No meshes found.");
+                return;
+            }
+            
             foreach (WldFragment meshFragment in _fragmentTypeDictionary[0x36])
             {
                 if (!(meshFragment is Mesh mesh))
@@ -913,6 +961,7 @@ namespace LanternExtractor.EQ.Wld
         {
             if (!_fragmentNameDictionary.ContainsKey(modelName))
             {
+                _logger.LogWarning("Cannot find model reference for " + modelName);
                 modelReference = null;
                 return false;
             }
@@ -930,11 +979,6 @@ namespace LanternExtractor.EQ.Wld
         {
             string exportDirectory = _zoneName + "/" + LanternStrings.ExportCharactersFolder;
             Directory.CreateDirectory(exportDirectory);
-
-            if (mesh.Name.ToLower().StartsWith("baf"))
-            {
-                
-            }
 
             if (isMainModel)
             {
@@ -964,8 +1008,6 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
-                //_logger.LogError("Material: " + mat.Name + " is a slot reference: " + mat.GetMaterialType());
             }
         }
     }
