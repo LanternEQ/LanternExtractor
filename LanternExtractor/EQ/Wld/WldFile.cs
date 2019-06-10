@@ -481,7 +481,7 @@ namespace LanternExtractor.EQ.Wld
             // Zone mesh export
             int vertexBase = 0;
             int addedVertices = 0;
-            string lastUsedTexture = string.Empty;
+            Material lastUsedMaterial = null;
 
             for (int i = 0; i < zoneMeshes.Count; ++i)
             {
@@ -492,8 +492,8 @@ namespace LanternExtractor.EQ.Wld
                     zoneExport.AppendLine("g " + i);
                 }
 
-                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedTexture,
-                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedTexture);
+                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
+                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -511,7 +511,7 @@ namespace LanternExtractor.EQ.Wld
             if (shouldExportCollisionMesh)
             {
                 vertexBase = 0;
-                lastUsedTexture = string.Empty;
+                lastUsedMaterial = null;
 
                 for (int i = 0; i < zoneMeshes.Count; ++i)
                 {
@@ -522,8 +522,8 @@ namespace LanternExtractor.EQ.Wld
                         collisionExport.AppendLine("g " + i);
                     }
 
-                    List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedTexture,
-                        ObjExportType.Collision, out addedVertices, out lastUsedTexture);
+                    List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
+                        ObjExportType.Collision, out addedVertices, out lastUsedMaterial);
 
                     if (outputStrings == null || outputStrings.Count == 0)
                     {
@@ -540,12 +540,12 @@ namespace LanternExtractor.EQ.Wld
 
             // Water mesh export
             vertexBase = 0;
-            lastUsedTexture = string.Empty;
+            lastUsedMaterial = null;
 
             foreach (Mesh zoneMesh in zoneMeshes)
             {
-                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedTexture,
-                    ObjExportType.Water, out addedVertices, out lastUsedTexture);
+                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
+                    ObjExportType.Water, out addedVertices, out lastUsedMaterial);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -564,12 +564,12 @@ namespace LanternExtractor.EQ.Wld
 
             // Lava mesh export
             vertexBase = 0;
-            lastUsedTexture = string.Empty;
+            lastUsedMaterial = null;
 
             foreach (Mesh zoneMesh in zoneMeshes)
             {
-                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedTexture,
-                    ObjExportType.Lava, out addedVertices, out lastUsedTexture);
+                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
+                    ObjExportType.Lava, out addedVertices, out lastUsedMaterial);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -631,10 +631,10 @@ namespace LanternExtractor.EQ.Wld
 
                 // These values are not used
                 int addedVertices = 0;
-                string lastUsedTexture = string.Empty;
+                Material lastUsedMaterial = null;
                 
-                List<string> meshStrings = objectMesh.GetMeshExport(0, string.Empty,
-                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedTexture);
+                List<string> meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial,
+                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial);
 
                 if (meshStrings == null || meshStrings.Count == 0)
                 {
@@ -697,8 +697,8 @@ namespace LanternExtractor.EQ.Wld
                     collisionExport.AppendLine(LanternStrings.ExportHeaderTitle + "Object Collision Mesh - " + fixedObjectName);
 
                     addedVertices = 0;
-                    lastUsedTexture = string.Empty;
-                    meshStrings = objectMesh.GetMeshExport(0, string.Empty, ObjExportType.Collision, out addedVertices, out lastUsedTexture);
+                    lastUsedMaterial = null;
+                    meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial, ObjExportType.Collision, out addedVertices, out lastUsedMaterial);
 
                     if (meshStrings == null || meshStrings.Count == 0)
                     {

@@ -259,12 +259,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="baseVertex">The number of vertices we have processed so far in the model</param>
         /// <param name="objExportType"></param>
         /// <param name="vertexCount">The number of vertices in this model</param>
-        /// <param name="activeTexture"></param>
+        /// <param name="activeMaterial"></param>
         /// <param name="lastUsedTexture"></param>
         /// <returns></returns>
-        public List<string> GetMeshExport(int baseVertex, string activeTexture, ObjExportType objExportType,
-            out int vertexCount,
-            out string lastUsedTexture)
+        public List<string> GetMeshExport(int baseVertex, Material activeMaterial, ObjExportType objExportType,
+            out int vertexCount, out Material lastUsedMaterial)
         {
             var frames = new List<string>();
             var usedVertices = new List<int>();
@@ -356,12 +355,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         .BitmapNames[0].Filename;
                     string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
 
-                    if (pngName != activeTexture && bitmapValid)
+                    if (MaterialList.Materials[textureIndex] != activeMaterial && bitmapValid)
                     {
                         string materialPrefix =
                             MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
                         faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + pngName);
-                        activeTexture = pngName;
+                        activeMaterial = MaterialList.Materials[textureIndex];
                     }
                 }
 
@@ -455,7 +454,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
 
             vertexCount = usedVertices.Count;
-            lastUsedTexture = activeTexture;
+            lastUsedMaterial = activeMaterial;
 
             // Ensure that output use the decimal point rather than the comma (as in Germany)
             for (var i = 0; i < frames.Count; i++)

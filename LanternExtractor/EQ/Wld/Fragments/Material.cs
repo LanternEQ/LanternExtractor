@@ -309,8 +309,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             else
             {
                 ShaderType = TextureInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
-            }
-            
+            }   
         }
 
         public override void OutputInfo(ILogger logger)
