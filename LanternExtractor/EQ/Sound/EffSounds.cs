@@ -192,31 +192,35 @@ namespace LanternExtractor.EQ.Sound
             {
                 soundType = EmissionType.Internal;
 
-                if (soundId == 39)
-                    return "death_me";
-                if (soundId == 143)
-                    return "thunder1";
-                if (soundId == 144)
-                    return "thunder2";
-                if (soundId == 158)
-                    return "wind_lp1";
-                if (soundId == 159)
-                    return "rainloop";
-                if (soundId == 160)
-                    return "torch_lp";
-                if (soundId == 161)
-                    return "watundlp";
+                switch (soundId)
+                {
+                    case 39:
+                        return "death_me";
+                    case 143:
+                        return "thunder1";
+                    case 144:
+                        return "thunder2";
+                    case 158:
+                        return "wind_lp1";
+                    case 159:
+                        return "rainloop";
+                    case 160:
+                        return "torch_lp";
+                    case 161:
+                        return "watundlp";
+                }
             }
 
             // Loop sounds
-            if (soundId >= 162 && soundId < 162 + soundBank.LoopSounds.Count)
+            if (soundId < 162 || soundId >= 162 + soundBank.LoopSounds.Count)
             {
-                soundType = EmissionType.Loop;
-
-                return soundBank.LoopSounds[soundId - 161 - 1];
+                return "";
             }
+            
+            soundType = EmissionType.Loop;
 
-            return "";
+            return soundBank.LoopSounds[soundId - 161 - 1];
+
         }
 
         /// <summary>
@@ -233,7 +237,7 @@ namespace LanternExtractor.EQ.Sound
                 if (entry.SoundType == SoundType.Music)
                 {
                     musicExport.Append(entry.SoundIdDay + "," + entry.SoundIdNight + ","
-                                       + entry.PosX + "," + entry.PosY + "," + entry.PosZ + "," +
+                                       + entry.PosX + "," + entry.PosZ + "," + entry.PosY + "," +
                                        entry.Radius + ","
                                        + entry.FadeOutMs + "\n");
                 }
@@ -242,7 +246,7 @@ namespace LanternExtractor.EQ.Sound
                     soundExport.Append(entry.SoundIdDay + "," + entry.SoundIdNight + ","
                                        + Convert.ToInt32(entry.SoundType) + "," +
                                        Convert.ToInt32(entry.EmissionType) + ","
-                                       + entry.PosX + "," + entry.PosY + "," + entry.PosZ + "," +
+                                       + entry.PosX + "," + entry.PosZ + "," + entry.PosY + "," +
                                        entry.Radius + ","
                                        + entry.CooldownDay + "," + entry.CooldownNight + "," +
                                        entry.RandomDelay + "\n");

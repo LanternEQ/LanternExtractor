@@ -57,22 +57,20 @@ namespace LanternExtractor.EQ.Sound
 
             foreach (var line in parsedLines)
             {
-                if (line == "")
-                    continue;
-
-                if (line == "EMIT")
+                switch (line)
                 {
-                    currentList = EmitSounds;
-                    continue;
+                    case "":
+                        continue;
+                    case "EMIT":
+                        currentList = EmitSounds;
+                        continue;
+                    case "LOOP":
+                        currentList = LoopSounds;
+                        continue;
+                    default:
+                        currentList?.Add(line);
+                        break;
                 }
-
-                if (line == "LOOP")
-                {
-                    currentList = LoopSounds;
-                    continue;
-                }
-
-                currentList?.Add(line);
             }
         }
     }
