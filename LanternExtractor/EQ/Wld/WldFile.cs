@@ -686,7 +686,7 @@ namespace LanternExtractor.EQ.Wld
                     animatedMeshesHeader.AppendLine(
                         LanternStrings.ExportHeaderFormat + "ModelName, Frames, Frame Delay");
 
-                    File.WriteAllText(objectsExportFolder + _zoneName + "_animated_meshes.txt",
+                    File.WriteAllText(_zoneName + "/" + _zoneName + "_animated_meshes.txt",
                         animatedMeshesHeader + animatedMeshInfo.ToString());
                 }
 
@@ -730,7 +730,7 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
+            string zoneExportFolder = _zoneName + "/";
             
             Directory.CreateDirectory(zoneExportFolder);
             
@@ -786,7 +786,7 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
+            string zoneExportFolder = _zoneName + "/";
 
             Directory.CreateDirectory(zoneExportFolder);
             
@@ -924,7 +924,7 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 // Find the model reference
-                ModelReference actorReference = null;
+                ModelReference actorReference;
 
                 bool isMainModel = FindModelReference(mesh.Name.Split('_')[0] + "_ACTORDEF", out actorReference);
 
