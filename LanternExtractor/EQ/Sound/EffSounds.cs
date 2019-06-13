@@ -255,16 +255,16 @@ namespace LanternExtractor.EQ.Sound
 
             if (soundExport.Length != 0)
             {
-                string exportHeader = "# Lantern Extractor - Sound Information\n";
-                exportHeader += "# Format: Sound1, Sound2, PosX, PosY, PosZ, Cooldown1, Cooldown2, RandomDelay\n";
+                string exportHeader = LanternStrings.ExportHeaderTitle + "Sound Instances\n";
+                exportHeader += "# Format: SoundIdDay, SoundIdNight, SoundType, EmissionType, PosX, PosY, PosZ, Radius, CooldownDay, CooldownNight, RandomDelay\n";
 
                 File.WriteAllText(zoneName + "/" + zoneName + "_sounds.txt", exportHeader + soundExport);
             }
 
             if (musicExport.Length != 0)
             {
-                string exportHeader = "# Lantern Extractor - Music Information\n";
-                exportHeader += "# Format: Sound1, Sound2, PosX, PosY, PosZ, FadeOutMs\n";
+                string exportHeader = LanternStrings.ExportHeaderTitle + "Music Instances\n";
+                exportHeader += "# Format: SoundIdDay, SoundIdNight, PosX, PosY, PosZ, Radius, FadeOutMs\n";
 
                 File.WriteAllText(zoneName + "/" + zoneName + "_music.txt", exportHeader + musicExport);
             }
