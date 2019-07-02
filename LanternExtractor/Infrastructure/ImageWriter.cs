@@ -2,6 +2,8 @@
 using System.Drawing.Imaging;
 using System.IO;
 using LanternExtractor.EQ.Wld;
+using System;
+using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.Infrastructure
 {
@@ -17,7 +19,9 @@ namespace LanternExtractor.Infrastructure
         /// <param name="filePath">The output file path</param>
         /// <param name="fileName">The output file name</param>
         /// <param name="type">The type of shader (affects the output process)</param>
-        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type)
+        /// <param name="logger">Logger for debug output</param>
+
+        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, ILogger logger)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -32,7 +36,17 @@ namespace LanternExtractor.Infrastructure
                 return;
             }
 
-            var image = new Bitmap(bytes);
+            Bitmap image = null;
+
+            try
+            {
+                image = new Bitmap(bytes);
+            }
+            catch (Exception e)
+            {
+                logger.LogError("Caught exception while creating bitmap: " + e);
+                return;
+            }
 
             Bitmap cloneBitmap;
 

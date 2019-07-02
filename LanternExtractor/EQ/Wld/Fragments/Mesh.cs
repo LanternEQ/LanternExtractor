@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
-using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -348,18 +347,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     }
                 }
 
-
                 if (MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible && objExportType != ObjExportType.Collision)
                 {
-                    string bitmapName = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
-                        .BitmapNames[0].Filename;
-                    string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
+                    string filenameWithoutExtension = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
+                        .BitmapNames[0].GetFilenameWithoutExtension();
 
                     if (MaterialList.Materials[textureIndex] != activeMaterial && bitmapValid)
                     {
                         string materialPrefix =
                             MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
-                        faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + pngName);
+                        faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + filenameWithoutExtension);
                         activeMaterial = MaterialList.Materials[textureIndex];
                     }
                 }

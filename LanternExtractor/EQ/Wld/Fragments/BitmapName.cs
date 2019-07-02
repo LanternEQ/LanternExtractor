@@ -41,6 +41,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Filename = Filename.Substring(0, Filename.Length - 1);
         }
 
+        public string GetExportFilename()
+        {
+            if(Filename.EndsWith(".dds"))
+            {
+                return Filename;
+            }
+            else
+            {
+                return GetFilenameWithoutExtension() + ".png";
+            }
+        }
+
+        public string GetFilenameWithoutExtension()
+        {
+            return Filename.Substring(0, Filename.Length - 4);
+        }
+
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);

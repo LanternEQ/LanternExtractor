@@ -339,22 +339,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     continue;
                 }
 
-                List<string> bitmapNames = material.GetAllBitmapNames();
-
-                if (bitmapNames == null || bitmapNames.Count == 0)
+                if(material.TextureInfoReference == null)
                 {
                     continue;
                 }
 
-                string pngName = bitmapNames[0].Substring(0, bitmapNames[0].Length - 4);
+                // TODO: Clean this up
+                string filenameWithoutExtension = material.TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
+                string exportFilename = material.TextureInfoReference.TextureInfo.BitmapNames[0].GetExportFilename();
 
-                materialsExport.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + GetMaterialPrefix(material.ShaderType) + pngName);
+                materialsExport.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + GetMaterialPrefix(material.ShaderType) + filenameWithoutExtension);
                 materialsExport.AppendLine("Ka 1.000 1.000 1.000");
                 materialsExport.AppendLine("Kd 1.000 1.000 1.000");
                 materialsExport.AppendLine("Ks 0.000 0.000 0.000");
                 materialsExport.AppendLine("d 1.0 ");
                 materialsExport.AppendLine("illum 2");
-                materialsExport.AppendLine("map_Kd " + pngName + ".png");
+                materialsExport.AppendLine("map_Kd " + exportFilename);
             }
 
             return materialsExport.ToString();

@@ -274,6 +274,10 @@ namespace LanternExtractor.EQ.Pfs
                         WriteImage(i, type, folderName);
                     }
                 }
+                else if(filename.EndsWith(".dds"))
+                {
+                    WriteFile(i, folderName);
+                }
                 else
                 {
                     if (onlyTextures)
@@ -307,7 +311,7 @@ namespace LanternExtractor.EQ.Pfs
 
             if (!string.IsNullOrEmpty(folderName))
             {
-                directoryPath += folderName;
+                directoryPath += "/" + folderName;
             }
 
             Directory.CreateDirectory(directoryPath);
@@ -373,7 +377,7 @@ namespace LanternExtractor.EQ.Pfs
             }
 
             var byteStream = new MemoryStream(_files[index].Bytes);
-            ImageWriter.WriteImage(byteStream, exportPath, pngName, type);
+            ImageWriter.WriteImage(byteStream, exportPath, pngName, type, _logger);
         }
 
         /// <summary>
