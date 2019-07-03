@@ -221,7 +221,7 @@ namespace LanternExtractor
             }
             else
             {
-                zoneS3DArchive.WriteAllFiles();
+                zoneS3DArchive.WriteAllFiles("Zone");
             }
         }
 
@@ -264,7 +264,7 @@ namespace LanternExtractor
             }
             else
             {
-                objectsS3DArchive.WriteAllFiles();
+                objectsS3DArchive.WriteAllFiles("Objects");
             }
         }
 
@@ -307,7 +307,7 @@ namespace LanternExtractor
             }
             else
             {
-                charactersS3DArchive.WriteAllFiles();
+                charactersS3DArchive.WriteAllFiles("Characters");
             }
         }
 

@@ -233,13 +233,14 @@ namespace LanternExtractor.EQ.Pfs
         }
 
         /// <summary>
-        /// Writes all of the files contained within the file list
+        /// Writes all files to disk
         /// </summary>
-        public void WriteAllFiles()
+        /// <param name="folderName">An optional subfolder to </param>
+        public void WriteAllFiles(string subfolderName = "")
         {
             for (int i = 0; i < _files.Count; ++i)
             {
-                WriteFile(i);
+                WriteFile(i, subfolderName);
             }
         }
 
@@ -294,8 +295,8 @@ namespace LanternExtractor.EQ.Pfs
         /// Writes a file based on the index in the file list
         /// </summary>
         /// <param name="index">The index of the file to write</param>
-        /// <param name="folderName">An optional folder name to put the files into</param>
-        private void WriteFile(int index, string folderName = "")
+        /// <param name="subfolderName">An optional folder name to put the files into</param>
+        private void WriteFile(int index, string subfolderName = "")
         {
             if (index < 0 || _files.Count <= index || _files[index].Bytes == null)
             {
@@ -309,9 +310,9 @@ namespace LanternExtractor.EQ.Pfs
                 return;
             }
 
-            if (!string.IsNullOrEmpty(folderName))
+            if (!string.IsNullOrEmpty(subfolderName))
             {
-                directoryPath += "/" + folderName;
+                directoryPath += "/" + subfolderName;
             }
 
             Directory.CreateDirectory(directoryPath);
