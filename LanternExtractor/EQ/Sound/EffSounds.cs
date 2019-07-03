@@ -258,6 +258,7 @@ namespace LanternExtractor.EQ.Sound
                 string exportHeader = LanternStrings.ExportHeaderTitle + "Sound Instances\n";
                 exportHeader += "# Format: SoundIdDay, SoundIdNight, SoundType, EmissionType, PosX, PosY, PosZ, Radius, CooldownDay, CooldownNight, RandomDelay\n";
 
+                Directory.CreateDirectory(zoneName + "/");
                 File.WriteAllText(zoneName + "/" + zoneName + "_sounds.txt", exportHeader + soundExport);
             }
 
@@ -266,6 +267,7 @@ namespace LanternExtractor.EQ.Sound
                 string exportHeader = LanternStrings.ExportHeaderTitle + "Music Instances\n";
                 exportHeader += "# Format: SoundIdDay, SoundIdNight, PosX, PosY, PosZ, Radius, FadeOutMs\n";
 
+                Directory.CreateDirectory(zoneName + "/");
                 File.WriteAllText(zoneName + "/" + zoneName + "_music.txt", exportHeader + musicExport);
             }
         }
