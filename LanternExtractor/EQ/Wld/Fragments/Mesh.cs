@@ -83,9 +83,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
+            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             var reader = new BinaryReader(new MemoryStream(data));
 
@@ -159,7 +159,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < textureCoordinateCount; ++i)
             {
-                TextureUvCoordinates.Add(new vec2(reader.ReadInt16() / 256.0f, reader.ReadInt16() / 256.0f));
+                if (isNewWldFormat)
+                {
+                    TextureUvCoordinates.Add(new vec2(reader.ReadInt32() / 256.0f, reader.ReadInt32() / 256.0f));
+                }
+                else
+                {
+                    TextureUvCoordinates.Add(new vec2(reader.ReadInt16() / 256.0f, reader.ReadInt16() / 256.0f));
+                }
             }
 
             for (int i = 0; i < normalsCount; ++i)
@@ -262,7 +269,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="lastUsedTexture"></param>
         /// <returns></returns>
         public List<string> GetMeshExport(int baseVertex, Material activeMaterial, ObjExportType objExportType,
-            out int vertexCount, out Material lastUsedMaterial)
+            out int vertexCount, out Material lastUsedMaterial, ILogger logger)
         {
             var frames = new List<string>();
             var usedVertices = new List<int>();
@@ -294,6 +301,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.Water)
                 {
+                    if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
+                    {
+                        logger.LogError("Invalid texture index");
+                        continue;
+                    }
+
                     if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
@@ -309,6 +322,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.Lava)
                 {
+                    if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
+                    {
+                        logger.LogError("Invalid texture index");
+                        continue;
+                    }
+
                     if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
@@ -324,6 +343,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (objExportType == ObjExportType.NoSpecialZones)
                 {
+                    if(textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
+                    {
+                        logger.LogError("Invalid texture index");
+                        continue;
+                    }
+
                     if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                     {
                         activeArray = unusedVertices;
@@ -347,8 +372,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     }
                 }
 
-                if (MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible && objExportType != ObjExportType.Collision)
+                if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
                 {
+                    logger.LogError("Invalid texture index");
+                    continue;
+                }
+
+                if (MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible && objExportType != ObjExportType.Collision)
+                { 
                     string filenameWithoutExtension = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
                         .BitmapNames[0].GetFilenameWithoutExtension();
 
@@ -363,6 +394,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 for (int j = 0; j < polygonCount; ++j)
                 {
+                    if(currentPolygon < 0 || currentPolygon >= Polygons.Count)
+                    {
+                        logger.LogError("Invalid polygon index");
+                        continue;
+                    }
+
                     int vertex1 = Polygons[currentPolygon].Vertex1 + baseVertex + 1;
                     int vertex2 = Polygons[currentPolygon].Vertex2 + baseVertex + 1;
                     int vertex3 = Polygons[currentPolygon].Vertex3 + baseVertex + 1;
@@ -421,6 +458,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     if (i == 0)
                     {
+                        if(usedVertex < 0 || usedVertex >= Vertices.Count)
+                        {
+                            logger.LogError("Invalid vertex index: " + usedVertex);
+                            continue;
+                        }
+
                         vertex = Vertices[usedVertex];
                     }
                     else

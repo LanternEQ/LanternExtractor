@@ -69,6 +69,11 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private readonly Settings _settings;
 
+        /// <summary>
+        /// Is this the new WLD format? Some data types are different
+        /// </summary>
+        private bool _isNewWldFormat;
+
         private Dictionary<string, Material> GlobalCharacterMaterials;
 
         /// <summary>
@@ -121,8 +126,9 @@ namespace LanternExtractor.EQ.Wld
                 case 0x00015500:
                     break;
                 case 0x1000C800:
-                    _logger.LogError("New WLD format not supported.");
-                    return false;
+                    _isNewWldFormat = true;
+                    _logger.LogWarning("New WLD format not fully spported.");
+                    break;
                 default:
                     _logger.LogError("Unrecognized WLD format.");
                     return false;
@@ -153,7 +159,7 @@ namespace LanternExtractor.EQ.Wld
                 // Create the fragments
                 newFrag = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
 
-                newFrag.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
+                newFrag.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash, _isNewWldFormat,
                     _logger);
                 newFrag.OutputInfo(_logger);
 
@@ -493,7 +499,7 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial);
+                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial, _logger);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -523,7 +529,7 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                        ObjExportType.Collision, out addedVertices, out lastUsedMaterial);
+                        ObjExportType.Collision, out addedVertices, out lastUsedMaterial, _logger);
 
                     if (outputStrings == null || outputStrings.Count == 0)
                     {
@@ -545,7 +551,7 @@ namespace LanternExtractor.EQ.Wld
             foreach (Mesh zoneMesh in zoneMeshes)
             {
                 List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                    ObjExportType.Water, out addedVertices, out lastUsedMaterial);
+                    ObjExportType.Water, out addedVertices, out lastUsedMaterial, _logger);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -569,7 +575,7 @@ namespace LanternExtractor.EQ.Wld
             foreach (Mesh zoneMesh in zoneMeshes)
             {
                 List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                    ObjExportType.Lava, out addedVertices, out lastUsedMaterial);
+                    ObjExportType.Lava, out addedVertices, out lastUsedMaterial, _logger);
 
                 if (outputStrings == null || outputStrings.Count == 0)
                 {
@@ -634,7 +640,7 @@ namespace LanternExtractor.EQ.Wld
                 Material lastUsedMaterial = null;
                 
                 List<string> meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial,
-                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial);
+                    ObjExportType.NoSpecialZones, out addedVertices, out lastUsedMaterial, _logger);
 
                 if (meshStrings == null || meshStrings.Count == 0)
                 {
@@ -698,7 +704,7 @@ namespace LanternExtractor.EQ.Wld
 
                     addedVertices = 0;
                     lastUsedMaterial = null;
-                    meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial, ObjExportType.Collision, out addedVertices, out lastUsedMaterial);
+                    meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial, ObjExportType.Collision, out addedVertices, out lastUsedMaterial, _logger);
 
                     if (meshStrings == null || meshStrings.Count == 0)
                     {

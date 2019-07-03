@@ -12,9 +12,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
     {
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
+            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             var reader = new BinaryReader(new MemoryStream(data));
 
