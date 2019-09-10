@@ -2,6 +2,7 @@
 {
     public enum RegionType
     {
+        Normal,
         Water,
         Lava,
         Pvp,

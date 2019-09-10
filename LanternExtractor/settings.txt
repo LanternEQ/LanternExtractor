@@ -1,7 +1,7 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-EverQuestDirectory = C:\EverQuest\
+EverQuestDirectory = C:\EverQuest
 
 # Extract the zone file? (e.g. arena.s3d)
 # Contains zone models, object instances and light data
@@ -12,8 +12,7 @@ ExtractZoneFile = true
 ExtractObjectsFile = true
 
 # Extract the characters file? (e.g. arena_chr.s3d)
-# Contains character models and textures
-# This is an experimental feature!
+# Contains character models and textures. EXPERIMENTAL.
 ExtractCharactersFile = false
 
 # Extract the sound file?
@@ -21,15 +20,15 @@ ExtractCharactersFile = false
 ExtractSoundFile = true
 
 # Extract the WLD file?
-# If true, this will export all WLD data files (textures, models, data lists)
-# If false, this just extracts the S3D contents
+# If true, this will export all WLD data files (textures, models, data lists).
+# If false, this just extracts the S3D contents.
 ExtractWld = true
 
 # Extract the zone mesh with groups
 # The zone model is made up of smaller BSP region meshes.
-# If enabled, these regions are exports. If disabled, the mesh is combined into one single mesh.
+# If enabled, these regions are exportd. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
-LoggerVerbosity = 0
+LoggerVerbosity = 2

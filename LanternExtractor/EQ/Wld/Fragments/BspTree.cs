@@ -2,6 +2,7 @@
 using System.IO;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
+using System.Text;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -40,8 +41,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     NormalZ = reader.ReadSingle(),
                     SplitDistance = reader.ReadSingle(),
                     RegionId = reader.ReadInt32(),
-                    LeftNode = reader.ReadInt32(),
-                    RightNode = reader.ReadInt32()
+                    LeftNode = reader.ReadInt32() - 1,
+                    RightNode = reader.ReadInt32() - 1
                 };
 
                 Nodes.Add(node);
@@ -53,6 +54,38 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.OutputInfo(logger);
             logger.LogInfo("-----");
             logger.LogInfo("0x21: Node count: " + Nodes.Count);
+        }
+
+        public string GetBspTreeExport(List<WldFragment> fragments, ILogger logger)
+        {
+            StringBuilder treeExport = new StringBuilder();
+
+            for(int i = 0; i < Nodes.Count; ++i)
+            {
+                BspNode node = Nodes[i];
+
+                BspRegion region = null;
+
+                if (node.RegionId != 0)
+                {
+                    region = fragments[node.RegionId - 1] as BspRegion;
+
+                    if(region == null)
+                    {
+                        continue;
+                    }
+
+                    RegionType type = region.Flag == null ? RegionType.Normal : region.Flag.RegionType;
+
+                    treeExport.AppendLine($"{node.RegionId}, {type.ToString()}");
+                }
+                else
+                {
+                    treeExport.AppendLine($"{node.NormalX}, {node.NormalZ}, {node.NormalY}, {node.SplitDistance}, {node.LeftNode}, {node.RightNode}");
+                }
+            }
+
+            return treeExport.ToString();
         }
     }
 }

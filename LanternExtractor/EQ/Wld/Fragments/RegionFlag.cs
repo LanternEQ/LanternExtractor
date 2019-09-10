@@ -12,14 +12,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
     class RegionFlag : WldFragment
     {
         /// <summary>
-        /// The list of regions that correspond with the region flag
-        /// </summary>
-        public List<BspRegion> Regions { get; private set; }
-
-        /// <summary>
         /// The region type associated with the region list
         /// </summary>
         public RegionType RegionType { get; private set; }
+
+        public List<int> BspRegionIndices { get; private set; }
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
@@ -32,26 +29,40 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int flags = reader.ReadInt32();
+            int regionCount = reader.ReadInt32();
+        
+            BspRegionIndices = new List<int>();
 
-            int regions = reader.ReadInt32();
-
-            Regions = new List<BspRegion>();
-
-            for (int i = 0; i < regions; ++i)
+            for (int i = 0; i < regionCount; ++i)
             {
-                int reference = reader.ReadInt32();
-
-                if (reference == 0)
-                {
-                    continue;
-                }
-
-                Regions.Add(fragments[reference - 1] as BspRegion);
+                BspRegionIndices.Add(reader.ReadInt32());
             }
 
-            int size2 = reader.ReadInt32();
+            int regionStringSize = reader.ReadInt32();
 
-            //TODO: read in and set region flag
+            string regionTypeString = regionStringSize == 0 ? Name.ToLower() : 
+                WldStringDecoder.DecodeString(reader.ReadBytes(regionStringSize)).ToLower();
+
+            if(regionTypeString.StartsWith("wt"))
+            {
+                RegionType = RegionType.Water;
+            }
+            else if (regionTypeString.StartsWith("la"))
+            {
+                RegionType = RegionType.Lava;
+            }
+            else if (regionTypeString.StartsWith("drp"))
+            {
+                RegionType = RegionType.Pvp;
+            }
+            else if (regionTypeString.StartsWith("drn"))
+            {
+                RegionType = RegionType.Zoneline;
+            }
+            else
+            {
+                logger.LogError("Unknown region type: " + regionTypeString);
+            }
         }
 
         public override void OutputInfo(ILogger logger)
@@ -59,7 +70,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.OutputInfo(logger);
             logger.LogInfo("-----");
             logger.LogInfo("0x29: Region type: " + RegionType);
-            logger.LogInfo("0x29: Region count: " + Regions.Count);
+        }
+
+        internal void LinkRegionType(List<BspRegion> bspRegions)
+        {
+            foreach(var regionIndex in BspRegionIndices)
+            {
+                bspRegions[regionIndex].SetRegionFlag(this);
+            }
         }
     }
 }

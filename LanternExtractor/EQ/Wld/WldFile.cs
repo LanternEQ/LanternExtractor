@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -9,7 +8,6 @@ using GlmSharp;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -43,6 +41,8 @@ namespace LanternExtractor.EQ.Wld
         /// A collection of fragment lists that can be referenced by a fragment type
         /// </summary>
         private Dictionary<string, WldFragment> _fragmentNameDictionary;
+
+        private List<BspRegion> _bspRegions;
 
         /// <summary>
         /// The shortname of the zone this WLD is from
@@ -104,10 +104,9 @@ namespace LanternExtractor.EQ.Wld
             InstantiateFragmentBuilder();
 
             _fragments = new Dictionary<int, WldFragment>();
-
             _fragmentTypeDictionary = new Dictionary<int, List<WldFragment>>();
-
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
+            _bspRegions = new List<BspRegion>();
 
             var reader = new BinaryReader(new MemoryStream(_wldFile.Bytes));
 
@@ -173,6 +172,11 @@ namespace LanternExtractor.EQ.Wld
                 if (!string.IsNullOrEmpty(newFrag.Name) && !_fragmentNameDictionary.ContainsKey(newFrag.Name))
                 {
                     _fragmentNameDictionary[newFrag.Name] = newFrag;
+                }
+
+                if(fragId == 0x22)
+                {
+                    _bspRegions.Add(newFrag as BspRegion);
                 }
 
                 _fragmentTypeDictionary[fragId].Add(newFrag);
@@ -401,6 +405,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 ExportZoneMeshes();
                 ExportMaterialList();
+                ExportBspTree();
             }
             else if (_wldType == WldType.Objects)
             {
@@ -709,7 +714,7 @@ namespace LanternExtractor.EQ.Wld
                     if (meshStrings == null || meshStrings.Count == 0)
                     {
                         continue;
-                    } 
+                    }
 
                     File.WriteAllText(objectsExportFolder + fixedObjectName + "_collision" + LanternStrings.ObjFormatExtension, meshStrings[0]);
                 }
@@ -910,7 +915,58 @@ namespace LanternExtractor.EQ.Wld
 
             File.WriteAllText(fileName, materialListExport.ToString());
         }
-        
+
+        private void ExportBspTree()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(0x21))
+            {
+                _logger.LogWarning("Cannot export BSP tree. No tree found.");
+                return;
+            }
+
+            if (_fragmentTypeDictionary[0x21].Count != 1)
+            {
+                _logger.LogWarning("Cannot export BSP tree. Incorrect number of trees found.");
+                return;
+            }
+
+            if(_bspRegions.Count == 0)
+            {
+                return;
+            }
+
+            if (_fragmentTypeDictionary.ContainsKey(0x29))
+            {
+                foreach (WldFragment fragment in _fragmentTypeDictionary[0x29])
+                {
+                    RegionFlag region = fragment as RegionFlag;
+
+                    if (region == null)
+                    {
+                        continue;
+                    }
+
+                    region.LinkRegionType(_bspRegions);
+                }
+            }
+
+            string zoneExportFolder = _zoneName + "/";
+
+            Directory.CreateDirectory(zoneExportFolder);
+
+            // Used for ensuring the output uses a period for a decimal number
+            var format = new NumberFormatInfo { NumberDecimalSeparator = "." };
+
+            BspTree bspTree = _fragmentTypeDictionary[0x21][0] as BspTree;
+
+            if (bspTree == null)
+            {
+                return;
+            }
+
+            File.WriteAllText(zoneExportFolder + _zoneName + "_tree.txt", bspTree.GetBspTreeExport(_fragmentTypeDictionary[0x22], _logger));
+        }
+
         /// <summary>
         /// Exports all meshes in the archive. If the mesh belongs to a model, it exports additional information
         /// </summary>

@@ -21,6 +21,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh RegionMesh { get; private set; }
 
+        public RegionFlag Flag { get; private set; }
+
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -103,6 +105,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int meshReference = reader.ReadInt32();
                 RegionMesh = (Mesh) fragments[meshReference - 1];
             }
+        }
+
+        public void SetRegionFlag(RegionFlag regionFlag)
+        {
+            Flag = regionFlag;
         }
 
         public override void OutputInfo(ILogger logger)
