@@ -269,7 +269,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="lastUsedTexture"></param>
         /// <returns></returns>
         public List<string> GetMeshExport(int baseVertex, Material activeMaterial, ObjExportType objExportType,
-            out int vertexCount, out Material lastUsedMaterial, ILogger logger)
+            out int vertexCount, out Material lastUsedMaterial, Settings settings, ILogger logger)
         {
             var frames = new List<string>();
             var usedVertices = new List<int>();
@@ -288,88 +288,30 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 List<int> activeArray = null;
                 bool bitmapValid = false;
 
-                // Figure out the correct export array
                 if (objExportType == ObjExportType.Textured)
                 {
-                    activeArray = MaterialList.Materials[textureIndex].IsInvisible ? unusedVertices : usedVertices;
+                    if(MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
+                    {
+                        activeArray = usedVertices;
+                    }
+                    else
+                    {
+                        if(settings.ExportHiddenGeometry)
+                        {
+                            activeArray = usedVertices;
+                        }
+                        else
+                        {
+                            activeArray = unusedVertices;
+                        }
+                    }
+
                     bitmapValid = true;
                 }
                 else if (objExportType == ObjExportType.Collision)
                 {
                     activeArray = usedVertices;
                     bitmapValid = false;
-                }
-                else if (objExportType == ObjExportType.Water)
-                {
-                    if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
-                    {
-                        logger.LogError("Invalid texture index");
-                        continue;
-                    }
-
-                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
-                    {
-                        activeArray = unusedVertices;
-                        bitmapValid = false;
-                    }
-                    else
-                    {
-                        string bitmapName = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
-                            .BitmapNames[0].Filename;
-                        activeArray = SpecialTextures.IsWater(bitmapName) ? usedVertices : unusedVertices;
-                        bitmapValid = SpecialTextures.IsWater(bitmapName);
-                    }
-                }
-                else if (objExportType == ObjExportType.Lava)
-                {
-                    if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
-                    {
-                        logger.LogError("Invalid texture index");
-                        continue;
-                    }
-
-                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
-                    {
-                        activeArray = unusedVertices;
-                        bitmapValid = false;
-                    }
-                    else
-                    {
-                        string bitmapName = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
-                            .BitmapNames[0].Filename;
-                        activeArray = SpecialTextures.IsLava(bitmapName) ? usedVertices : unusedVertices;
-                        bitmapValid = SpecialTextures.IsLava(bitmapName);
-                    }
-                }
-                else if (objExportType == ObjExportType.NoSpecialZones)
-                {
-                    if(textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
-                    {
-                        logger.LogError("Invalid texture index");
-                        continue;
-                    }
-
-                    if (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
-                    {
-                        activeArray = unusedVertices;
-                        bitmapValid = false;
-                    }
-                    else
-                    {
-                        string bitmapName = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
-                            .BitmapNames[0].Filename;
-
-                        if (SpecialTextures.IsWater(bitmapName) || SpecialTextures.IsLava(bitmapName))
-                        {
-                            activeArray = unusedVertices;
-                            bitmapValid = false;
-                        }
-                        else
-                        {
-                            activeArray = usedVertices;
-                            bitmapValid = true;
-                        }
-                    }
                 }
 
                 if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
@@ -378,17 +320,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     continue;
                 }
 
-                if (MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible && objExportType != ObjExportType.Collision)
-                { 
-                    string filenameWithoutExtension = MaterialList.Materials[textureIndex].TextureInfoReference.TextureInfo
-                        .BitmapNames[0].GetFilenameWithoutExtension();
+                string filenameWithoutExtension = MaterialList.Materials[textureIndex].GetFirstBitmapNameWithoutExtension();
 
-                    if (MaterialList.Materials[textureIndex] != activeMaterial && bitmapValid)
+                if(MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
+                    || (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible && settings.ExportHiddenGeometry))
+                {
+                    // Material change
+                    if (activeMaterial != MaterialList.Materials[textureIndex])
                     {
-                        string materialPrefix =
-                            MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
-                        faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + filenameWithoutExtension);
-                        activeMaterial = MaterialList.Materials[textureIndex];
+                        if (string.IsNullOrEmpty(filenameWithoutExtension))
+                        {
+                            faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + "null");
+                        }
+                        else
+                        {
+                            string materialPrefix =
+                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
+                            faceOutput.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + filenameWithoutExtension);
+                            activeMaterial = MaterialList.Materials[textureIndex];
+                        }
                     }
                 }
 
@@ -484,6 +434,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         continue;
                     }
 
+                    if(usedVertex >= TextureUvCoordinates.Count)
+                    {
+                        vertexOutput.AppendLine("vt " + 0.0f + " " + 0.0f);
+
+                        continue;
+                    }
+
                     vec2 vertexUvs = TextureUvCoordinates[usedVertex];
                     vertexOutput.AppendLine("vt " + vertexUvs.x + " " + vertexUvs.y);
                 }
@@ -532,11 +489,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {              
                 string bitmapName = MaterialList.Materials[group.TextureIndex].TextureInfoReference.TextureInfo
                     .BitmapNames[0].Filename;
-
-                if (bitmapName.ToLower().StartsWith("chain"))
-                {
-                    
-                }
 
                 string slotName = string.Empty;
 

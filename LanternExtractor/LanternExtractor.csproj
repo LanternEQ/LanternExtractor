@@ -101,7 +101,6 @@
     <Compile Include="EQ\Wld\Fragments\VertexColorReference.cs" />
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\ZoneUnknown.cs" />
-    <Compile Include="EQ\Wld\SpecialTextures.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />

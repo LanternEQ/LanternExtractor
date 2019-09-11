@@ -331,11 +331,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public string GetMaterialListExport()
         {
             var materialsExport = new StringBuilder();
+            bool createdNullMaterial = false;
 
             foreach (Material material in Materials)
             {
-                if (material.IsInvisible)
+                if (material.GetFirstBitmapNameWithoutExtension() == string.Empty)
                 {
+                    if(!createdNullMaterial)
+                    {
+                        materialsExport.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + "null");
+                        materialsExport.AppendLine("Ka 1.000 1.000 1.000");
+                        materialsExport.AppendLine("Kd 1.000 1.000 1.000");
+                        materialsExport.AppendLine("Ks 0.000 0.000 0.000");
+                        materialsExport.AppendLine("d 1.0 ");
+                        materialsExport.AppendLine("illum 2");
+
+                        createdNullMaterial = true;
+                    }
+
                     continue;
                 }
 
@@ -383,7 +396,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         continue;
                     }
                     
-                    if (material.IsInvisible)
+                    if (material.ShaderType == ShaderType.Invisible)
                     {
                         continue;
                     }

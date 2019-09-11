@@ -42,11 +42,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
     class Material : WldFragment
     {
         /// <summary>
-        /// Is this material invisible? Used for invisible walls and things that are not rendered. 
-        /// </summary>
-        public bool IsInvisible { get; private set; }
-
-        /// <summary>
         /// The TextureInfoReference (0x05) that this material uses
         /// </summary>
         public TextureInfoReference TextureInfoReference { get; private set; }
@@ -319,7 +314,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x30: Display type: " + ShaderType);
             logger.LogInfo("0x30: Parameters: " + Parameters);
             logger.LogInfo("0x30 Bit dump: " + BitDump);
-            logger.LogInfo("0x30: Invisible: " + IsInvisible);
             logger.LogInfo("0x30: UnknownFloat1: " + UnknownFloat1);
             logger.LogInfo("0x30: UnknownFloat2: " + UnknownFloat2);
 
@@ -375,6 +369,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             return CharacterMaterialType.CharacterSkin;
+        }
+
+        public string GetFirstBitmapNameWithoutExtension()
+        {
+            if(TextureInfoReference == null || TextureInfoReference.TextureInfo == null ||
+                TextureInfoReference.TextureInfo.BitmapNames == null ||
+                TextureInfoReference.TextureInfo.BitmapNames.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
         }
     }
 }

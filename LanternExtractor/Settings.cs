@@ -56,7 +56,12 @@ namespace LanternExtractor
         /// Adds group separation in the zone mesh export
         /// </summary>
         public bool ExportZoneMeshGroups { get; private set; }
-        
+
+        /// <summary>
+        /// Exports hidden geometry like zone boundaries
+        /// </summary>
+        public bool ExportHiddenGeometry { get; private set; }
+
         /// <summary>
         /// The verbosity of the logger
         /// </summary>
@@ -80,6 +85,7 @@ namespace LanternExtractor
             ExtractSoundFile = false;
             ExtractWld = true;
             ExportZoneMeshGroups = false;
+            ExportHiddenGeometry = false;
             LoggerVerbosity = 0;
         }
 
@@ -141,7 +147,12 @@ namespace LanternExtractor
             {
                 ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
             }
-            
+
+            if (parsedSettings.ContainsKey("ExportHiddenGeometry"))
+            {
+                ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
+            }
+
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
             {
                 LoggerVerbosity = Convert.ToInt32(parsedSettings["LoggerVerbosity"]);

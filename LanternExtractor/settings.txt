@@ -24,10 +24,15 @@ ExtractSoundFile = true
 # If false, this just extracts the S3D contents.
 ExtractWld = true
 
-# Extract the zone mesh with groups
+# Extract the zone mesh with groups?
 # The zone model is made up of smaller BSP region meshes.
-# If enabled, these regions are exportd. If disabled, the mesh is combined into one single mesh.
+# If enabled, these regions are exported. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
+
+# Include hidden geometry in the zone export?
+# Mainly used for invisible walls/boundaries and are untextured.
+# Will also affect collision models.
+ExportHiddenGeometry = true
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
