@@ -301,8 +301,10 @@ namespace LanternExtractor.EQ.Wld
         {
             foreach (Material material in materialList)
             {
-                if (material.ShaderType == ShaderType.Invisible)
+                if (material.GetFirstBitmapNameWithoutExtension() == string.Empty)
+                {
                     continue;
+                }
 
                 List<string> bitmapNames = material.GetAllBitmapNames();
 
@@ -558,7 +560,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                materialsExport.Append(materialList.GetMaterialListExport());
+                materialsExport.Append(materialList.GetMaterialListExport(_settings));
             }
 
             File.WriteAllText(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension,
@@ -674,7 +676,7 @@ namespace LanternExtractor.EQ.Wld
                 // Materials
                 var materialsExport = new StringBuilder();
                 materialsExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material Definitions");
-                materialsExport.Append(objectMesh.MaterialList.GetMaterialListExport());
+                materialsExport.Append(objectMesh.MaterialList.GetMaterialListExport(_settings));
 
                 File.WriteAllText(objectsExportFolder + fixedObjectName + LanternStrings.FormatMtlExtension,
                     materialsExport.ToString());

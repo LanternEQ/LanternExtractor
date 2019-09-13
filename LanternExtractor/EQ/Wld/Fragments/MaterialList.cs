@@ -328,14 +328,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return character + partName;
         }
 
-        public string GetMaterialListExport()
+        public string GetMaterialListExport(Settings settings)
         {
             var materialsExport = new StringBuilder();
             bool createdNullMaterial = false;
 
             foreach (Material material in Materials)
             {
-                if (material.GetFirstBitmapNameWithoutExtension() == string.Empty)
+                string filenameWithoutExtension = material.GetFirstBitmapNameWithoutExtension();
+                
+                if (string.IsNullOrEmpty(filenameWithoutExtension))
                 {
                     if(!createdNullMaterial)
                     {
@@ -352,14 +354,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     continue;
                 }
 
-                if(material.TextureInfoReference == null)
+                if (material.ShaderType == ShaderType.Invisible && !settings.ExportHiddenGeometry)
                 {
                     continue;
                 }
-
-                // TODO: Clean this up
-                string filenameWithoutExtension = material.TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
-                string exportFilename = material.TextureInfoReference.TextureInfo.BitmapNames[0].GetExportFilename();
 
                 materialsExport.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + GetMaterialPrefix(material.ShaderType) + filenameWithoutExtension);
                 materialsExport.AppendLine("Ka 1.000 1.000 1.000");
@@ -367,7 +365,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 materialsExport.AppendLine("Ks 0.000 0.000 0.000");
                 materialsExport.AppendLine("d 1.0 ");
                 materialsExport.AppendLine("illum 2");
-                materialsExport.AppendLine("map_Kd " + exportFilename);
+                materialsExport.AppendLine("map_Kd " + material.GetFirstBitmapExportFilename());
             }
 
             return materialsExport.ToString();
@@ -527,7 +525,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 case ShaderType.TransparentAdditiveUnlitSkydome:
                     return "taus_";
                 default:
-                    return "?";
+                    return "d_";
             }
         }
     }

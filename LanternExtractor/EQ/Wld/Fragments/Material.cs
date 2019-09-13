@@ -382,5 +382,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             return TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
         }
+        
+        public string GetFirstBitmapExportFilename()
+        {
+            if(TextureInfoReference == null || TextureInfoReference.TextureInfo == null ||
+               TextureInfoReference.TextureInfo.BitmapNames == null ||
+               TextureInfoReference.TextureInfo.BitmapNames.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            return TextureInfoReference.TextureInfo.BitmapNames[0].GetExportFilename();
+        }
     }
 }

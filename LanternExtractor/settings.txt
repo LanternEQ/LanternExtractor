@@ -31,7 +31,7 @@ ExportZoneMeshGroups = false
 
 # Include hidden geometry in the zone export?
 # Mainly used for invisible walls/boundaries and are untextured.
-# Will also affect collision models.
+# Will also affect exporting of collision models.
 ExportHiddenGeometry = true
 
 # The minimum verbosity of the logger
