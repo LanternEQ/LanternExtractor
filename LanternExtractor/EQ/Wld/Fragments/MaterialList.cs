@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
-using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -467,7 +466,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 foreach (var general in GeneralTextures)
                 {
                     Material materialToAdd = general;
-                            
+
+                    if (materialToAdd == null)
+                    {
+                        continue;
+                    }
+
+                    var bitmapNames = materialToAdd.GetAllBitmapNames();
+
+                    if (bitmapNames == null || bitmapNames.Count == 0)
+                    {
+                        // Handle this
+                        continue;
+                    }
+                    
                     string pngName = materialToAdd.GetAllBitmapNames()[0];
                     pngName = pngName.Substring(0, pngName.Length - 4);
 

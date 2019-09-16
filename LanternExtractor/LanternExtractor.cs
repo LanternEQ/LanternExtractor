@@ -23,9 +23,7 @@ namespace LanternExtractor
         /// The logger - created before extraction and passed into files for logging
         /// </summary>
         private static ILogger _logger;
-
-        private static List<string> _failedExtractions = new List<string>();
-
+        
         /// <summary>
         /// Entry point for the application 
         /// </summary>
@@ -37,77 +35,90 @@ namespace LanternExtractor
             _settings.Initialize();
             _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
 
-            string shortName;
+            string archiveName;
             
 #if DEBUG
-            shortName = "qeynos";          
+            archiveName = "all";          
 #else
             if (args.Length != 1)
             {
-                Console.WriteLine("Format: lantern.exe <shortname>");
+                Console.WriteLine("Format: lantern.exe <filename/shortname/all>");
                 return;
             }
             
             shortName = args[0];
 #endif
 
-            List<string> eqFiles = GetValidEqFiles(shortName);
+            List<string> eqFiles = GetValidEqFilePaths(archiveName);
 
             if (eqFiles.Count == 0)
             {
-                Console.WriteLine("No valid EQ files found for: '" + shortName + "' at path: " + _settings.EverQuestDirectory);
+                Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " + _settings.EverQuestDirectory);
                 return;
             }      
                         
             foreach (var file in eqFiles)
             {
-                ExtractZone(file);
+                ExtractArchive(file);
             }
             
             Console.WriteLine("Extraction complete");
         }
 
         /// <summary>
-        /// Gets a list of valid EQ archives that aren't OBJ or CHR files
+        /// Returns a list of valid file paths to extract based on the archive name input
         /// </summary>
-        /// <param name="shortName">The shortname to search for</param>
-        /// <returns>The list of valid archive names</returns>
-        private static List<string> GetValidEqFiles(string shortName)
+        /// <param name="archiveName">The name of the archive to extract</param>
+        /// <returns>Valid paths to extract</returns>
+        private static List<string> GetValidEqFilePaths(string archiveName)
         {
-            shortName = shortName.ToLower();
+            archiveName = archiveName.ToLower();
             
             var validFiles = new List<string>();
 
-            // Get all files in the EQ directory
-            if (shortName == "all")
+            if (archiveName == "all")
             {
-                List<string> eqFiles = Directory
-                    .GetFiles(_settings.EverQuestDirectory, "*" + LanternStrings.PfsFormatExtension).ToList();
+                validFiles = Directory.GetFiles(_settings.EverQuestDirectory, "*.*", SearchOption.AllDirectories)
+                    .Where(s => s.EndsWith(".s3d") || s.EndsWith(".pfs")).ToList();
+            }
+            else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
+            {
+                string archivePath = _settings.EverQuestDirectory + archiveName;
 
-                // Prune all object and character files - these will be brought in anyway
-                foreach (var file in eqFiles)
+                if (File.Exists(archivePath))
                 {
-                    if (file.EndsWith("_chr" + LanternStrings.PfsFormatExtension) ||
-                        file.EndsWith("_obj" + LanternStrings.PfsFormatExtension))
-                    {
-                        continue;
-                    }
-
-                    validFiles.Add(Path.GetFileNameWithoutExtension(file));
+                    validFiles.Add(archivePath);
                 }
             }
             else
             {
-                if (!shortName.EndsWith(LanternStrings.PfsFormatExtension))
+                // If it's the shortname of a PFS file, we assume it's standalone - used for sound files
+                string archivePath = _settings.EverQuestDirectory + archiveName + ".pfs";
+                
+                if (File.Exists(archivePath))
                 {
-                    shortName += LanternStrings.PfsFormatExtension;
+                    validFiles.Add(archivePath);
+                    
+                    return validFiles;
                 }
-
-                string path = _settings.EverQuestDirectory + shortName;
-
-                if (File.Exists(path))
+                
+                // Try and find all associated files with the shortname - can theoretically be a non zone file
+                string mainArchivePath = _settings.EverQuestDirectory + archiveName + ".s3d";
+                if (File.Exists(mainArchivePath))
                 {
-                    validFiles.Add(Path.GetFileNameWithoutExtension(path));
+                    validFiles.Add(mainArchivePath);
+                }
+                
+                string objectsArchivePath = _settings.EverQuestDirectory + archiveName + "_obj.s3d";
+                if (File.Exists(objectsArchivePath))
+                {
+                    validFiles.Add(objectsArchivePath);
+                }
+                
+                string charactersArchivePath = _settings.EverQuestDirectory + archiveName + "_chr.s3d";
+                if (File.Exists(charactersArchivePath))
+                {
+                    validFiles.Add(charactersArchivePath);
                 }
             }
 
@@ -115,202 +126,95 @@ namespace LanternExtractor
         }
 
         /// <summary>
-        /// Initializes and extracts content from the archives specified based on settings
+        /// Initializes and extracts files from the specified archive
         /// </summary>
-        /// <param name="shortName">The zone shortname</param>
-        private static void ExtractZone(string shortName)
+        /// <param name="path">The OS path to the file</param>
+        private static void ExtractArchive(string path)
         {
-            if (string.IsNullOrEmpty(shortName))
+            var s3dArchive = new PfsArchive(path, _logger);
+
+            if (!s3dArchive.Initialize())
+            {
+                _logger.LogError("Failed to initialize PFS archive at path: " + path);
+                return;
+            }
+
+            if (_settings.RawS3dExtract)
+            {
+                s3dArchive.WriteAllFiles(true);
+                return;
+            }
+
+            // For non WLD files, we can just extract their contents
+            // Used for pure texture archives (e.g. bmpwad.s3d)
+            if (!s3dArchive.IsWldArchive)
+            {
+                s3dArchive.WriteAllFiles(null);
+                return;
+            }
+
+            string archiveName = Path.GetFileNameWithoutExtension(path);
+
+            if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
             
-            // Zone - contains geometry, textures
-            if (_settings.ExtractZoneFile)
+            string shortName = archiveName.Split('_')[0];
+            string wldFileName = archiveName + LanternStrings.WldFormatExtension;
+            
+            PfsFile wldFileInArchive = s3dArchive.GetFile(wldFileName);
+
+            if (wldFileInArchive == null)
             {
-                ExtractZoneFile(shortName);
+                _logger.LogError($"Unable to extract WLD file {wldFileName} from archive: {path}");
+                return;
             }
 
-            // Objects - contains actual object textures and geometry
-            if (_settings.ExtractObjectsFile)
+            if (archiveName.Contains("_chr") || archiveName.Contains("_amr"))
             {
-                ExtractObjectsFile(shortName);
+                if (_settings.IgnoreCharacterWldFile)
+                {
+                    s3dArchive.WriteAllFiles(null, "Characters", true);
+                }
+                else
+                {
+                    WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
+                    wldFile.Initialize();
+                    s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
+                }
             }
-
-            // Characters - contains character model geometry
-            if (_settings.ExtractCharactersFile)
+            else if (archiveName.Contains("_obj"))
             {
-                ExtractCharactersFile(shortName);
+                WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
+                wldFile.Initialize();
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Objects", true);
             }
-
-            if (_settings.ExtractSoundFile)
+            else
             {
+                WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
+                wldFile.Initialize();
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone", true);
+                
+                PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
+
+                if (lightsFileInArchive != null)
+                {
+                    WldFile lightsWldFile = new WldFile(lightsFileInArchive, shortName, WldType.Lights, _logger, _settings);
+                    lightsWldFile.Initialize();
+                }
+                
+                PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
+
+                if (zoneObjectsFileInArchive != null)
+                {
+                    WldFile zoneObjectsWldFile = new WldFile(zoneObjectsFileInArchive, shortName, WldType.Lights, _logger, _settings);
+                    zoneObjectsWldFile.Initialize();
+                }
                 ExtractSoundFile(shortName);
             }
-
-            _logger.LogInfo("Extraction complete");
-            _logger.LogInfo("");
         }
-
-        /// <summary>
-        /// Initializes and extracts files from the main zone S3D and WLD (if specified)
-        /// </summary>
-        /// <param name="shortName">The zone shortname</param>
-        private static void ExtractZoneFile(string shortName)
-        {
-            var filePath = _settings.EverQuestDirectory + shortName + LanternStrings.PfsFormatExtension;
-
-            var zoneS3DArchive = new PfsArchive(filePath, _logger);
-
-            if (!zoneS3DArchive.Initialize())
-            {
-                _logger.LogError("Failed to initialize zone PFS archive!");
-                return;
-            }
-
-            if (_settings.ExtractWld)
-            {
-                PfsFile zoneWldFile = zoneS3DArchive.GetFile(shortName + LanternStrings.WldFormatExtension);
-
-                if (zoneWldFile != null)
-                {
-                    var wld = new WldFile(zoneWldFile, shortName, WldType.Zone, _logger, _settings);
-
-                    if (wld.Initialize())
-                    {
-                        wld.OutputFiles();
-                        zoneS3DArchive.WriteAllFiles(wld.GetMaterialTypes(), "Zone/", true);
-                    }
-                    else
-                    {
-                        _logger.LogError("Unable to initialize objects.wld");
-                    }
-                }
-
-                PfsFile zoneObjectsWldFile = zoneS3DArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
-
-                if (zoneObjectsWldFile != null)
-                {
-                    var wld = new WldFile(zoneObjectsWldFile, shortName, WldType.ZoneObjects, _logger, _settings);
-
-                    if (wld.Initialize())
-                    {
-                        wld.OutputFiles();
-                    }
-                    else
-                    {
-                        _logger.LogError("Unable to initialize objects.wld");
-                    }
-                }
-
-                PfsFile zoneLightsFile = zoneS3DArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
-
-                if (zoneLightsFile != null)
-                {
-                    var wld = new WldFile(zoneLightsFile, shortName, WldType.Lights, _logger, _settings);
-
-                    if (wld.Initialize())
-                    {
-                        wld.OutputFiles();
-                    }
-                    else
-                    {
-                        _logger.LogError("Unable to initialize lights.wld");
-                    }
-                }
-            }
-            else
-            {
-                zoneS3DArchive.WriteAllFiles("Zone");
-            }
-        }
-
-        /// <summary>
-        /// Initializes and extracts files from the zone objects S3D and WLD (if specified)
-        /// </summary>
-        /// <param name="shortName">The zone shortname</param>
-        private static void ExtractObjectsFile(string shortName)
-        {
-            var filePath = _settings.EverQuestDirectory + shortName + "_obj" + LanternStrings.PfsFormatExtension;
-
-            var objectsS3DArchive = new PfsArchive(filePath, _logger);
-
-            if (!objectsS3DArchive.Initialize())
-            {
-                return;
-            }
-
-            if (_settings.ExtractWld)
-            {
-                PfsFile objectsWldFile =
-                    objectsS3DArchive.GetFile(shortName + "_obj" + LanternStrings.WldFormatExtension);
-
-                if (objectsWldFile == null)
-                {
-                    return;
-                }
-
-                var wld = new WldFile(objectsWldFile, shortName, WldType.Objects, _logger, _settings);
-
-                if (wld.Initialize())
-                {
-                    wld.OutputFiles();
-                    objectsS3DArchive.WriteAllFiles(wld.GetMaterialTypes(), "Objects/", true);
-                }
-                else
-                {
-                    _logger.LogError("Unable to initialize objects wld");
-                }
-            }
-            else
-            {
-                objectsS3DArchive.WriteAllFiles("Objects");
-            }
-        }
-
-        /// <summary>
-        /// Parses and extracts the character models from the archive
-        /// </summary>
-        /// <param name="shortName">The zone shortname</param>
-        private static void ExtractCharactersFile(string shortName)
-        {
-            var filePath = _settings.EverQuestDirectory + shortName + "_chr" + LanternStrings.PfsFormatExtension;
-
-            var charactersS3DArchive = new PfsArchive(filePath, _logger);
-
-            if (!charactersS3DArchive.Initialize())
-            {
-                return;
-            }
-
-            if (_settings.ExtractWld)
-            {
-                PfsFile charactersWldFile =
-                    charactersS3DArchive.GetFile(shortName + "_chr" + LanternStrings.WldFormatExtension);
-
-                if (charactersWldFile == null)
-                {
-                    return;
-                }
-
-                var wld = new WldFile(charactersWldFile, shortName, WldType.Characters, _logger, _settings);
-
-                if (wld.Initialize())
-                {
-                    wld.OutputFiles();
-                    charactersS3DArchive.WriteAllFiles(wld.GetMaterialTypes(), "Characters/", true);
-                }
-                else
-                {
-                    _logger.LogError("Unable to initialize characters WLD");
-                }
-            }
-            else
-            {
-                charactersS3DArchive.WriteAllFiles("Characters");
-            }
-        }
-
+        
         /// <summary>
         /// Parses and extracts the sound and music files for the zone
         /// </summary>

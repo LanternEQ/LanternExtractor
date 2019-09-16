@@ -21,7 +21,7 @@ namespace LanternExtractor.Infrastructure
         /// <param name="type">The type of shader (affects the output process)</param>
         /// <param name="logger">Logger for debug output</param>
 
-        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, ILogger logger)
+        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, bool rotate, ILogger logger)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -36,7 +36,7 @@ namespace LanternExtractor.Infrastructure
                 return;
             }
 
-            Bitmap image = null;
+            Bitmap image;
 
             try
             {
@@ -74,6 +74,11 @@ namespace LanternExtractor.Infrastructure
                 cloneBitmap.Palette = palette;
             }
 
+            if (rotate)
+            {
+                cloneBitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
+            }
+            
             cloneBitmap.Save(filePath + fileName, ImageFormat.Png);
         }
     }

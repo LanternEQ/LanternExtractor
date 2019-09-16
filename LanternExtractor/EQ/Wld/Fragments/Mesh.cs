@@ -288,7 +288,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int polygonCount = group.PolygonCount;
 
                 List<int> activeArray = null;
-                bool bitmapValid = false;
+                //bool bitmapValid = false;
 
                 if(MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
                 {
@@ -488,13 +488,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int currentPolygon = 0;
             foreach (RenderGroup group in RenderGroups)
             {              
-                string bitmapName = MaterialList.Materials[group.TextureIndex].TextureInfoReference.TextureInfo
-                    .BitmapNames[0].Filename;
+                string bitmapName = MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
 
+                if (bitmapName == string.Empty)
+                {
+                    continue;
+                }
+                
                 string slotName = string.Empty;
 
                 slotName = MaterialList.Materials[group.TextureIndex].ExportName;
 
+                if (bitmapName.Length < 4)
+                {
+                    // TODO: Handle
+                    continue;
+                }
+                
                 string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
                 
                 string materialPrefix =

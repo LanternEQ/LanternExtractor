@@ -190,6 +190,8 @@ namespace LanternExtractor.EQ.Wld
             {
                 ProcessCharacterSkins();
             }
+            
+            ExportWldData();
 
             return true;
         }
@@ -401,7 +403,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
-        public void OutputFiles()
+        public void ExportWldData()
         {
             if (_wldType == WldType.Zone)
             {
@@ -806,7 +808,7 @@ namespace LanternExtractor.EQ.Wld
 
             materialListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
             materialListExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                          "BitmapName, BitmapCount, FrameDelay (optional)");
+                                          "BitmapName, BitmapCount, AnimationDelayMs (optional)");
             
             for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
             {
@@ -842,31 +844,27 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            string fileName;
+            string fileName = _zoneName + "/" + _zoneName + "_materials";
 
-            if (_wldType == WldType.Zone)
+            if (_wldType == WldType.Objects)
             {
-                string exportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
-                Directory.CreateDirectory(exportFolder);
-                fileName = exportFolder + "/" + _zoneName;
-            }
-            else if (_wldType == WldType.Objects)
-            {
-                string exportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
-                Directory.CreateDirectory(exportFolder);
-                fileName = exportFolder + "/" + _zoneName;
                 fileName += "_objects";
             }
-            else
+            else if(_wldType == WldType.Characters)
             {
-                string exportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder;
-                Directory.CreateDirectory(exportFolder);
-                fileName = exportFolder + "/" + _zoneName;
                 fileName += "_characters";
             }
 
-            fileName += "_materials.txt";
+            fileName += ".txt";
 
+            string directory = Path.GetDirectoryName(fileName);
+
+            if (!Directory.Exists(directory))
+            {
+                // TODO: Handle error
+                return;
+            }
+            
             File.WriteAllText(fileName, materialListExport.ToString());
         }
 
@@ -917,8 +915,16 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
+            
+            StringBuilder bspTreeExport = new StringBuilder();
+            bspTreeExport.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
+            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
+                                          "Normal nodes: NormalX, NormalY, NormalZ, SplitDistance, LeftNodeId, RightNodeId");
+            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
+                                     "Leaf nodes: BSPRegionId, RegionType");
+            bspTreeExport.AppendLine(bspTree.GetBspTreeExport(_fragmentTypeDictionary[0x22], _logger));
 
-            File.WriteAllText(zoneExportFolder + _zoneName + "_tree.txt", bspTree.GetBspTreeExport(_fragmentTypeDictionary[0x22], _logger));
+            File.WriteAllText(zoneExportFolder + _zoneName + "_bsp_tree.txt", bspTreeExport.ToString());
         }
 
         /// <summary>

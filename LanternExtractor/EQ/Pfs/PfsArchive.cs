@@ -19,7 +19,12 @@ namespace LanternExtractor.EQ.Pfs
         private readonly string _filePath;
 
         /// <summary>
-        /// The OS path to which the files will be extracted
+        /// The OS path to which the files will be extracted if we are doing a raw export
+        /// </summary>
+        private readonly string _rawExportPath;
+        
+        /// <summary>
+        /// The OS path to which the files will be extracted if we are processing the files
         /// </summary>
         private readonly string _exportPath;
 
@@ -37,11 +42,13 @@ namespace LanternExtractor.EQ.Pfs
         /// A dictionary of all files allowing direct name access
         /// </summary>
         private readonly Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
-
+        
         /// <summary>
         /// The logger for debug output
         /// </summary>
         private readonly ILogger _logger;
+
+        public bool IsWldArchive { get; set; }
 
         /// <summary>
         /// Constructor that initializes the file path and logger
@@ -54,13 +61,21 @@ namespace LanternExtractor.EQ.Pfs
             _fileName = Path.GetFileName(filePath);
             _logger = logger;
 
+            _rawExportPath = Path.GetFileNameWithoutExtension(filePath);
+
+            if (string.IsNullOrEmpty(_rawExportPath))
+            {
+                logger.LogError("Invalid PFS path");
+                return;
+            }
+            
             if (filePath.EndsWith("_obj.s3d") || filePath.EndsWith("_chr.s3d"))
             {
-                _exportPath = _filePath.Substring(0, filePath.Length - 8);
+                _exportPath = _rawExportPath.Substring(0, _rawExportPath.Length - 4);
             }
             else
             {
-                _exportPath = _filePath;
+                _exportPath = _rawExportPath;
             }
         }
 
@@ -167,6 +182,14 @@ namespace LanternExtractor.EQ.Pfs
             {
                 _files[i].SetFileName(fileNames[i]);
                 _fileNameReference.Add(fileNames[i], _files[i]);
+
+                if (!IsWldArchive)
+                {
+                    if (fileNames[i].EndsWith(".wld"))
+                    {
+                        IsWldArchive = true;
+                    }
+                }
             }
 
             _logger.LogInfo("Finished initialization of archive: " + _fileName);
@@ -226,7 +249,6 @@ namespace LanternExtractor.EQ.Pfs
 
                 zlibCodec.EndInflate();
 
-
                 inflatedBytes = output;
                 return true;
             }
@@ -235,12 +257,13 @@ namespace LanternExtractor.EQ.Pfs
         /// <summary>
         /// Writes all files to disk
         /// </summary>
-        /// <param name="folderName">An optional subfolder to </param>
-        public void WriteAllFiles(string subfolderName = "")
+        /// <param name="rawExport">Are we processing any of the files?</param>
+        /// <param name="subfolderName">If specified, exports are put in a subfolder with this name</param>
+        public void WriteAllFiles(bool rawExport, string subfolderName = "")
         {
             for (int i = 0; i < _files.Count; ++i)
             {
-                WriteFile(i, subfolderName);
+                WriteFile(i, rawExport, subfolderName);
             }
         }
 
@@ -254,30 +277,26 @@ namespace LanternExtractor.EQ.Pfs
         public void WriteAllFiles(Dictionary<string, List<ShaderType>> textureTypes, string folderName = "",
             bool onlyTextures = false)
         {
-            if (textureTypes == null)
-            {
-                return;
-            }
-            
             for (int i = 0; i < _files.Count; ++i)
             {
                 string filename = _files[i].Name;
 
                 if (filename.EndsWith(".bmp"))
                 {
-                    if (!textureTypes.ContainsKey(filename))
+                    if (textureTypes == null || !textureTypes.ContainsKey(filename))
                     {
+                        WriteImageAsPng(i, ShaderType.Diffuse, folderName);
                         continue;
                     }
 
                     foreach (ShaderType type in textureTypes[filename])
                     {
-                        WriteImage(i, type, folderName);
+                        WriteImageAsPng(i, type, folderName);
                     }
                 }
                 else if(filename.EndsWith(".dds"))
                 {
-                    WriteFile(i, folderName);
+                    WriteFile(i, false, folderName);
                 }
                 else
                 {
@@ -286,7 +305,7 @@ namespace LanternExtractor.EQ.Pfs
                         continue;
                     }
 
-                    WriteFile(i, folderName);
+                    WriteFile(i, false, folderName);
                 }
             }
         }
@@ -295,15 +314,16 @@ namespace LanternExtractor.EQ.Pfs
         /// Writes a file based on the index in the file list
         /// </summary>
         /// <param name="index">The index of the file to write</param>
+        /// <param name="rawExport">Dictates which folder the output goes into</param>
         /// <param name="subfolderName">An optional folder name to put the files into</param>
-        private void WriteFile(int index, string subfolderName = "")
+        private void WriteFile(int index, bool rawExport, string subfolderName = "")
         {
             if (index < 0 || _files.Count <= index || _files[index].Bytes == null)
             {
                 return;
             }
 
-            string directoryPath = Path.GetFileNameWithoutExtension(_exportPath);
+            string directoryPath = rawExport ? _rawExportPath :_exportPath;
 
             if (string.IsNullOrEmpty(directoryPath))
             {
@@ -330,7 +350,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index"></param>
         /// <param name="fileName">The name of the file to be written</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
-        public void WriteFile(int index, string fileName, string folderName = "")
+        public void WriteFile(int index, string fileName, bool rawExport, string folderName = "")
         {
             for (var i = 0; i < _files.Count; i++)
             {
@@ -341,7 +361,7 @@ namespace LanternExtractor.EQ.Pfs
                     continue;
                 }
 
-                WriteFile(i, folderName);
+                WriteFile(i, rawExport, folderName);
                 break;
             }
         }
@@ -352,7 +372,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index">The index in the file list</param>
         /// <param name="type">The shader type</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
-        private void WriteImage(int index, ShaderType type, string folderName = "")
+        private void WriteImageAsPng(int index, ShaderType type, string folderName = "")
         {
             if (index < 0 || index >= _files.Count)
             {
@@ -377,8 +397,13 @@ namespace LanternExtractor.EQ.Pfs
                 exportPath += folderName;
             }
 
+            if (!exportPath.EndsWith("/"))
+            {
+                exportPath += "/";
+            }
+
             var byteStream = new MemoryStream(_files[index].Bytes);
-            ImageWriter.WriteImage(byteStream, exportPath, pngName, type, _logger);
+            ImageWriter.WriteImage(byteStream, exportPath, pngName, type, !IsWldArchive, _logger);
         }
 
         /// <summary>

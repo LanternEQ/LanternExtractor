@@ -19,6 +19,7 @@ namespace LanternExtractor
         public const string ObjFormatExtension = ".obj";
 
         public const string WldFormatExtension = ".wld";
+        public const string S3dFormatExtension = ".s3d";
         public const string PfsFormatExtension = ".s3d";
         public const string SoundFormatExtension = ".eff";
     }

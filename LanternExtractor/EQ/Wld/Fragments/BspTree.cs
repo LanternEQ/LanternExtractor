@@ -60,22 +60,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             StringBuilder treeExport = new StringBuilder();
 
-            for(int i = 0; i < Nodes.Count; ++i)
+            foreach (var node in Nodes)
             {
-                BspNode node = Nodes[i];
-
-                BspRegion region = null;
-
                 if (node.RegionId != 0)
                 {
-                    region = fragments[node.RegionId - 1] as BspRegion;
-
-                    if(region == null)
+                    if(!(fragments[node.RegionId - 1] is BspRegion region))
                     {
                         continue;
                     }
 
-                    RegionType type = region.Flag == null ? RegionType.Normal : region.Flag.RegionType;
+                    RegionType type = region.Flag?.RegionType ?? RegionType.Normal;
 
                     treeExport.AppendLine($"{node.RegionId}, {type.ToString()}");
                 }

@@ -31,7 +31,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool params1 = false;
             bool params2 = false;
 
-            bool size2frag3data3 = false;
+            //bool size2frag3data3 = false;
 
             var ba = new BitAnalyzer(flags);
 

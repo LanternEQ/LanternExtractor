@@ -1,38 +1,27 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-EverQuestDirectory = C:\EverQuest
+EverQuestDirectory = /Users/daniel.wilkins/Documents/EQC
 
-# Extract the zone file? (e.g. arena.s3d)
-# Contains zone models, object instances and light data
-ExtractZoneFile = true
-
-# Extract the objects file? (e.g. arena_obj.s3d)
-# Contains object models and textures
-ExtractObjectsFile = true
-
-# Extract the characters file? (e.g. arena_chr.s3d)
-# Contains character models and textures. EXPERIMENTAL.
-ExtractCharactersFile = false
-
-# Extract the sound file?
-# This contains information about sound instances in the world.
-ExtractSoundFile = true
-
-# Extract the WLD file?
-# If true, this will export all WLD data files (textures, models, data lists).
-# If false, this just extracts the S3D contents.
-ExtractWld = true
+# Extract the contents of the S3D archive as is?
+# If true, this will export all contents as they exist in the archives to their original formats.
+# If false, this will extract contents, process WLD files and convert images to .png
+RawS3DExtract = false
 
 # Extract the zone mesh with groups?
 # The zone model is made up of smaller BSP region meshes.
 # If enabled, these regions are exported. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
 
+# Ignore the character WLD file?
+# As this feature is still experimental, it is recommended you keep this set to true.
+# There are still unhandled exceptions in some character archives.
+IgnoreCharacterWLDFile = true
+
 # Include hidden geometry in the zone export?
-# Mainly used for invisible walls/boundaries and are untextured.
+# Mainly used for invisible walls/boundaries.
 # Will also affect exporting of collision models.
-ExportHiddenGeometry = true
+ExportHiddenGeometry = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
