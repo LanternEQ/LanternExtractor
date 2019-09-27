@@ -208,7 +208,7 @@ namespace LanternExtractor
 
                 if (zoneObjectsFileInArchive != null)
                 {
-                    WldFile zoneObjectsWldFile = new WldFile(zoneObjectsFileInArchive, shortName, WldType.Lights, _logger, _settings);
+                    WldFile zoneObjectsWldFile = new WldFile(zoneObjectsFileInArchive, shortName, WldType.ZoneObjects, _logger, _settings);
                     zoneObjectsWldFile.Initialize();
                 }
                 ExtractSoundFile(shortName);
