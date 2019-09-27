@@ -79,6 +79,9 @@
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
     <Compile Include="EQ\Wld\Fragments\FirstFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment2F.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
     <Compile Include="EQ\Wld\Fragments\LightInfo.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSourceReference.cs" />
@@ -87,7 +90,7 @@
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVertices.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshReference.cs" />
     <Compile Include="EQ\Wld\Fragments\ModelReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ObjectLocation.cs" />
+    <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\RegionFlag.cs" />
     <Compile Include="EQ\Wld\Fragments\SkeletonPieceTrackReference.cs" />
     <Compile Include="EQ\Wld\Fragments\SkeletonPiece.cs" />

@@ -6,10 +6,10 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x15 - Object Location
+    /// 0x15 - Object Instance
     /// Contains information about a single zone object instance
     /// </summary>
-    class ObjectLocation : WldFragment
+    class ObjectInstance : WldFragment
     {
         /// <summary>
         /// The name of the object model

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -158,6 +159,11 @@ namespace LanternExtractor.EQ.Wld
                 // Create the fragments
                 newFrag = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
 
+                if (newFrag is Generic)
+                {
+                    _logger.LogWarning($"Unhandled fragment type: {fragId:x}");
+                }
+
                 newFrag.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash, _isNewWldFormat,
                     _logger);
                 newFrag.OutputInfo(_logger);
@@ -240,12 +246,15 @@ namespace LanternExtractor.EQ.Wld
                 {0x33, () => new VertexColorReference()},
 
                 // General
-                {0x15, () => new ObjectLocation()},
+                {0x15, () => new ObjectInstance()},
 
                 // Unused
                 {0x08, () => new Camera()},
                 {0x09, () => new CameraReference()},
                 {0x16, () => new ZoneUnknown()},
+                {0x17, () => new Fragment17()},
+                {0x18, () => new Fragment18()},
+                {0x2F, () => new Fragment2F()},
             };
         }
 
@@ -712,7 +721,7 @@ namespace LanternExtractor.EQ.Wld
             
             for (int i = 0; i < _fragmentTypeDictionary[0x15].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x15][i] is ObjectLocation objectLocation))
+                if (!(_fragmentTypeDictionary[0x15][i] is ObjectInstance objectLocation))
                 {
                     continue;
                 }

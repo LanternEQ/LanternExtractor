@@ -99,7 +99,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             reader.BaseStream.Position += 16;
 
             // Get the mesh reference index and link to it
-            // TODO: Get the actual mesh reference
             if (ContainsPolygons)
             {
                 int meshReference = reader.ReadInt32();
