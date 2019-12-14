@@ -8,7 +8,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x05 - TextureInfoReference
     /// This fragment contains a reference to a TextureInfo (0x04) fragment
     /// </summary>
-    class TextureInfoReference : WldFragment
+    public class TextureInfoReference : WldFragment
     {
         /// <summary>
         /// The reference to the texture info (0x04)

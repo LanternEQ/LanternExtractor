@@ -131,5 +131,19 @@ namespace LanternExtractor.Infrastructure
 
             return parsedOutput;
         }
+
+        public static List<string> ParseStringToList(string text)
+        {
+            List<string> returnList = new List<string>();
+            
+            if (string.IsNullOrEmpty(text))
+            {
+                return returnList;
+            }
+
+            string[] strings = text.Split(';');
+
+            return strings.ToList();
+        }
     }
 }

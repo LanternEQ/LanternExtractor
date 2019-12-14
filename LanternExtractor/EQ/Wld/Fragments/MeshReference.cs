@@ -8,7 +8,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x2D - Mesh Reference
     /// Contains a reference to a mesh fragment (0x36)
     /// </summary>
-    class MeshReference : WldFragment
+    public class MeshReference : WldFragment
     {
         /// <summary>
         /// The mesh reference

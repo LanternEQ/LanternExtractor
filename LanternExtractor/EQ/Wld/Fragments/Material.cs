@@ -39,7 +39,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x30 - Material
     /// Contains information about the material and how it's rendered
     /// </summary>
-    class Material : WldFragment
+    public class Material : WldFragment
     {
         /// <summary>
         /// The TextureInfoReference (0x05) that this material uses
@@ -393,6 +393,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             return TextureInfoReference.TextureInfo.BitmapNames[0].GetExportFilename();
+        }
+
+        public void SetHandled(bool b)
+        {
+            IsHandled = b;
         }
     }
 }

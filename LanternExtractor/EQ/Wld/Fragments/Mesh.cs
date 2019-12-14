@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -14,7 +15,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x36 - Mesh
     /// Contains geometric data making up a mesh
     /// </summary>
-    class Mesh : WldFragment
+    public class Mesh : WldFragment
     {
         /// <summary>
         /// The center of the mesh - used to calculate absolute coordinates of vertices
@@ -48,6 +49,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The vertices of the mesh
         /// </summary>
         public List<vec3> Vertices { get; private set; }
+        
+        /// <summary>
+        /// The normals of the mesh
+        /// </summary>
+        public List<vec3> Normals { get; private set; }
 
         /// <summary>
         /// The polygon indices of the mesh
@@ -75,6 +81,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// This means we export collision separately (e.g. trees, fire)
         /// </summary>
         public bool ExportSeparateCollision { get; private set; }
+
+        public bool Handled = false;
 
         /// <summary>
         /// The render components of a mob skeleton
@@ -129,6 +137,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             MaxPosition = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
             Vertices = new List<vec3>();
+            Normals = new List<vec3>();
             TextureUvCoordinates = new List<vec2>();
 
             short vertexCount = reader.ReadInt16();
@@ -171,7 +180,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < normalsCount; ++i)
             {
-                reader.BaseStream.Position += 3;
+                Normals.Add(new vec3(reader.ReadByte() * (1.0f / 127.0f), reader.ReadByte() * (1.0f / 127.0f), reader.ReadByte() * (1.0f / 127.0f)));
             }
 
             for (int i = 0; i < colorsCount; ++i)
@@ -215,6 +224,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 mobStart += count;
 
                 MobPieces[index1] = mobVertexPiece;
+            }
+            
+            if (Name.StartsWith("GOR"))
+            {
+                
             }
             
             RenderGroups = new List<RenderGroup>();
@@ -476,16 +490,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
                                   ? FixCharacterMeshName(Name, true)
                                   : FixCharacterMeshName(forceMaterialList, true)) + LanternStrings.FormatMtlExtension);
 
+            int vertexCount = Vertices.Count;
             for (var i = 0; i < Vertices.Count; i++)
             {
                 vec3 vertex = Vertices[i];
                 vec2 uvs = TextureUvCoordinates[i];
-                export.AppendLine("v " + (vertex.x + Center.x) + " " + (vertex.y + Center.y) + " " +
-                                  (vertex.z + Center.z));
+                vec3 normals = Normals[i];
+                export.AppendLine("v " + -(vertex.x + Center.x) + " " + (vertex.z + Center.z) + " " +
+                                  (vertex.y + Center.y));
                 export.AppendLine("vt " + uvs.x + " " + uvs.y);
+                export.AppendLine("vn " + normals.x + " " + normals.y + " " + normals.z);
             }
 
             int currentPolygon = 0;
+            int index = 0;
             foreach (RenderGroup group in RenderGroups)
             {              
                 string bitmapName = MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
@@ -509,8 +527,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 string materialPrefix =
                     MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType);
-                export.AppendLine(LanternStrings.ObjUseMtlPrefix + materialPrefix + slotName);
+                var line = LanternStrings.ObjUseMtlPrefix + materialPrefix + bitmapName;
 
+                
+                export.AppendLine(line);
+                
                 for (int i = 0; i < group.PolygonCount; ++i)
                 {
                     int vertex1 = Polygons[currentPolygon].Vertex1 + 1;
@@ -523,9 +544,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     currentPolygon++;
                 }
+
+                export.AppendLine("g group" + group.TextureIndex);
             }
 
             // Ensure that output use the decimal point rather than the comma (as in Germany)
+            // TODO: Use invariant culture
             string exportString = export.ToString().Replace(',', '.');
             
             return exportString;
@@ -546,6 +570,52 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
+        private void ShiftAndRotateVertices(vec3 shift, quat rotation, int index, ILogger logger)
+        {
+            if (!MobPieces.ContainsKey(index))
+            {
+                return;
+            }
+
+            MobVertexPiece mobPiece = MobPieces[index];
+
+            for (int i = 0; i < mobPiece.Count; ++i)
+            {
+                vec3 vertexPosition = Vertices[mobPiece.Start + i];
+                vertexPosition += shift;
+                vertexPosition *= rotation;
+                Vertices[mobPiece.Start + i] = vertexPosition;
+            }
+        }
+        
+        private void ShiftAndRotateVertices(mat4 rotationTranslationMat, int index, ILogger logger)
+        {
+            if (!MobPieces.ContainsKey(index))
+            {
+                return;
+            }
+
+            var quat = glm.ToQuaternion(rotationTranslationMat);
+
+            //logger.LogError( $"{index} trans: " + rotationTranslationMat.Column3.ToString());
+            logger.LogError( $"{index} rot: " + quat.ToString());
+
+            MobVertexPiece mobPiece = MobPieces[index];
+
+            for (int i = 0; i < mobPiece.Count; ++i)
+            {
+                var position = Vertices[mobPiece.Start + i];
+                vec4 newPosition = new vec4(position, 1.0f);
+                vec4 shiftedPosition = rotationTranslationMat * newPosition;
+                Vertices[mobPiece.Start + i] = shiftedPosition.xyz;
+
+                if (position != shiftedPosition.xyz)
+                {
+                    
+                }
+            }
+        }
+
         private static void AddIfNotContained(List<int> list, int element)
         {
             if (list.Contains(element))
@@ -558,7 +628,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public static string FixCharacterMeshName(string meshName2, bool isMainModel)
         {
-
             if (!isMainModel)
             {
                 Regex expression = new Regex("^(\\w{3})(.*)(\\d{2})_DMSPRITEDEF$");
@@ -632,12 +701,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="mesh">The mesh to shift</param>
         /// <param name="track">The skeleton track set to shift</param>
         /// <param name="skeletonPieceData">The data about this specific piece</param>
-        /// <param name="shift">The shift value to apply to this piece</param>
+        /// <param name="parentShift">The shift value to apply to this piece</param>
         /// <param name="index">The current bone index</param>
-        public void ShiftSkeletonValues(SkeletonTrack track, SkeletonPieceData skeletonPieceData,
-            vec3 shift, int index)
+        public void ShiftSkeletonValues(HierSpriteDefFragment track, SkeletonPieceData skeletonPieceData,
+            vec3 parentShift, int index)
         {
-            vec3 newShift = shift + skeletonPieceData.AnimationTracks.First().Value.SkeletonPiece.Frames[0].Translation;
+            vec3 newShift = parentShift + skeletonPieceData.AnimationTracks.First().Value.TrackDefFragment.Frames[0].Translation;
 
             ShiftVertices(newShift, index);
 
@@ -646,5 +715,130 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 ShiftSkeletonValues(track, track.Skeleton[pieces], newShift, pieces);
             }
         }
+        
+        public void ShiftSkeletonValues(List<SkeletonNode> skeleton, SkeletonNode currentNode,
+            vec3 parentShift, int index)
+        {
+            vec3 newShift = parentShift + currentNode.Track.TrackDefFragment.Frames2[0].Translation;
+
+            ShiftVertices(newShift, index);
+
+            foreach (var pieces in skeleton[index].Children)
+            {
+                ShiftSkeletonValues(skeleton, skeleton[pieces], newShift, pieces);
+            }
+        }
+        
+        public void ShiftSkeletonValues(List<SkeletonNode> skeleton, List<BoneTrack> boneTracks,
+            mat4 parentModelMatrix, int index, int frame, ILogger logger)
+        {
+            int actualFrame = frame;
+            
+            if (boneTracks[index]._frames.Count == 1)
+            {
+                actualFrame = 0;
+            }
+
+            mat4 translationMatrix = mat4.Translate(boneTracks[index]._frames[actualFrame].Translation);
+            mat4 rotationMatrix = glm.ToMat4(boneTracks[index]._frames[actualFrame].Rotation);
+            mat4 modelMatrix = translationMatrix * rotationMatrix;
+            mat4 combineParentMatrix = parentModelMatrix * modelMatrix;
+            
+            ShiftAndRotateVertices(combineParentMatrix, index, logger);
+            
+            foreach (var pieces in skeleton[index].Children)
+            {
+                ShiftSkeletonValues(skeleton, boneTracks, combineParentMatrix, pieces, frame, logger);
+            }
+        }
+        
+        public void ShiftSkeletonValues(List<SkeletonNode> skeleton, List<BoneTrack> boneTracks,
+            BoneTransform parentTrans, int index, int frame)
+        {
+            int maxFrame = Math.Min(boneTracks[index]._frames.Count - 1, frame);
+            
+            BoneTransform pieceTrans = boneTracks[index]._frames[maxFrame];
+            BoneTransform globalTrans = parentTrans.Map(pieceTrans);
+            
+            ShiftVertices(globalTrans.Translation, index);
+
+            foreach (var pieces in skeleton[index].Children)
+            {
+                ShiftSkeletonValues(skeleton, boneTracks, globalTrans, pieces, frame);
+            }
+        }
+
+        public string GetIntermediateMeshExport()
+        {
+            var export = new StringBuilder();
+
+            export.AppendLine("# Lantern Test Intermediate Format");
+            
+            foreach (var vertex in Vertices)
+            {
+                export.Append("v");
+                export.Append(",");
+                export.Append(vertex.x);
+                export.Append(",");
+                export.Append(vertex.y);
+                export.Append(",");
+                export.Append(vertex.z);
+                export.AppendLine();
+            }
+            
+            foreach (var textureUv in TextureUvCoordinates)
+            {
+                export.Append("t");
+                export.Append(",");
+                export.Append(textureUv.x);
+                export.Append(",");
+                export.Append(textureUv.y);
+                export.AppendLine();
+            }
+            
+            foreach (var normal in Normals)
+            {
+                export.Append("n");
+                export.Append(",");
+                export.Append(normal.x);
+                export.Append(",");
+                export.Append(normal.y);
+                export.Append(",");
+                export.Append(normal.z);
+                export.AppendLine();
+            }
+            int currentPolygon = 0;
+            foreach (RenderGroup group in RenderGroups)
+            {
+                string materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
+
+                export.Append("mg");
+                export.Append(",");
+                export.Append(group.TextureIndex);
+                export.Append(",");
+                export.Append(materialName);
+                export.AppendLine();
+                
+                for (int i = 0; i < group.PolygonCount; ++i)
+                {
+                    int vertex1 = Polygons[currentPolygon].Vertex1;
+                    int vertex2 = Polygons[currentPolygon].Vertex2;
+                    int vertex3 = Polygons[currentPolygon].Vertex3;
+
+                    export.Append("i");
+                    export.Append(",");
+                    export.Append(group.TextureIndex);
+                    export.Append(",");
+                    export.Append(vertex3);
+                    export.Append(",");
+                    export.Append(vertex2);
+                    export.Append(",");
+                    export.Append(vertex1);
+                    export.AppendLine();
+                    currentPolygon++;
+                }
+            }
+            
+            return export.ToString();        }
     }
 }

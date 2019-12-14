@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Contains a list of frames each containing a vertex position the model
     /// The frame vertices are cycled through animating the model
     /// </summary>
-    class MeshAnimatedVertices : WldFragment
+    public class MeshAnimatedVertices : WldFragment
     {
         /// <summary>
         /// The model frames

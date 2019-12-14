@@ -10,11 +10,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x10 - Skeleton Track
     /// Describes the layout of a complete skeleton and which pieces connect to eachother
     /// </summary>
-    class SkeletonTrack : WldFragment
+    public class HierSpriteDefFragment : WldFragment
     {
         public List<SkeletonPieceData> Skeleton { get; private set; }
 
+        public List<MeshReference> Meshes { get; private set; }
+        
+        public List<SkeletonNode> Tree { get; set; }
+        
         public Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary { get; private set; }
+
+        public float BoundingRadius;
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
@@ -32,6 +38,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool params2 = false;
 
             //bool size2frag3data3 = false;
+            
+            Tree = new List<SkeletonNode>();
+            Meshes = new List<MeshReference>();
 
             var ba = new BitAnalyzer(flags);
 
@@ -66,40 +75,49 @@ namespace LanternExtractor.EQ.Wld.Fragments
             for (int i = 0; i < size1; ++i)
             {
                 var piece = new SkeletonPieceData();
+                var pieceNew = new SkeletonNode();
 
                 // Create the skeleton structure
                 // refers to this or another 0x10 fragment - confusing
                 int entryNameRef = reader.ReadInt32();
 
                 piece.Name = stringHash[-entryNameRef];
+                pieceNew.Name = piece.Name;
 
                 // usually 0
                 int entryFlags = reader.ReadInt32();
+                pieceNew.Flags = entryFlags;
 
                 // reference to an 0x13
                 int entryFrag = reader.ReadInt32();
+                pieceNew.Track = fragments[entryFrag - 1] as TrackFragment;
 
-                piece.AnimationTracks = new Dictionary<string, SkeletonPieceTrackReference>();
+                piece.AnimationTracks = new Dictionary<string, TrackFragment>();
 
-                piece.AnimationTracks["default"] = fragments[entryFrag - 1] as SkeletonPieceTrackReference;
-                piece.AnimationTracks["default"].Assigned = true;
+                piece.AnimationTracks["default"] = fragments[entryFrag - 1] as TrackFragment;
+                //piece.AnimationTracks["default"] = true;
 
                 int entryFrag2 = reader.ReadInt32();
 
                 // Reference to a 0x2D
                 if (entryFrag2 != 0)
                 {
+                    pieceNew.Mesh = fragments[entryFrag2 - 1] as MeshReference;
                 }
 
                 int entrySize = reader.ReadInt32();
 
                 List<int> moose = new List<int>();
+                pieceNew.Children = new List<int>();
 
                 for (int j = 0; j < entrySize; ++j)
                 {
                     int pieceIndex = reader.ReadInt32();
                     moose.Add(pieceIndex);
+                    pieceNew.Children.Add(pieceIndex);
                 }
+                
+                Tree.Add(pieceNew);
 
 
                 piece.ConnectedPieces = moose;
@@ -114,6 +132,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     }
                 }
             }
+
+            // Read in mesh references
+            int size2 = reader.ReadInt32();
+
+            for (int i = 0; i < size2; ++i)
+            {
+                int meshRefIndex = reader.ReadInt32();
+
+                MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
+
+                if (meshRef != null)
+                {
+                    Meshes.Add(meshRef);
+                }
+            }
         }
 
         public override void OutputInfo(ILogger logger)
@@ -123,7 +156,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x10: Skeleton pieces: " + Skeleton.Count);
         }
 
-        public void AddNewTrack(SkeletonPieceTrackReference newTrack)
+        public void AddNewTrack(TrackFragment newTrack)
         {
             string animationName = newTrack.Name.Substring(0, 3);
             string boneName = newTrack.Name.Substring(3);

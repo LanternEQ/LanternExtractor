@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// This fragment contains the name of a bitmap image
     /// It's theoretically possible for this fragment to have more than one bitmap but it hasn't been seen
     /// </summary>
-    class BitmapName : WldFragment
+    public class BitmapName : WldFragment
     {
         /// <summary>
         /// The bitmap names of this fragment - stored as a list because the client supports more than one

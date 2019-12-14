@@ -14,12 +14,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The skeleton track reference
         /// </summary>
-        public List<SkeletonTrackReference> SkeletonReferences { get; private set; }
+        public List<HierSpriteFragment> SkeletonReferences { get; private set; }
 
         /// <summary>
         /// The mesh reference
         /// </summary>
         public Mesh Mesh { get; private set; }
+
+        public List<MeshReference> _meshes = new List<MeshReference>();
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
@@ -31,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Name = stringHash[-reader.ReadInt32()];
 
-            SkeletonReferences = new List<SkeletonTrackReference>();
+            SkeletonReferences = new List<HierSpriteFragment>();
 
             int flags = reader.ReadInt32();
 
@@ -70,16 +72,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // references
             for (int i = 0; i < size2; ++i)
             {
-                if (size2 != 1)
-                {
-                }
-
                 int fragmentIndex = reader.ReadInt32();
-                var skeletonTrackReference = fragments[fragmentIndex - 1] as SkeletonTrackReference;
+                var skeletonTrackReference = fragments[fragmentIndex - 1] as HierSpriteFragment;
 
                 if (skeletonTrackReference != null)
                 {
                     SkeletonReferences.Add(skeletonTrackReference);
+                    continue;
+                }
+
+                var meshReference = fragments[fragmentIndex - 1] as MeshReference;
+
+                if (meshReference != null)
+                {
+                    _meshes.Add(meshReference);
                 }
             }
         }

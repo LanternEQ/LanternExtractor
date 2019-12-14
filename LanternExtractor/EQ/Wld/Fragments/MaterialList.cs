@@ -12,7 +12,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// A list of material fragments (0x30) that make up a single list.
     /// This list is used in the rendering of an mesh (via the list indices).
     /// </summary>
-    class MaterialList : WldFragment
+    public class MaterialList : WldFragment
     {
         /// <summary>
         /// The materials in the list

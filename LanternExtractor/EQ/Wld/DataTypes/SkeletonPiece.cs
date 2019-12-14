@@ -7,6 +7,6 @@ namespace LanternExtractor.EQ.Wld.DataTypes
     {
         public string Name { get; set; }
         public List<int> ConnectedPieces { get; set; }
-        public Dictionary<string, SkeletonPieceTrackReference> AnimationTracks { get; set; }
+        public Dictionary<string, TrackFragment> AnimationTracks { get; set; }
     }
 }

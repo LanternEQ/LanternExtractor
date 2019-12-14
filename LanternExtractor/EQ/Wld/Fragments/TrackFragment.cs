@@ -8,14 +8,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x13 - Skeleton Piece Track Reference
     /// Refers to the skeleton piece fragment (0x12)
     /// </summary>
-    public class SkeletonPieceTrackReference : WldFragment
+    public class TrackFragment : WldFragment
     {
         /// <summary>
         /// Reference to a skeleton piece
         /// </summary>
-        public SkeletonPiece SkeletonPiece { get; set; }
-
-        public bool Assigned { get; set; }
+        public TrackDefFragment TrackDefFragment { get; set; }
+        
+        public bool IsProcessed { get; set; }
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
@@ -26,20 +26,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-
+            
             int reference = reader.ReadInt32();
 
-            SkeletonPiece = fragments[reference - 1] as SkeletonPiece;
+            TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
 
-            if (SkeletonPiece != null)
+            if (TrackDefFragment != null)
             {
                 logger.LogInfo("-----");
-                logger.LogInfo("0x13: Skeleton piece reference: " + SkeletonPiece.Index + 1);
+                logger.LogInfo("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
             }
         }
     }
