@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// BSP regions are leaf nodes in the BSP tree. They can contain references to mesh data (0x36)
     /// This fragment is largely unhandled as we don't need the tree data or the PVS (potentially visible set)
     /// </summary>
-    class BspRegion : WldFragment
+    public class BspRegion : WldFragment
     {
         /// <summary>
         /// Does this fragment contain geometry?

@@ -179,20 +179,20 @@ namespace LanternExtractor
                 }
                 else
                 {
-                    WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
+                    WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
                     wldFile.Initialize();
                     s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
                 }
             }
             else if (archiveName.Contains("_obj"))
             {
-                WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
+                WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Objects", true);
             }
             else
             {
-                WldFile wldFile = new WldFile(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
+                WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone", true);
                 
@@ -200,7 +200,7 @@ namespace LanternExtractor
 
                 if (lightsFileInArchive != null)
                 {
-                    WldFile lightsWldFile = new WldFile(lightsFileInArchive, shortName, WldType.Lights, _logger, _settings);
+                    WldFileLights lightsWldFile = new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, _logger, _settings);
                     lightsWldFile.Initialize();
                 }
                 
@@ -208,7 +208,7 @@ namespace LanternExtractor
 
                 if (zoneObjectsFileInArchive != null)
                 {
-                    WldFile zoneObjectsWldFile = new WldFile(zoneObjectsFileInArchive, shortName, WldType.ZoneObjects, _logger, _settings);
+                    WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName, WldType.ZoneObjects, _logger, _settings);
                     zoneObjectsWldFile.Initialize();
                 }
                 ExtractSoundFile(shortName);

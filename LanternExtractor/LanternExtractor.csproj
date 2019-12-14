@@ -71,6 +71,7 @@
     <Compile Include="EQ\Wld\DataTypes\Polygon.cs" />
     <Compile Include="EQ\Wld\DataTypes\RegionType.cs" />
     <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
+    <Compile Include="EQ\Wld\DataTypes\Skeleton.cs" />
     <Compile Include="EQ\Wld\DataTypes\SkeletonPiece.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
@@ -92,10 +93,10 @@
     <Compile Include="EQ\Wld\Fragments\ModelReference.cs" />
     <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\RegionFlag.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonPieceTrackReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonPiece.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonTrack.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonTrackReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\TrackFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\TrackDefFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\HierSpriteDefFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\HierSpriteFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Material.cs" />
     <Compile Include="EQ\Wld\Fragments\TextureInfo.cs" />
     <Compile Include="EQ\Wld\Fragments\TextureInfoReference.cs" />
@@ -106,6 +107,11 @@
     <Compile Include="EQ\Wld\Fragments\ZoneUnknown.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
+    <Compile Include="EQ\Wld\WldFileCharacters.cs" />
+    <Compile Include="EQ\Wld\WldFileLights.cs" />
+    <Compile Include="EQ\Wld\WldFileObjects.cs" />
+    <Compile Include="EQ\Wld\WldFileZone.cs" />
+    <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />
     <Compile Include="EQ\Wld\WldType.cs" />
     <Compile Include="Infrastructure\BitAnalyzer.cs" />

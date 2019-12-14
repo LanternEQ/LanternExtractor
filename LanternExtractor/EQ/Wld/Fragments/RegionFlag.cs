@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x29 - Region Flag
     /// Associates a list of regions with a specified region flag (Water, Lava, PvP or Zoneline)
     /// </summary>
-    class RegionFlag : WldFragment
+    public class RegionFlag : WldFragment
     {
         /// <summary>
         /// The region type associated with the region list
