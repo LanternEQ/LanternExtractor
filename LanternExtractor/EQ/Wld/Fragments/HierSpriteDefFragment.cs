@@ -36,6 +36,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             bool params1 = false;
             bool params2 = false;
+            bool size2Exists = false;
 
             //bool size2frag3data3 = false;
             
@@ -49,6 +50,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (ba.IsBitSet(1))
                 params2 = true;
+            
+            if (ba.IsBitSet(9))
+                size2Exists = true;
 
             //if (CheckBit(flags, 9))
             //size2frag3data3 = true;
@@ -134,17 +138,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Read in mesh references
-            int size2 = reader.ReadInt32();
-
-            for (int i = 0; i < size2; ++i)
+            if (size2Exists)
             {
-                int meshRefIndex = reader.ReadInt32();
-
-                MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
-
-                if (meshRef != null)
+                int size2 = reader.ReadInt32();
+                
+                for (int i = 0; i < size2; ++i)
                 {
-                    Meshes.Add(meshRef);
+                    int meshRefIndex = reader.ReadInt32();
+
+                    MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
+
+                    if (meshRef != null)
+                    {
+                        Meshes.Add(meshRef);
+                    }
                 }
             }
         }

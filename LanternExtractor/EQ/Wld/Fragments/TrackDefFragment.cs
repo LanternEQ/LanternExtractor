@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -32,6 +33,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int flags = reader.ReadInt32();
+            
+            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
+
+            if (bitAnalyzer.IsBitSet(3))
+            {
+                
+            }
 
             int size1 = reader.ReadInt32();
 
@@ -40,6 +48,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             float l = 0.0f;
 
+
+            
             for (int i = 0; i < size1; ++i)
             {
                 // Windcatcher
