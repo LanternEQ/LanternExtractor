@@ -13,11 +13,6 @@ RawS3DExtract = false
 # If enabled, these regions are exported. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
 
-# Ignore the character WLD file?
-# As this feature is still experimental, it is recommended you keep this set to true.
-# There are still unhandled exceptions in some character archives.
-IgnoreCharacterWLDFile = true
-
 # Include hidden geometry in the zone export?
 # Mainly used for invisible walls/boundaries.
 # Will also affect exporting of collision models.

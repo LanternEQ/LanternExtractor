@@ -27,11 +27,6 @@ namespace LanternExtractor
         public string EverQuestDirectory { get; private set; }
         
         /// <summary>
-        /// Ignore the character WLD file?
-        /// </summary>
-        public bool IgnoreCharacterWldFile { get; private set; }
-
-        /// <summary>
         /// Extract data from the WLD file
         /// If false, we just extract the S3D contents
         /// </summary>
@@ -64,7 +59,6 @@ namespace LanternExtractor
             _logger = logger;
 
             EverQuestDirectory = "C:/EverQuest/";
-            IgnoreCharacterWldFile = true;
             RawS3dExtract = false;
             ExportZoneMeshGroups = false;
             ExportHiddenGeometry = false;
@@ -99,12 +93,7 @@ namespace LanternExtractor
                 // Ensure the path ends with a /
                 EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + "/");
             }
-            
-            if (parsedSettings.ContainsKey("IgnoreCharacterWLDFile"))
-            {
-                IgnoreCharacterWldFile = Convert.ToBoolean(parsedSettings["IgnoreCharacterWLDFile"]);
-            }
-            
+
             if (parsedSettings.ContainsKey("RawS3DExtract"))
             {
                 RawS3dExtract = Convert.ToBoolean(parsedSettings["RawS3DExtract"]);

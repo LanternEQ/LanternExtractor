@@ -171,18 +171,12 @@ namespace LanternExtractor
                 return;
             }
 
-            if (archiveName.Contains("_chr") || archiveName.Contains("_amr"))
+            if (archiveName.Contains("_chr") || archiveName.Contains("_amr") || archiveName.StartsWith("chequip"))
             {
-                if (_settings.IgnoreCharacterWldFile)
-                {
-                    s3dArchive.WriteAllFiles(null, "Characters", true);
-                }
-                else
-                {
-                    WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
-                    wldFile.Initialize();
-                    s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
-                }
+                WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
+                wldFile.Initialize();
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
+
             }
             else if (archiveName.Contains("_obj"))
             {
