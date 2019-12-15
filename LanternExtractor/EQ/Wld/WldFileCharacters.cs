@@ -6,14 +6,27 @@ using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
 {
     public class WldFileCharacters : WldFile
     {
+        public Dictionary<string, string> AnimationModelLink;
+        
         public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings) : base(wldFile, zoneName, type, logger, settings)
         {
+            AnimationModelLink = new Dictionary<string, string>();
+
+            var fileText = File.ReadAllText("models.txt");
+
+            var parsedText = TextParser.ParseTextByDelimitedLines(fileText, ',', '#');
+
+            foreach (var line in parsedText)
+            {
+                AnimationModelLink[line[2]] = line[4];
+            }
         }
         
         /// <summary>
@@ -380,6 +393,13 @@ namespace LanternExtractor.EQ.Wld
         {
             CharacterModel model = Models[animBase];
 
+            var animBaseAdjusted = AnimationModelLink[animBase];
+
+            if (string.IsNullOrEmpty(animBaseAdjusted))
+            {
+                animBaseAdjusted = animBase;
+            }
+
             if (model == null)
             {
                 return;
@@ -415,7 +435,8 @@ namespace LanternExtractor.EQ.Wld
                 }
                 
 
-                if (modelNameCur != animBase)
+                
+                if (modelNameCur != animBaseAdjusted)
                 {
                     continue;
                 }
@@ -445,7 +466,7 @@ namespace LanternExtractor.EQ.Wld
                         }
                     }
 
-                    Animation newAnimation = new Animation(animationName, tracks, FindSkeleton(modelName), null);
+                    Animation newAnimation = new Animation(animationName, tracks, FindSkeleton(animBase), null);
                     model.AddAnimation(animationName, newAnimation);
                     currentTracks.Clear();
 
@@ -464,7 +485,8 @@ namespace LanternExtractor.EQ.Wld
                 currentTracks[boneName] = newTrack;
             }
             
-            
+            model.AddAnimation("POS", model.skeleton._pose);
+
         }
 
         private bool ResolveAnimations()

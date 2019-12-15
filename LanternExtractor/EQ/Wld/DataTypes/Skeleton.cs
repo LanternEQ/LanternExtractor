@@ -32,6 +32,7 @@ Ability to add tracks, and copy animations from other skeletons.
             _tree = skelDefTree;
             _treePartMap = names;
             _pose = new Animation("POS", tracks, this, this);
+            _animations["POS"] = _pose;
             _boundingRadius = skelDefBoundingRadius;
             _animations[_pose.Name] = _pose;            
         }
