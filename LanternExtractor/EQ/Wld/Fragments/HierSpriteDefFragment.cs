@@ -7,7 +7,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x10 - Skeleton Track
+    /// sforea  0x10 - Skeleton Track
     /// Describes the layout of a complete skeleton and which pieces connect to eachother
     /// </summary>
     public class HierSpriteDefFragment : WldFragment
@@ -36,7 +36,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             bool params1 = false;
             bool params2 = false;
-            bool size2Exists = false;
+            bool hasMeshReferences = false;
 
             //bool size2frag3data3 = false;
             
@@ -52,7 +52,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 params2 = true;
             
             if (ba.IsBitSet(9))
-                size2Exists = true;
+                hasMeshReferences = true;
 
             //if (CheckBit(flags, 9))
             //size2frag3data3 = true;
@@ -67,10 +67,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // params - [0, 1, 2] - no idea what they are for
             if (params1)
+            {
                 reader.BaseStream.Position += (3 * sizeof(int));
+            }
 
             if (params2)
-                reader.BaseStream.Position += (sizeof(float));
+            {
+                BoundingRadius = reader.ReadSingle();
+            }
 
             Skeleton = new List<SkeletonPieceData>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
@@ -80,6 +84,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 var piece = new SkeletonPieceData();
                 var pieceNew = new SkeletonNode();
+
+                pieceNew.Index = i;
 
                 // Create the skeleton structure
                 // refers to this or another 0x10 fragment - confusing
@@ -138,7 +144,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Read in mesh references
-            if (size2Exists)
+            if (hasMeshReferences)
             {
                 int size2 = reader.ReadInt32();
                 
@@ -149,8 +155,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
 
                     if (meshRef != null)
-                    {
+                    {      
+                                 
+                                         // If this is not the first mesh, it's a secondary mesh and we need to determine the attach point
+
+                    
                         Meshes.Add(meshRef);
+                        
                     }
                 }
             }

@@ -84,6 +84,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public bool Handled = false;
 
+        public int StartTextureIndex = 0;
+
         /// <summary>
         /// The render components of a mob skeleton
         /// </summary>
@@ -225,20 +227,27 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 MobPieces[index1] = mobVertexPiece;
             }
-            
-            if (Name.StartsWith("GOR"))
-            {
-                
-            }
-            
+
             RenderGroups = new List<RenderGroup>();
 
+            StartTextureIndex = Int32.MaxValue;
+            
             for (int i = 0; i < polygonTextureCount; ++i)
             {
                 var group = new RenderGroup();
                 group.PolygonCount = reader.ReadUInt16();
                 group.TextureIndex = reader.ReadUInt16();
                 RenderGroups.Add(group);
+
+                if (group.TextureIndex < StartTextureIndex)
+                {
+                    StartTextureIndex = group.TextureIndex;
+                }
+            }
+            
+            if (Name.StartsWith("DRA"))
+            {
+                
             }
 
             for (int i = 0; i < vertexTextureCount; ++i)
@@ -768,12 +777,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public string GetIntermediateMeshExport()
+        public string GetIntermediateMeshExport(int skinId, Dictionary<string,Dictionary<int, Material>> materials)
         {
             var export = new StringBuilder();
 
             export.AppendLine("# Lantern Test Intermediate Format");
-            
+
             foreach (var vertex in Vertices)
             {
                 export.Append("v");
@@ -807,14 +816,88 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 export.Append(normal.z);
                 export.AppendLine();
             }
+            
             int currentPolygon = 0;
             foreach (RenderGroup group in RenderGroups)
             {
-                string materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
+                string materialName = string.Empty;
+
+                if (skinId == -1)
+                {
+                    //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
+                    materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetMaterialSkinWithoutExtension();
+                }
+                else
+                {
+                    //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetSpecificMaterialSkinWithoutExtension(skinId);
+                    //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetMaterialSkinWithoutExtension();
+                    //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
+
+                    string nameOfMaterial = MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension().ToUpper() + "_MDF";
+                    
+                    if (nameOfMaterial.ToLower().Contains("fun"))
+                    {
+                        
+                    }
+                    
+                    if (nameOfMaterial == "DRAHE0612_MDF")
+                    {
+                    
+                    }
+                    
+                    string charName;
+                    int skinIdUnused;
+                    string partName;
+                    
+                    if (!WldMaterialPalette.ExplodeName(nameOfMaterial, out charName, out skinIdUnused, out partName))
+                    {
+                        materialName =
+                            MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                            MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();                    }
+                    else
+                    {
+                        if (materials.ContainsKey(partName))
+                        {
+                        
+                            var specific = materials[partName];
+
+                            if (specific.ContainsKey(skinId))
+                            {
+                                materialName =
+                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                                    specific[skinId].GetFirstBitmapNameWithoutExtension();
+
+                            }
+                            else
+                            {
+                                // Find the lowest value
+                                int lowest = Int32.MaxValue;
+
+                                foreach (var entry in specific)
+                                {
+                                    if (entry.Key < lowest)
+                                    {
+                                        lowest = entry.Key;
+                                    }
+                                }
+                                
+                                materialName =
+                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                                    specific[lowest].GetFirstBitmapNameWithoutExtension();
+                            }
+                        }
+                        else
+                        {
+                            materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                                           nameOfMaterial;
+                            // what the fuck?
+                        }
+                    }
+                }
 
                 export.Append("mg");
                 export.Append(",");
-                export.Append(group.TextureIndex);
+                export.Append(group.TextureIndex - StartTextureIndex);
                 export.Append(",");
                 export.Append(materialName);
                 export.AppendLine();
@@ -827,7 +910,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     export.Append("i");
                     export.Append(",");
-                    export.Append(group.TextureIndex);
+                    export.Append(group.TextureIndex - StartTextureIndex);
                     export.Append(",");
                     export.Append(vertex3);
                     export.Append(",");
@@ -839,6 +922,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
             }
             
-            return export.ToString();        }
+            foreach (var bone in MobPieces)
+            {
+                export.Append("b");
+                export.Append(",");
+                export.Append(bone.Key);
+                export.Append(",");
+                export.Append(bone.Value.Start);
+                export.Append(",");
+                export.Append(bone.Value.Count);
+                export.AppendLine();
+            }
+
+            if (StartTextureIndex != 0)
+            {
+                
+            }
+            
+            return export.ToString();        
+        }
     }
 }

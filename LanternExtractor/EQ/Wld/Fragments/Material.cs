@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Text.RegularExpressions;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -87,6 +86,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // String reference
             Name = stringHash[-reader.ReadInt32()];
+
+            if (Name.Contains("DRA") && Name.Contains("14"))
+            {
+                
+                
+            }
+            
+            if (Name.EndsWith("DRAHE0212_MDF"))
+            {
+                
+            }
 
             // Flags?
             int flags = reader.ReadInt32();
@@ -383,6 +393,45 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
         }
         
+        public string GetSpecificMaterialSkinWithoutExtension(int specificSkin)
+        {
+            string charName;
+            int skinId;
+            string partName;
+
+            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
+
+            
+            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
+            {
+                return string.Empty;
+            }
+
+            string skinIdText = skinId >= 10 ? skinId.ToString() : "0" + specificSkin;
+
+            var final = charName + partName.Substring(0, 2) + skinIdText + partName.Substring(2, 2);
+
+            return final;
+        }
+        
+        public string GetMaterialSkinWithoutExtension()
+        {
+            string charName;
+            int skinId;
+            string partName;
+
+            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
+
+            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
+            {
+                return string.Empty;
+            }
+
+            var final = charName + partName.Substring(0, 2) + "{ID}" + partName.Substring(2, 2);
+
+            return final;
+        }
+        
         public string GetFirstBitmapExportFilename()
         {
             if(TextureInfoReference == null || TextureInfoReference.TextureInfo == null ||
@@ -398,6 +447,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public void SetHandled(bool b)
         {
             IsHandled = b;
+        }
+
+        public object GetMaterialNameNew(int skinId2)
+        {
+            string charName;
+            int skinId;
+            string partName;
+
+            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
+
+            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
+            {
+                return string.Empty;
+            }
+
+            var final = charName + partName.Substring(0, 2) + "{ID}" + partName.Substring(2, 2);
+
+            return final;        
         }
     }
 }

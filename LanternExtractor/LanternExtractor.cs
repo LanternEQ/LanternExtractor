@@ -38,7 +38,7 @@ namespace LanternExtractor
             string archiveName;
             
 #if DEBUG
-            archiveName = "arena";          
+            archiveName = "chequip";          
 #else
             if (args.Length != 1)
             {

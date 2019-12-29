@@ -71,12 +71,6 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private bool _isNewWldFormat;
 
-        private Dictionary<string, Material> GlobalCharacterMaterials;
-
-        protected Dictionary<string, CharacterModel> Models = new Dictionary<string, CharacterModel>();
-
-        protected List<BoneTransform> Frames = new List<BoneTransform>();
-
         /// <summary>
         /// Constructor setting data references used during the initialization process
         /// </summary>

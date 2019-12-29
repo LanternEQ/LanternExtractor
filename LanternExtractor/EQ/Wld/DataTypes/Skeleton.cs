@@ -9,15 +9,15 @@ using LanternExtractor.EQ.Wld.Fragments;
 namespace LanternExtractor.EQ.Wld.DataTypes
 {
 
-    /* Skeleton - Papa bear class
-Contains a Skeleton tree - a vector of Skeleton Nodes
-An animation reference *pose (could be the default animation)
-A map of animations <string, Animation*>
-Bounding radius
+            /* Skeleton - Papa bear class
+        Contains a Skeleton tree - a vector of Skeleton Nodes
+        An animation reference *pose (could be the default animation)
+        A map of animations <string, Animation*>
+        Bounding radius
 
-Functions:
-Ability to add tracks, and copy animations from other skeletons.
-     */
+        Functions:
+        Ability to add tracks, and copy animations from other skeletons.
+             */
     public class Skeleton
     {
         public List<SkeletonNode> _tree;
@@ -104,9 +104,11 @@ Ability to add tracks, and copy animations from other skeletons.
     /// </summary>
     public class SkeletonNode
     {
+        public int Index;
         public string Name;
 
         public string FullPath;
+        public string FullIndexPath;
         
         public int Flags;
         
@@ -262,27 +264,67 @@ Ability to add tracks, and copy animations from other skeletons.
 
     public class CharacterModel
     {
-        public RaceId RaceId;
-        public GenderId GenderId;
-        public string AnimationBase; // the name of the model to copy animations from
+        /// <summary>
+        /// The (most commonly) 3 letter abbreviation for this character model
+        /// </summary>
+        public string ModelBase;
+        
+        /// <summary>
+        /// The base from which this model copies the animations (often is the same as the modelbase)
+        /// </summary>
+        public string AnimationBase;
+        
+        /// <summary>
+        /// The main mesh
+        /// </summary>
         public WldMesh MainMesh;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public List<WldMesh> Meshes = new List<WldMesh>();
-
-        // mesh buffer
-
-        public Skeleton skeleton;
-
-        public Dictionary<string, Animation> animations = new Dictionary<string, Animation>();
         
+        /// <summary>
+        /// The skeleton used by this character model
+        /// </summary>
+        public Skeleton Skeleton;
+
+        /// <summary>
+        /// The animations used by this model
+        /// </summary>
+        public Dictionary<string, Animation> Animations = new Dictionary<string, Animation>();
+        
+        /// <summary>
+        /// Skin masks - need to flesh this out
+        /// </summary>
         public List<int> SkinMasks = new List<int>();
 
+        public Dictionary<string, Dictionary<int, Material>> NewSkins;
 
-        public CharacterModel(WldMesh mainMesh)
+        public int DefaultSkinId;
+        
+        public CharacterModel(string actorName, WldMesh mainMesh)
         {
+            ModelBase = actorName;
             MainMesh = mainMesh;
+            NewSkins = new Dictionary<string, Dictionary<int, Material>>();
         }
 
+        public void AddNewSkin(string slot, int mask, Material mat)
+        {
+            if (NewSkins.Count == 0)
+            {
+                DefaultSkinId = mask;
+            }
+            
+            if (!NewSkins.ContainsKey(slot))
+            {
+                NewSkins[slot] = new Dictionary<int, Material>();
+            }
+
+            NewSkins[slot][mask] = mat;
+        }
+        
         public void AddPart(Mesh mesh, int skinId)
         {
             if (mesh == null)
@@ -291,6 +333,7 @@ Ability to add tracks, and copy animations from other skeletons.
             }
             
             WldMesh meshPart = new WldMesh(mesh, Meshes.Count);
+            
             AddPart(meshPart, skinId);
         }
 
@@ -304,12 +347,12 @@ Ability to add tracks, and copy animations from other skeletons.
             Meshes.Add(mesh);
 
             // Mark the part used by the skin.
-            int skinMask = GetSkinMask(skinId, true);
+            int skinMask = AddSkin(skinId, true);
             SetPartUsed(ref skinMask, mesh.PartId, true);
             SkinMasks[skinId] = skinMask;
         }
 
-        public int GetSkinMask(int skinId, bool createSkin = false)
+        public int AddSkin(int skinId, bool createSkin = false)
         {
             int newMask = (SkinMasks.Count > 0) ? SkinMasks[0] : 0;
             if(skinId >= SkinMasks.Count)
@@ -323,6 +366,7 @@ Ability to add tracks, and copy animations from other skeletons.
                     return newMask;
                 }
             }
+            
             return SkinMasks[skinId];
         }
 
@@ -334,20 +378,14 @@ Ability to add tracks, and copy animations from other skeletons.
                 skinMask &= ~(1 << partID);
         }
 
-        public void SetRace(RaceId human)
-        {
-
-            RaceId = human;
-        }
-
-        public void SetGender(GenderId eGenderMale)
-        {
-            GenderId = eGenderMale;
-        }
-
-        public void SetAnimBase(string gor)
+        public void SetAnimationBase(string gor)
         {
             AnimationBase = gor;
+        }
+
+        public void SetModelBase(string modelBase)
+        {
+            ModelBase = modelBase;
         }
 
         public bool IsPartUsed(int skinMask, int partId)
@@ -361,19 +399,19 @@ Ability to add tracks, and copy animations from other skeletons.
                 return;
             
             AddPart(mesh, skinId);
-            int skinMask = GetSkinMask(skinId, true);
+            int skinMask = AddSkin(skinId, true);
             SetPartUsed(ref skinMask, oldPartId, false);
             SkinMasks[skinId] = skinMask;        
         }
 
         public void SetSkeleton(Skeleton skeleton1)
         {
-            skeleton = skeleton1;
+            Skeleton = skeleton1;
         }
 
         public void AddAnimation(string name, Animation animation)
         {
-            animations[name] = animation;
+            Animations[name] = animation;
         }
     }
 
@@ -418,7 +456,7 @@ Ability to add tracks, and copy animations from other skeletons.
             }
 
             _def = matDef;
-            matDef.SetHandled(true);        
+            //matDef.SetHandled(true);        
         }
     }
     

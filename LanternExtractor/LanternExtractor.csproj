@@ -135,6 +135,9 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="models.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="musictracks.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
