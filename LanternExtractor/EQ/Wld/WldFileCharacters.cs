@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Pfs;
@@ -55,7 +54,6 @@ namespace LanternExtractor.EQ.Wld
                 FindAnimations(animationBase);
                 ExportCharacterMesh(animationBase);
                 ExportCharacterSkeleton(animationBase);
-                //ExportCharacterAnimations(animationBase);
             }
 
             FindAllAnimations();
@@ -74,8 +72,8 @@ namespace LanternExtractor.EQ.Wld
             foreach (var animation in _animations)
             {
                 string modelName = animation.Key.Substring(0, 3);
-
-                if (animation.Key.Contains("ELF"))
+                
+                if (animation.Key.Contains("GOR"))
                 {
                     
                 }
@@ -468,7 +466,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (node.Name != string.Empty)
             {
-                runningName += node.Name + "/";
+                runningName += "{MOD}" + node.Name.Replace("_DAG", "").Substring(3) + "/";
             }
             
             if (node.Name != string.Empty)
@@ -490,6 +488,9 @@ namespace LanternExtractor.EQ.Wld
             }
         }
         
+        /// <summary>
+        /// Finds and groups all character animations
+        /// </summary>
         private void FindAllAnimations()
         {
             Dictionary<string, BoneTrack> currentTracks = new Dictionary<string, BoneTrack>();
@@ -497,6 +498,7 @@ namespace LanternExtractor.EQ.Wld
             string animationName = string.Empty;
             string modelName = string.Empty;
 
+            // Loop through each track
             foreach (var fragment in _fragmentTypeDictionary[0x13])
             {
                 TrackFragment track = fragment as TrackFragment;
@@ -506,11 +508,10 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
+                // Break apart the name
                 string partName = track.TrackDefFragment.Name;
-
                 string animNameCur = partName.Substring(0, 3);
                 string modelNameCur = partName.Substring(3, 3);
-
 
                 if (!Models.ContainsKey(modelNameCur))
                 {
@@ -527,11 +528,13 @@ namespace LanternExtractor.EQ.Wld
 
                 if (animationName != animNameCur || modelName != modelNameCur)
                 {
+                    var oldModel = Models[modelName];
+                    
                     List<BoneTrack> tracks = new List<BoneTrack>();
 
-                    for (int i = 0; i < model.Skeleton._tree.Count; ++i)
+                    for (int i = 0; i < oldModel.Skeleton._tree.Count; ++i)
                     {
-                        string partNameFromIndex = model.Skeleton._treePartMap[i + 1];
+                        string partNameFromIndex = oldModel.Skeleton._treePartMap[i + 1];
 
                         if (currentTracks.ContainsKey(partNameFromIndex))
                         {
@@ -545,8 +548,8 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     Animation newAnimation = new Animation(animationName, tracks, FindSkeleton(modelName), null);
-                    //model.AddAnimation(animationName, newAnimation);
-                    _animations[modelNameCur + "_" + animationName] = newAnimation;
+                    
+                    _animations[modelName + "_" + animationName] = newAnimation;
                     currentTracks.Clear();
 
                     animationName = animNameCur;
@@ -564,6 +567,12 @@ namespace LanternExtractor.EQ.Wld
                 string boneName = partName.Substring(6, partName.Length - 15);
 
                 currentTracks[boneName] = newTrack;
+            }
+            
+            // Add all pose animations
+            foreach (var model in Models)
+            {
+                _animations[model.Value.ModelBase + "_" + "POS"] = model.Value.Skeleton._pose;
             }
         }
 
@@ -937,7 +946,7 @@ namespace LanternExtractor.EQ.Wld
 
                         var node = skeleton._tree[i];
 
-                        skeletonExport.Append(node.FullIndexPath);
+                        skeletonExport.Append(node.FullPath);
                         skeletonExport.Append(",");
                         skeletonExport.Append(j);
                         skeletonExport.Append(",");
