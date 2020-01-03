@@ -146,7 +146,7 @@ namespace LanternExtractor
             }
 
             // For non WLD files, we can just extract their contents
-            // Used for pure texture archives (e.g. bmpwad.s3d)
+            // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
             if (!s3dArchive.IsWldArchive)
             {
                 s3dArchive.WriteAllFiles(null);
@@ -159,8 +159,9 @@ namespace LanternExtractor
             {
                 return;
             }
-            
+
             string shortName = archiveName.Split('_')[0];
+
             string wldFileName = archiveName + LanternStrings.WldFormatExtension;
             
             PfsFile wldFileInArchive = s3dArchive.GetFile(wldFileName);
@@ -171,7 +172,13 @@ namespace LanternExtractor
                 return;
             }
 
-            if (archiveName.Contains("_chr") || archiveName.Contains("_amr") || archiveName.StartsWith("chequip"))
+            if (IsModelsArchive(archiveName))
+            {
+                WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
+                wldFile.Initialize();
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Models", true);
+            }
+            else if (IsCharactersArchive(archiveName))
             {
                 WldFileCharacters wldFileToInject = null;
                 
@@ -188,15 +195,15 @@ namespace LanternExtractor
                     PfsFile wldFileInArchive2 = s3dArchive2.GetFile("global_chr.wld");
 
                     wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters, _logger, _settings);
-                    wldFileToInject.Initialize(true);
+                    wldFileToInject.Initialize(false);
                 }
-                
+
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
 
             }
-            else if (archiveName.Contains("_obj"))
+            else if (IsObjectsArchive(archiveName))
             {
                 WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
@@ -225,6 +232,21 @@ namespace LanternExtractor
                 }
                 ExtractSoundFile(shortName);
             }
+        }
+
+        private static bool IsModelsArchive(string archiveName)
+        {
+            return archiveName.StartsWith("gequip");
+        }
+
+        private static bool IsCharactersArchive(string archiveName)
+        {
+            return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") || archiveName.Contains("_amr");
+        }
+
+        private static bool IsObjectsArchive(string archiveName)
+        {
+            return archiveName.Contains("_obj");
         }
         
         /// <summary>

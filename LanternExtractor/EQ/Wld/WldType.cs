@@ -38,6 +38,11 @@
         /// <summary>
         /// The WLD containing the character model and information
         /// </summary>
-        Characters
+        Characters,
+        
+        /// <summary>
+        /// The special case WLD file that should be extracted as is
+        /// </summary>
+        Models
     }
 }

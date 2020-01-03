@@ -36,7 +36,14 @@ namespace LanternExtractor.EQ.Wld
             {
                 AnimationModelLink[line[2]] = line[4];
             }
-            
+        }
+
+        protected override void ProcessData()
+        {
+            ImportCharacters();
+            ImportCharacterPalettes();
+            ImportSkeletons();
+            ResolveAnimations();
         }
 
         /// <summary>
@@ -44,19 +51,22 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected override void ExportWldData()
         {
+            base.ExportWldData();
+
             if (_wldToInject != null)
             {
                 Models = (_wldToInject as WldFileCharacters)?.Models;
             }
             
-            ImportCharacters();
-            ImportCharacterPalettes();
-            ImportSkeletons();
-            ResolveAnimations();
-
             foreach (var model in Models)
             {
                 var animationBase = model.Key;
+
+                if (model.Key == "IVM")
+                {
+                    continue;
+                }
+                
                 CreateSkeletonPieceHierarchy(animationBase);
                 FindAnimations(animationBase);
                 ExportCharacterMesh(animationBase);
@@ -70,7 +80,12 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAllAnimations()
         {
-            string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Animation/";
+            if (_animations == null || _animations.Count == 0)
+            {
+                return;
+            }
+            
+            string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Animations/";
             Directory.CreateDirectory(charactersExportFolder);
 
             string lastAnimationModel = string.Empty;
@@ -79,15 +94,11 @@ namespace LanternExtractor.EQ.Wld
             foreach (var animation in _animations)
             {
                 string modelName = animation.Key.Substring(0, 3);
-
-                if (animation.Key.Contains("GOR"))
-                {
-                }
-
+                
                 if (modelName != lastAnimationModel)
                 {
                     lastAnimationModel = modelName;
-
+                        
                     // Find the associated character model
                     if (Models.ContainsKey(modelName))
                     {
@@ -122,6 +133,16 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportModelList()
         {
+            if (_wldToInject != null)
+            {
+                return;
+            }
+
+            if (!_fragmentTypeDictionary.ContainsKey(0x14))
+            {
+                return;
+            }
+            
             StringBuilder exportListBuilder = new StringBuilder();
             exportListBuilder.AppendLine("# Model list: " + _zoneName);
             exportListBuilder.AppendLine("# Total models: " + Models.Count);
@@ -357,6 +378,11 @@ namespace LanternExtractor.EQ.Wld
 
         private void ImportSkeletons()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x12))
+            {
+                return;
+            }
+            
             // count skeleton track frames
             List<BoneTrack> boneTracks = new List<BoneTrack>();
             Dictionary<int, int> trackMap = new Dictionary<int, int>();
@@ -513,6 +539,11 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void FindAllAnimations()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x13))
+            {
+                return;
+            }
+
             Dictionary<string, BoneTrack> currentTracks = new Dictionary<string, BoneTrack>();
 
             string animationName = string.Empty;
@@ -597,6 +628,11 @@ namespace LanternExtractor.EQ.Wld
             // Add all pose animations
             foreach (var model in Models)
             {
+                if (model.Key == "IVM")
+                {
+                    continue;
+                }
+                
                 _animations[model.Value.ModelBase + "_" + "POS"] = model.Value.Skeleton._pose;
             }
         }
@@ -779,6 +815,11 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportCharacterMesh(string modelName)
         {
+            if (_wldToInject != null)
+            {
+                return;
+            }
+            
             string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Meshes/";
             Directory.CreateDirectory(charactersExportFolder);
 
@@ -870,6 +911,11 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportCharacterSkeleton(string modelName)
         {
+            if (_wldToInject != null)
+            {
+                return;
+            }
+            
             string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Skeletons/";
             Directory.CreateDirectory(charactersExportFolder);
 
@@ -947,8 +993,8 @@ namespace LanternExtractor.EQ.Wld
         {
             StringBuilder skeletonExport = new StringBuilder();
 
-            skeletonExport.AppendLine("# Lantern Animation Test Export: " + animation.Name);
-            skeletonExport.AppendLine("# Total frames: " + animation._frameCount);
+            skeletonExport.AppendLine("# Lantern Animation Export: " + animation.Name);
+            skeletonExport.AppendLine("framecount," + animation._frameCount);
 
             for (var i = 0; i < skeleton._tree.Count; ++i)
             {

@@ -69,7 +69,7 @@ namespace LanternExtractor.EQ.Pfs
                 return;
             }
             
-            if (filePath.EndsWith("_obj.s3d") || filePath.EndsWith("_chr.s3d"))
+            if (filePath.EndsWith("_obj.s3d") || filePath.EndsWith("_chr.s3d") || filePath.EndsWith("_amr.s3d"))
             {
                 _exportPath = _rawExportPath.Substring(0, _rawExportPath.Length - 4);
             }

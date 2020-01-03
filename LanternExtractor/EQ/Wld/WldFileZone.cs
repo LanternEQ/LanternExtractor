@@ -21,8 +21,8 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected override void ExportWldData()
         {
+            base.ExportWldData();
             ExportZoneMeshes();
-            ExportMaterialList();
             ExportBspTree();
         }
 
@@ -281,82 +281,6 @@ namespace LanternExtractor.EQ.Wld
                 File.WriteAllText(objectsExportFolder + fixedObjectName + LanternStrings.FormatMtlExtension,
                     materialsExport.ToString());
             }
-        }
-
-        /// <summary>
-        /// Exports the list of material and their associated shader types
-        /// This is not the same as the material definition files associated with each model
-        /// </summary>
-        private void ExportMaterialList()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(0x31))
-            {
-                _logger.LogWarning("Cannot export material list. No list found.");
-                return;
-            }
-
-            var materialListExport = new StringBuilder();
-
-            materialListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
-            materialListExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                          "BitmapName, BitmapCount, AnimationDelayMs (optional)");
-
-            for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
-            {
-                if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
-                {
-                    continue;
-                }
-
-                foreach (Material material in materialList.Materials)
-                {
-                    if (material.ShaderType == ShaderType.Invisible)
-                    {
-                        continue;
-                    }
-
-                    string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
-
-                    string textureName = material.TextureInfoReference.TextureInfo.BitmapNames[0]
-                        .Filename;
-
-                    textureName = textureName.Substring(0, textureName.Length - 4);
-                    materialListExport.Append(materialPrefix);
-                    materialListExport.Append(textureName);
-                    materialListExport.Append(",");
-                    materialListExport.Append(material.TextureInfoReference.TextureInfo.BitmapNames.Count);
-
-                    if (material.TextureInfoReference.TextureInfo.IsAnimated)
-                    {
-                        materialListExport.Append("," + material.TextureInfoReference.TextureInfo.AnimationDelayMs);
-                    }
-
-                    materialListExport.AppendLine();
-                }
-            }
-
-            string fileName = _zoneName + "/" + _zoneName + "_materials";
-
-            if (_wldType == WldType.Objects)
-            {
-                fileName += "_objects";
-            }
-            else if (_wldType == WldType.Characters)
-            {
-                fileName += "_characters";
-            }
-
-            fileName += ".txt";
-
-            string directory = Path.GetDirectoryName(fileName);
-
-            if (!Directory.Exists(directory))
-            {
-                // TODO: Handle error
-                return;
-            }
-
-            File.WriteAllText(fileName, materialListExport.ToString());
         }
 
         private void ExportBspTree()

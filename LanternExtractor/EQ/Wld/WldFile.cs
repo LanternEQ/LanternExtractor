@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -80,11 +79,11 @@ namespace LanternExtractor.EQ.Wld
         /// <param name="zoneName">The shortname of the zone</param>
         /// <param name="type">The type of WLD - used to determine what to extract</param>
         /// <param name="logger">The logger used for debug output</param>
-        public WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile fileToInject)
+        protected WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile fileToInject)
         {
+            _wldFile = wldFile;
             _zoneName = zoneName.ToLower();
             _wldType = type;
-            _wldFile = wldFile;
             _logger = logger;
             _settings = settings;
             _wldToInject = fileToInject;
@@ -189,6 +188,8 @@ namespace LanternExtractor.EQ.Wld
             _logger.LogInfo("-----------------------------------");
             _logger.LogInfo("WLD extraction complete");
 
+            ProcessData();
+
             if (exportData)
             {
                 ExportWldData();
@@ -196,7 +197,12 @@ namespace LanternExtractor.EQ.Wld
 
             return true;
         }
-        
+
+        protected virtual void ProcessData()
+        {
+            
+        }
+
         /// <summary>
         /// Instantiates the link between fragment hex values and fragment classes
         /// </summary>
@@ -270,16 +276,10 @@ namespace LanternExtractor.EQ.Wld
             foreach (var hashString in splitHash)
             {
                 _stringHash[index] = hashString;
-
-                stringHashDump.AppendLine(hashString);
-
+                
                 // Advance the position by the length + the null terminator
                 index += hashString.Length + 1;
-                
-                
             }
-            
-            File.WriteAllText(_zoneName + "_stringhash.txt", stringHashDump.ToString());
         }
 
         /// <summary>
@@ -339,15 +339,18 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
-        protected abstract void ExportWldData();
+        protected virtual void ExportWldData()
+        {
+            ExportMaterialList();
+        }
 
         /// <summary>
         /// Exports the list of material and their associated shader types
         /// This is not the same as the material definition files associated with each model
         /// </summary>
-        private void ExportMaterialList()
+        protected void ExportMaterialList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x31))
+            if (!_fragmentTypeDictionary.ContainsKey(0x30))
             {
                 _logger.LogWarning("Cannot export material list. No list found.");
                 return;
@@ -359,38 +362,36 @@ namespace LanternExtractor.EQ.Wld
             materialListExport.AppendLine(LanternStrings.ExportHeaderFormat +
                                           "BitmapName, BitmapCount, AnimationDelayMs (optional)");
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[0x30].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
+                if (!(_fragmentTypeDictionary[0x30][i] is Material material))
                 {
                     continue;
                 }
 
-                foreach (Material material in materialList.Materials)
+                if (material.ShaderType == ShaderType.Invisible)
                 {
-                    if (material.ShaderType == ShaderType.Invisible)
-                    {
-                        continue;
-                    }
-
-                    string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
-
-                    string textureName = material.TextureInfoReference.TextureInfo.BitmapNames[0]
-                        .Filename;
-
-                    textureName = textureName.Substring(0, textureName.Length - 4);
-                    materialListExport.Append(materialPrefix);
-                    materialListExport.Append(textureName);
-                    materialListExport.Append(",");
-                    materialListExport.Append(material.TextureInfoReference.TextureInfo.BitmapNames.Count);
-
-                    if (material.TextureInfoReference.TextureInfo.IsAnimated)
-                    {
-                        materialListExport.Append("," + material.TextureInfoReference.TextureInfo.AnimationDelayMs);
-                    }
-
-                    materialListExport.AppendLine();
+                    continue;
                 }
+
+                string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
+
+                string textureName = material.TextureInfoReference.TextureInfo.BitmapNames[0]
+                    .Filename;
+
+                textureName = textureName.Substring(0, textureName.Length - 4);
+                materialListExport.Append(materialPrefix);
+                materialListExport.Append(textureName);
+                materialListExport.Append(",");
+                materialListExport.Append(material.TextureInfoReference.TextureInfo.BitmapNames.Count);
+
+                if (material.TextureInfoReference.TextureInfo.IsAnimated)
+                {
+                    materialListExport.Append("," + material.TextureInfoReference.TextureInfo.AnimationDelayMs);
+                }
+
+                materialListExport.AppendLine();
+                
             }
 
             string fileName = _zoneName + "/" + _zoneName + "_materials";
@@ -408,12 +409,13 @@ namespace LanternExtractor.EQ.Wld
 
             string directory = Path.GetDirectoryName(fileName);
 
-            if (!Directory.Exists(directory))
+            if (string.IsNullOrEmpty(directory))
             {
-                // TODO: Handle error
                 return;
             }
-
+            
+            Directory.CreateDirectory(directory);
+            
             File.WriteAllText(fileName, materialListExport.ToString());
         }
     }

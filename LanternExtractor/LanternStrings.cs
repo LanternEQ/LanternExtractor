@@ -10,6 +10,7 @@ namespace LanternExtractor
         public const string ExportZoneFolder = "Zone/";
         public const string ExportObjectsFolder = "Objects/";
         public const string ExportCharactersFolder = "Characters/";
+        public const string ExportModelsFolder = "Models";
 
         public const string FormatMtlExtension = ".mtl";
 
