@@ -9,10 +9,11 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileLights : WldFile
     {
-        public WldFileLights(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings) : base(wldFile, zoneName, type, logger, settings)
+        public WldFileLights(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
-        
+
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
@@ -21,7 +22,7 @@ namespace LanternExtractor.EQ.Wld
             ExportLightInstanceList();
         }
 
-        
+
         /// <summary>
         /// Exports the list of light instances (contains position, colors, radius)
         /// </summary>

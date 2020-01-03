@@ -71,6 +71,8 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private bool _isNewWldFormat;
 
+        protected WldFile _wldToInject;
+
         /// <summary>
         /// Constructor setting data references used during the initialization process
         /// </summary>
@@ -78,19 +80,20 @@ namespace LanternExtractor.EQ.Wld
         /// <param name="zoneName">The shortname of the zone</param>
         /// <param name="type">The type of WLD - used to determine what to extract</param>
         /// <param name="logger">The logger used for debug output</param>
-        public WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings)
+        public WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile fileToInject)
         {
             _zoneName = zoneName.ToLower();
             _wldType = type;
             _wldFile = wldFile;
             _logger = logger;
             _settings = settings;
+            _wldToInject = fileToInject;
         }
 
         /// <summary>
         /// Initializes and instantiates the WLD file
         /// </summary>
-        public virtual bool Initialize()
+        public virtual bool Initialize(bool exportData = true)
         {
             _logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
             _logger.LogInfo("-----------------------------------");
@@ -186,7 +189,10 @@ namespace LanternExtractor.EQ.Wld
             _logger.LogInfo("-----------------------------------");
             _logger.LogInfo("WLD extraction complete");
 
-            ExportWldData();
+            if (exportData)
+            {
+                ExportWldData();
+            }
 
             return true;
         }
@@ -259,13 +265,21 @@ namespace LanternExtractor.EQ.Wld
 
             string[] splitHash = decodedHash.Split('\0');
 
+            StringBuilder stringHashDump = new StringBuilder();
+            
             foreach (var hashString in splitHash)
             {
                 _stringHash[index] = hashString;
 
+                stringHashDump.AppendLine(hashString);
+
                 // Advance the position by the length + the null terminator
                 index += hashString.Length + 1;
+                
+                
             }
+            
+            File.WriteAllText(_zoneName + "_stringhash.txt", stringHashDump.ToString());
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace LanternExtractor.EQ.Wld
     public class WldFileCharacters : WldFile
     {
         public Dictionary<string, string> AnimationModelLink;
-        
+
         private Dictionary<string, Material> GlobalCharacterMaterials;
 
         protected Dictionary<string, CharacterModel> Models = new Dictionary<string, CharacterModel>();
@@ -22,8 +22,9 @@ namespace LanternExtractor.EQ.Wld
         protected List<BoneTransform> Frames = new List<BoneTransform>();
 
         private Dictionary<string, Animation> _animations = new Dictionary<string, Animation>();
-        
-        public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings) : base(wldFile, zoneName, type, logger, settings)
+
+        public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
             AnimationModelLink = new Dictionary<string, string>();
 
@@ -35,13 +36,19 @@ namespace LanternExtractor.EQ.Wld
             {
                 AnimationModelLink[line[2]] = line[4];
             }
+            
         }
-        
+
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
         protected override void ExportWldData()
         {
+            if (_wldToInject != null)
+            {
+                Models = (_wldToInject as WldFileCharacters)?.Models;
+            }
+            
             ImportCharacters();
             ImportCharacterPalettes();
             ImportSkeletons();
@@ -65,19 +72,18 @@ namespace LanternExtractor.EQ.Wld
         {
             string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Animation/";
             Directory.CreateDirectory(charactersExportFolder);
-            
+
             string lastAnimationModel = string.Empty;
             Skeleton skeleton = null;
-            
+
             foreach (var animation in _animations)
             {
                 string modelName = animation.Key.Substring(0, 3);
-                
+
                 if (animation.Key.Contains("GOR"))
                 {
-                    
                 }
-                
+
                 if (modelName != lastAnimationModel)
                 {
                     lastAnimationModel = modelName;
@@ -104,10 +110,11 @@ namespace LanternExtractor.EQ.Wld
 
                 if (skeleton == null)
                 {
-                    _logger.LogError("Unable to export animation because there was no associated skeleton: " + animation.Key);
+                    _logger.LogError("Unable to export animation because there was no associated skeleton: " +
+                                     animation.Key);
                     continue;
                 }
-                
+
                 string exportString = GetAnimationString(animation.Value, skeleton);
                 File.WriteAllText(charactersExportFolder + animation.Key + ".txt", exportString);
             }
@@ -123,9 +130,9 @@ namespace LanternExtractor.EQ.Wld
             {
                 exportListBuilder.AppendLine(model.Value.ModelBase);
             }
-            
+
             string zoneExportFolder = _zoneName + "/";
-            
+
             // create directory
             File.WriteAllText(zoneExportFolder + _zoneName + "_characters.txt", exportListBuilder.ToString());
         }
@@ -224,7 +231,7 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
+
                 CharacterModel model = Models[actorName];
 
                 if (model == null)
@@ -261,7 +268,7 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
         }
-        
+
         static bool ExplodeMeshName(string defName, out string actorName,
             out string meshName, out int skinId)
         {
@@ -286,12 +293,17 @@ namespace LanternExtractor.EQ.Wld
             skinId = 0;
             return false;
         }
-        
+
         /// <summary>
         /// Iterates through each material and finds the corresponding model
         /// </summary>
         private void ImportCharacterPalettes()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(0x30))
+            {
+                return;
+            }
+
             foreach (WldFragment materialFragments in _fragmentTypeDictionary[0x30])
             {
                 Material material = materialFragments as Material;
@@ -321,22 +333,21 @@ namespace LanternExtractor.EQ.Wld
                     _logger.LogError("WldFileCharacter: Unable to find model: " + charName);
                     continue;
                 }
-                
+
                 Models[charName].AddNewSkin(partName, skinId, material);
 
                 if (material.Name.StartsWith("FUNHE"))
                 {
-                    
                 }
-                
+
                 _logger.LogError($"Adding {material.Name}");
-                
+
                 CharacterModel model = Models[charName];
                 WldMaterialPalette palette = model.MainMesh.Palette;
                 model.AddSkin(skinId, true);
-                
+
                 WldMaterialSlot materialSlot = palette.SlotByName(partName);
-                
+
                 if (materialSlot != null)
                 {
                     materialSlot.AddSkinMaterial(skinId, material);
@@ -401,48 +412,57 @@ namespace LanternExtractor.EQ.Wld
                 current += boneTrack._frameCount;
             }
 
-            // import skeletons which contain the pose animation
-            foreach (WldFragment fragment in _fragmentTypeDictionary[0x10])
+            if (_fragmentTypeDictionary.ContainsKey(0x10))
             {
-                HierSpriteDefFragment skelDef = fragment as HierSpriteDefFragment;
-
-                if (skelDef == null)
+                // import skeletons which contain the pose animation
+                foreach (WldFragment fragment in _fragmentTypeDictionary[0x10])
                 {
-                    continue;
-                }
+                    HierSpriteDefFragment skelDef = fragment as HierSpriteDefFragment;
 
-                string actorName = skelDef.Name.Replace("_HS_DEF", "");
-
-                CharacterModel model = Models[actorName];
-                if (model == null)
-                    continue;
-
-                List<BoneTrack> tracks = new List<BoneTrack>();
-                Dictionary<int, string> names = new Dictionary<int, string>();
-
-                foreach (SkeletonNode node in skelDef.Tree)
-                {
-                    int trackId = trackMap[node.Track.TrackDefFragment.Index];
-                    tracks.Add(boneTracks[trackId]);
-
-                    string partName = node.Name;
-                    partName = Regex.Replace(partName, @"_DAG$", String.Empty);
-
-                    if (partName.Length == 2)
+                    if (skelDef == null)
                     {
-                        partName = "";
+                        continue;
                     }
-                    else
+
+                    string actorName = skelDef.Name.Replace("_HS_DEF", "");
+
+                    if (actorName == "IVM")
                     {
-                        partName = partName.Substring(3, partName.Length - 3);
+                        continue;
                     }
                     
+                    CharacterModel model = Models[actorName];
 
-                    names[tracks.Count] = partName;
-                    boneTracks[trackId]._trackDef.IsAssigned = true;
+                    if (model == null)
+                        continue;
+
+                    List<BoneTrack> tracks = new List<BoneTrack>();
+                    Dictionary<int, string> names = new Dictionary<int, string>();
+
+                    foreach (SkeletonNode node in skelDef.Tree)
+                    {
+                        int trackId = trackMap[node.Track.TrackDefFragment.Index];
+                        tracks.Add(boneTracks[trackId]);
+
+                        string partName = node.Name;
+                        partName = Regex.Replace(partName, @"_DAG$", String.Empty);
+
+                        if (partName.Length == 2)
+                        {
+                            partName = "";
+                        }
+                        else
+                        {
+                            partName = partName.Substring(3, partName.Length - 3);
+                        }
+
+
+                        names[tracks.Count] = partName;
+                        boneTracks[trackId]._trackDef.IsAssigned = true;
+                    }
+
+                    model.SetSkeleton(new Skeleton(skelDef.Tree, names, tracks, skelDef.BoundingRadius));
                 }
-
-                model.SetSkeleton(new Skeleton(skelDef.Tree, names, tracks, skelDef.BoundingRadius));
             }
         }
 
@@ -456,7 +476,7 @@ namespace LanternExtractor.EQ.Wld
             }
 
             Dictionary<int, string> boneNames = new Dictionary<int, string>();
-            RecurseBone(0, model.Skeleton._pose._skeleton._tree, string.Empty,string.Empty, boneNames);
+            RecurseBone(0, model.Skeleton._pose._skeleton._tree, string.Empty, string.Empty, boneNames);
         }
 
         private void RecurseBone(int index, List<SkeletonNode> treeNodes, string runningName, string runningIndex,
@@ -468,7 +488,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 runningName += "{MOD}" + node.Name.Replace("_DAG", "").Substring(3) + "/";
             }
-            
+
             if (node.Name != string.Empty)
             {
                 runningIndex += node.Index + "/";
@@ -487,7 +507,7 @@ namespace LanternExtractor.EQ.Wld
                 RecurseBone(childNode, treeNodes, runningName, runningIndex, paths);
             }
         }
-        
+
         /// <summary>
         /// Finds and groups all character animations
         /// </summary>
@@ -515,11 +535,12 @@ namespace LanternExtractor.EQ.Wld
 
                 if (!Models.ContainsKey(modelNameCur))
                 {
+                    _logger.LogError("Cannot find model for animation.");
                     continue;
                 }
-                
+
                 CharacterModel model = Models[modelNameCur];
-                
+
                 if (animationName == string.Empty)
                 {
                     animationName = animNameCur;
@@ -528,28 +549,32 @@ namespace LanternExtractor.EQ.Wld
 
                 if (animationName != animNameCur || modelName != modelNameCur)
                 {
-                    var oldModel = Models[modelName];
-                    
-                    List<BoneTrack> tracks = new List<BoneTrack>();
-
-                    for (int i = 0; i < oldModel.Skeleton._tree.Count; ++i)
+                    if (Models.ContainsKey(modelName))
                     {
-                        string partNameFromIndex = oldModel.Skeleton._treePartMap[i + 1];
+                        var oldModel = Models[modelName];
 
-                        if (currentTracks.ContainsKey(partNameFromIndex))
+                        List<BoneTrack> tracks = new List<BoneTrack>();
+
+                        for (int i = 0; i < oldModel.Skeleton._tree.Count; ++i)
                         {
-                            tracks.Add(currentTracks[partNameFromIndex]);
+                            string partNameFromIndex = oldModel.Skeleton._treePartMap[i + 1];
+
+                            if (currentTracks.ContainsKey(partNameFromIndex))
+                            {
+                                tracks.Add(currentTracks[partNameFromIndex]);
+                            }
+                            else
+                            {
+                                // One transform
+                                tracks.Add(new BoneTrack {_frames = new List<BoneTransform>() {new BoneTransform()}});
+                            }
                         }
-                        else
-                        {
-                            // One transform
-                            tracks.Add(new BoneTrack {_frames = new List<BoneTransform>() {new BoneTransform()}});
-                        }
+
+                        Animation newAnimation = new Animation(animationName, tracks, FindSkeleton(modelName), null);
+
+                        _animations[modelName + "_" + animationName] = newAnimation;
                     }
 
-                    Animation newAnimation = new Animation(animationName, tracks, FindSkeleton(modelName), null);
-                    
-                    _animations[modelName + "_" + animationName] = newAnimation;
                     currentTracks.Clear();
 
                     animationName = animNameCur;
@@ -568,7 +593,7 @@ namespace LanternExtractor.EQ.Wld
 
                 currentTracks[boneName] = newTrack;
             }
-            
+
             // Add all pose animations
             foreach (var model in Models)
             {
@@ -582,7 +607,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
+
             CharacterModel model = Models[modelName1];
 
             if (model == null)
@@ -618,7 +643,6 @@ namespace LanternExtractor.EQ.Wld
 
                 if (modelNameCur == "ELF")
                 {
-                    
                 }
 
                 // TODO: FIX THIS SHIT
@@ -673,16 +697,16 @@ namespace LanternExtractor.EQ.Wld
 
                 currentTracks[boneName] = newTrack;
             }
-            
+
             model.AddAnimation("POS", model.Skeleton._pose);
         }
 
         private bool ResolveAnimations()
         {
             int misses = 0;
-            
+
             bool allLoaded = true;
-            
+
             foreach (var dictionaryPair in Models)
             {
                 CharacterModel model = dictionaryPair.Value;
@@ -694,7 +718,7 @@ namespace LanternExtractor.EQ.Wld
 
                 // All characters should have skeletons, but who knows.
                 Skeleton toSkel = model.Skeleton;
-                
+
                 if (toSkel == null)
                 {
                     continue;
@@ -736,7 +760,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 return null;
             }
-            
+
             CharacterModel model = Models[modelName];
 
             if (model != null && model.Skeleton != null)
@@ -771,7 +795,7 @@ namespace LanternExtractor.EQ.Wld
             }
 
             //model.MainMesh.Def.ShiftSkeletonValues(model.Skeleton._tree,
-              //  model.Skeleton._pose._boneTracks, mat4.Identity, 0, 0, _logger);
+            //  model.Skeleton._pose._boneTracks, mat4.Identity, 0, 0, _logger);
 
 
             File.WriteAllText(charactersExportFolder + modelName + "_mesh.txt",
@@ -793,16 +817,15 @@ namespace LanternExtractor.EQ.Wld
                 ExplodeMeshName(mesh.Def.Name, out actorName, out meshName, out skinId);
 
                 string realSkinId = skinId >= 10 ? skinId.ToString() : "0" + skinId;
-                
-                
-                
-                string exportPath = charactersExportFolder + actorName + "_" + meshName + "_" + realSkinId + "_mesh.txt";
+
+
+                string exportPath = charactersExportFolder + actorName + "_" + meshName + "_" + realSkinId +
+                                    "_mesh.txt";
 
                 if (exportPath.Contains("BAM_HE_02"))
                 {
-                    
                 }
-                
+
                 string exportMesh = mesh.Def.GetIntermediateMeshExport(skinId, model.NewSkins);
                 File.WriteAllText(exportPath, exportMesh);
                 /*File.WriteAllText(charactersExportFolder + actorName + "_" + meshName + "_" + realSkinId + "_mesh.obj",
@@ -832,7 +855,7 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 var tree = skeletonReference.HierSpriteDefFragment.Tree;
-                
+
                 foreach (var node in tree)
                 {
                     if (node.Mesh != null)
@@ -849,7 +872,7 @@ namespace LanternExtractor.EQ.Wld
         {
             string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Skeletons/";
             Directory.CreateDirectory(charactersExportFolder);
-            
+
             CharacterModel characterModel = Models[modelName];
 
             StringBuilder skeletonExport = new StringBuilder();
@@ -857,7 +880,7 @@ namespace LanternExtractor.EQ.Wld
             skeletonExport.AppendLine("# Lantern Skeleton Test Export");
             skeletonExport.AppendLine("# Total verts: " + characterModel.MainMesh.Def.Vertices.Count);
             skeletonExport.AppendLine($"radius,{characterModel.Skeleton._boundingRadius}");
-            
+
             foreach (var mesh in characterModel.Meshes)
             {
                 if (mesh.Def == characterModel.MainMesh.Def)
@@ -868,11 +891,11 @@ namespace LanternExtractor.EQ.Wld
                 string actorName;
                 string meshName;
                 int partId;
-                
+
                 ExplodeMeshName(mesh.Def.Name, out actorName, out meshName, out partId);
                 //skeletonExport.AppendLine("MAP," + actorName + meshName);
             }
-            
+
             for (var i = 0; i < characterModel.Skeleton._tree.Count; i++)
             {
                 var node = characterModel.Skeleton._tree[i];
@@ -906,16 +929,17 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
+
             string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Animations/";
             Directory.CreateDirectory(charactersExportFolder);
-            
+
             CharacterModel characterModel = Models[modelName];
-            
+
             foreach (Animation animation in characterModel.Animations.Values)
             {
                 string exportString = GetAnimationString(animation, characterModel.Skeleton);
-                File.WriteAllText(charactersExportFolder + characterModel.AnimationBase + "_" + animation.Name +".txt", exportString);
+                File.WriteAllText(charactersExportFolder + characterModel.AnimationBase + "_" + animation.Name + ".txt",
+                    exportString);
             }
         }
 
@@ -923,58 +947,58 @@ namespace LanternExtractor.EQ.Wld
         {
             StringBuilder skeletonExport = new StringBuilder();
 
-                skeletonExport.AppendLine("# Lantern Animation Test Export: " + animation.Name);
-                skeletonExport.AppendLine("# Total frames: " + animation._frameCount);
+            skeletonExport.AppendLine("# Lantern Animation Test Export: " + animation.Name);
+            skeletonExport.AppendLine("# Total frames: " + animation._frameCount);
 
-                for (var i = 0; i < skeleton._tree.Count; ++i)
+            for (var i = 0; i < skeleton._tree.Count; ++i)
+            {
+                for (var j = 0; j < animation._frameCount; j++)
                 {
-                    for (var j = 0; j < animation._frameCount; j++)
+                    int frameIndex = j;
+
+                    // Strange issue
+                    if (i >= animation._boneTracks.Count)
                     {
-                        int frameIndex = j;
-
-                        // Strange issue
-                        if (i >= animation._boneTracks.Count)
-                        {
-                            _logger.LogError("HUGE ERROR");
-                            break;
-                        }
-                        
-                        if (animation._boneTracks[i]._frames.Count == 1)
-                        {
-                            frameIndex = 0;
-                        }
-
-                        var node = skeleton._tree[i];
-
-                        skeletonExport.Append(node.FullPath);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(j);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Translation.x);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Translation.z);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Translation.y);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Rotation.x);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Rotation.z);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Rotation.y);
-                        skeletonExport.Append(",");
-                        skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
-                            .Rotation.w);
-                        skeletonExport.AppendLine();
+                        _logger.LogError("HUGE ERROR");
+                        break;
                     }
-                }
 
-                return skeletonExport.ToString();        
+                    if (animation._boneTracks[i]._frames.Count == 1)
+                    {
+                        frameIndex = 0;
+                    }
+
+                    var node = skeleton._tree[i];
+
+                    skeletonExport.Append(node.FullPath);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(j);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Translation.x);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Translation.z);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Translation.y);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Rotation.x);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Rotation.z);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Rotation.y);
+                    skeletonExport.Append(",");
+                    skeletonExport.Append(animation._boneTracks[i]._frames[frameIndex]
+                        .Rotation.w);
+                    skeletonExport.AppendLine();
+                }
+            }
+
+            return skeletonExport.ToString();
         }
 
         static bool FindMainMesh(List<MeshReference> meshes, string actorName,
@@ -1014,7 +1038,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 return false;
             }
-            
+
             var animationBase = AnimationModelLink[modelName];
             model.SetAnimationBase(animationBase == string.Empty ? modelName : animationBase);
             return false;

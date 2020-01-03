@@ -38,7 +38,7 @@ namespace LanternExtractor
             string archiveName;
             
 #if DEBUG
-            archiveName = "chequip";          
+            archiveName = "gequip2";          
 #else
             if (args.Length != 1)
             {
@@ -173,7 +173,25 @@ namespace LanternExtractor
 
             if (archiveName.Contains("_chr") || archiveName.Contains("_amr") || archiveName.StartsWith("chequip"))
             {
-                WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings);
+                WldFileCharacters wldFileToInject = null;
+                
+                if (archiveName.StartsWith("global3_chr"))
+                {
+                    var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), _logger);
+
+                    if (!s3dArchive2.Initialize())
+                    {
+                        _logger.LogError("Failed to initialize PFS archive at path: " + path);
+                        return;
+                    }
+                    
+                    PfsFile wldFileInArchive2 = s3dArchive2.GetFile("global_chr.wld");
+
+                    wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters, _logger, _settings);
+                    wldFileToInject.Initialize(true);
+                }
+                
+                WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
 

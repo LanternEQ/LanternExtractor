@@ -11,10 +11,11 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZone : WldFile
     {
-        public WldFileZone(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings) : base(wldFile, zoneName, type, logger, settings)
+        public WldFileZone(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+            WldFile wldToIbject = null) : base(wldFile, zoneName, type, logger, settings, wldToIbject)
         {
         }
-        
+
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>

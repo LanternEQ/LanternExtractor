@@ -9,8 +9,8 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZoneObjects : WldFile
     {
-        public WldFileZoneObjects(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings) : base(
-            wldFile, zoneName, type, logger, settings)
+        public WldFileZoneObjects(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile wldToIbject = null) : base(
+            wldFile, zoneName, type, logger, settings, wldToIbject)
         {
         }
 
