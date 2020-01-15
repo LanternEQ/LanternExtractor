@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Pfs;
@@ -360,9 +361,7 @@ namespace LanternExtractor.EQ.Wld
                 if (material.Name.StartsWith("FUNHE"))
                 {
                 }
-
-                _logger.LogError($"Adding {material.Name}");
-
+                
                 CharacterModel model = Models[charName];
                 WldMaterialPalette palette = model.MainMesh.Palette;
                 model.AddSkin(skinId, true);
@@ -456,6 +455,12 @@ namespace LanternExtractor.EQ.Wld
                     {
                         continue;
                     }
+
+                    if (!Models.ContainsKey(actorName))
+                    {
+                        continue;
+                    }
+                    
                     
                     CharacterModel model = Models[actorName];
 
@@ -496,7 +501,7 @@ namespace LanternExtractor.EQ.Wld
         {
             CharacterModel model = Models[modelName];
 
-            if (model == null)
+            if (model == null || model.Skeleton == null)
             {
                 return;
             }
@@ -512,7 +517,12 @@ namespace LanternExtractor.EQ.Wld
 
             if (node.Name != string.Empty)
             {
-                runningName += "{MOD}" + node.Name.Replace("_DAG", "").Substring(3) + "/";
+                string fixedName = node.Name.Replace("_DAG", "");
+
+                if (fixedName.Length >= 3)
+                {
+                    runningName += "{MOD}" + node.Name.Replace("_DAG", "").Substring(3) + "/";
+                }
             }
 
             if (node.Name != string.Empty)
@@ -520,8 +530,15 @@ namespace LanternExtractor.EQ.Wld
                 runningIndex += node.Index + "/";
             }
 
-            node.FullPath = runningName.Substring(0, runningName.Length - 1);
-            node.FullIndexPath = runningIndex.Substring(0, runningIndex.Length - 1);
+            if (runningName.Length >= 1)
+            {
+                node.FullPath = runningName.Substring(0, runningName.Length - 1);
+            }
+
+            if (runningIndex.Length >= 1)
+            {
+                node.FullIndexPath = runningIndex.Substring(0, runningIndex.Length - 1);
+            }
 
             if (node.Children.Count == 0)
             {
@@ -632,6 +649,11 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
+
+                if (model.Value.Skeleton == null)
+                {
+                    continue;
+                }
                 
                 _animations[model.Value.ModelBase + "_" + "POS"] = model.Value.Skeleton._pose;
             }
@@ -734,7 +756,11 @@ namespace LanternExtractor.EQ.Wld
                 currentTracks[boneName] = newTrack;
             }
 
-            model.AddAnimation("POS", model.Skeleton._pose);
+            if (model.Skeleton != null)
+            {
+                model.AddAnimation("POS", model.Skeleton._pose);
+            }
+            
         }
 
         private bool ResolveAnimations()
@@ -915,12 +941,22 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
-            string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Skeletons/";
-            Directory.CreateDirectory(charactersExportFolder);
+
+            if (!Models.ContainsKey(modelName))
+            {
+                return;
+            }
 
             CharacterModel characterModel = Models[modelName];
 
+            if (characterModel.Skeleton == null)
+            {
+                return;
+            }
+
+            string charactersExportFolder = _zoneName + "/" + LanternStrings.ExportCharactersFolder + "Skeletons/";
+            Directory.CreateDirectory(charactersExportFolder);
+            
             StringBuilder skeletonExport = new StringBuilder();
 
             skeletonExport.AppendLine("# Lantern Skeleton Test Export");

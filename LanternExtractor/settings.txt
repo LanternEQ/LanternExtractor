@@ -20,4 +20,4 @@ ExportHiddenGeometry = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
-LoggerVerbosity = 0
+LoggerVerbosity = 2

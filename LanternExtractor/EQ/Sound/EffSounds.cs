@@ -7,9 +7,9 @@ using LanternExtractor.Infrastructure;
 namespace LanternExtractor.EQ.Sound
 {
     /// <summary>
-    /// The EffSound file is binary data ending with "_sounds.eff"
-    /// It contains no header, just an array of entries each consisting of 84 bytes
-    /// Each entry describes an instance of a sound or music in the world
+    /// The EffSound file is binary binary ending with "_sounds.eff" extension.
+    /// It contains no header, just an array of entries each consisting of 84 bytes.
+    /// Each entry describes an instance of a sound or music in the world.
     /// </summary>
     public class EffSounds
     {
@@ -17,41 +17,21 @@ namespace LanternExtractor.EQ.Sound
         /// The sound bank referenced for sound names
         /// </summary>
         private readonly EffSndBnk _soundBank;
-
-        /// <summary>
-        /// The OS path to the sound file
-        /// </summary>
+        
         private readonly string _soundFilePath;
-
-        /// <summary>
-        /// The sound entries for this zone
-        /// </summary>
+        
         private readonly List<SoundEntry> _soundEntries = new List<SoundEntry>();
-
-        /// <summary>
-        /// The music track entries - read in from musictracks.txt
-        /// </summary>
+        
         private readonly Dictionary<string, string> _musicTrackEntries = new Dictionary<string, string>();
-
-        /// <summary>
-        /// The size of the sound entry in bytes
-        /// </summary>
+        
         private const int EntryLengthInBytes = 84;
-
-        /// <summary>
-        /// Sets the path and sound bank reference
-        /// </summary>
-        /// <param name="soundFilePath">The OS path</param>
-        /// <param name="soundBank">A reference to the sound bank</param>
+        
         public EffSounds(string soundFilePath, EffSndBnk soundBank)
         {
             _soundFilePath = soundFilePath;
             _soundBank = soundBank;
         }
-
-        /// <summary>
-        /// Initializes the sound entry list
-        /// </summary>
+        
         public void Initialize()
         {
             if (_soundBank == null || !File.Exists(_soundFilePath))
@@ -131,11 +111,7 @@ namespace LanternExtractor.EQ.Sound
                 }
             }
         }
-
-        /// <summary>
-        /// Loads the list of track names specific to each zone
-        /// </summary>
-        /// <param name="zoneShortName">The zone shortname</param>
+        
         private void LoadMusicTrackNames(string zoneShortName)
         {
             string trackContents = File.ReadAllText("musictracks.txt");
@@ -144,7 +120,6 @@ namespace LanternExtractor.EQ.Sound
 
             foreach (string entry in splitZones)
             {
-                // Split this into lines
                 var trackEntries = TextParser.ParseTextByNewline(entry);
 
                 if (trackEntries[0] != zoneShortName)
@@ -168,6 +143,8 @@ namespace LanternExtractor.EQ.Sound
 
         /// <summary>
         /// Returns the name of the sound based on either the internal reference or the sound back definitions
+        /// The client uses specific integer ranges to identify the type.
+        /// There are also a handful of hardcoded sound ids.
         /// </summary>
         /// <param name="soundId">The id index of the sound</param>
         /// <param name="soundBank">The sound bank in which to look</param>
@@ -177,10 +154,9 @@ namespace LanternExtractor.EQ.Sound
         {
             if (soundId == 0)
             {
-                return "";
+                return string.Empty;
             }
 
-            // Emit sounds
             if (soundId >= 1 && soundId < 32 && soundId < soundBank.EmitSounds.Count)
             {
                 soundType = EmissionType.Emit;
@@ -211,22 +187,16 @@ namespace LanternExtractor.EQ.Sound
                 }
             }
 
-            // Loop sounds
             if (soundId < 162 || soundId >= 162 + soundBank.LoopSounds.Count)
             {
-                return "";
+                return string.Empty;
             }
             
             soundType = EmissionType.Loop;
 
             return soundBank.LoopSounds[soundId - 161 - 1];
-
         }
-
-        /// <summary>
-        /// Writes sound data to a plaintext file
-        /// </summary>
-        /// <param name="zoneName">The shortname of the zone - used for naming the file</param>
+        
         public void ExportSoundData(string zoneName)
         {
             var soundExport = new StringBuilder();
@@ -236,10 +206,21 @@ namespace LanternExtractor.EQ.Sound
             {
                 if (entry.SoundType == SoundType.Music)
                 {
-                    musicExport.Append(entry.SoundIdDay + "," + entry.SoundIdNight + ","
-                                       + entry.PosX + "," + entry.PosZ + "," + entry.PosY + "," +
-                                       entry.Radius + ","
-                                       + entry.FadeOutMs + "\n");
+                    musicExport.Append(entry.SoundIdDay);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.SoundIdNight);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.PosX);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.PosZ);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.PosY);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.Radius);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.FadeOutMs);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.AppendLine();
                 }
                 else
                 {

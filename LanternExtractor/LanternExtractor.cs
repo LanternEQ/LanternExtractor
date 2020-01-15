@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
@@ -9,26 +11,13 @@ using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor
 {
-    /// <summary>
-    /// The main class in the application
-    /// </summary>
     static class LanternExtractor
     {
-        /// <summary>
-        /// Settings - loaded before extraction
-        /// </summary>
         private static Settings _settings;
-
-        /// <summary>
-        /// The logger - created before extraction and passed into files for logging
-        /// </summary>
+        
         private static ILogger _logger;
         
-        /// <summary>
-        /// Entry point for the application 
-        /// </summary>
-        /// <param name="args">Run arguments</param>
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {            
             _logger = new TextFileLogger("log.txt");
             _settings = new Settings("settings.txt", _logger);
@@ -36,9 +25,11 @@ namespace LanternExtractor
             _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
 
             string archiveName;
+
+            DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "gequip2";          
+            archiveName = "all";          
 #else
             if (args.Length != 1)
             {
@@ -46,7 +37,7 @@ namespace LanternExtractor
                 return;
             }
             
-            shortName = args[0];
+            archiveName = args[0];
 #endif
 
             List<string> eqFiles = GetValidEqFilePaths(archiveName);
@@ -56,20 +47,26 @@ namespace LanternExtractor
                 Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " + _settings.EverQuestDirectory);
                 return;
             }      
-                        
+             
+            List<Task> tasks = new List<Task>();
+            
             foreach (var file in eqFiles)
             {
-                ExtractArchive(file);
+                string fileName = file;
+                Task task = Task.Factory.StartNew(() =>
+                {
+                    _logger.LogError("Extracting: " + fileName);
+                    ExtractArchive(fileName);
+                });
+                tasks.Add(task);
+                //ExtractArchive(file);
             }
-            
-            Console.WriteLine("Extraction complete");
-        }
 
-        /// <summary>
-        /// Returns a list of valid file paths to extract based on the archive name input
-        /// </summary>
-        /// <param name="archiveName">The name of the archive to extract</param>
-        /// <returns>Valid paths to extract</returns>
+            Task.WaitAll(tasks.ToArray());
+            
+            Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds})s");
+        }
+        
         private static List<string> GetValidEqFilePaths(string archiveName)
         {
             archiveName = archiveName.ToLower();
@@ -124,11 +121,7 @@ namespace LanternExtractor
 
             return validFiles;
         }
-
-        /// <summary>
-        /// Initializes and extracts files from the specified archive
-        /// </summary>
-        /// <param name="path">The OS path to the file</param>
+        
         private static void ExtractArchive(string path)
         {
             var s3dArchive = new PfsArchive(path, _logger);
@@ -184,6 +177,7 @@ namespace LanternExtractor
                 
                 if (archiveName.StartsWith("global3_chr"))
                 {
+                    return;
                     var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), _logger);
 
                     if (!s3dArchive2.Initialize())
@@ -230,8 +224,21 @@ namespace LanternExtractor
                     WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName, WldType.ZoneObjects, _logger, _settings);
                     zoneObjectsWldFile.Initialize();
                 }
-                ExtractSoundFile(shortName);
+                
+                ExtractSoundData(shortName);
             }
+        }
+        
+        private static void ExtractSoundData(string shortName)
+        {
+            var sounds = new EffSndBnk(_settings.EverQuestDirectory + shortName + "_sndbnk" +
+                                       LanternStrings.SoundFormatExtension);
+            sounds.Initialize();
+            var soundEntries =
+                new EffSounds(
+                    _settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
+            soundEntries.Initialize();
+            soundEntries.ExportSoundData(shortName);
         }
 
         private static bool IsModelsArchive(string archiveName)
@@ -247,22 +254,6 @@ namespace LanternExtractor
         private static bool IsObjectsArchive(string archiveName)
         {
             return archiveName.Contains("_obj");
-        }
-        
-        /// <summary>
-        /// Parses and extracts the sound and music files for the zone
-        /// </summary>
-        /// <param name="shortName">The zone shortname</param>
-        private static void ExtractSoundFile(string shortName)
-        {
-            var sounds = new EffSndBnk(_settings.EverQuestDirectory + shortName + "_sndbnk" +
-                                       LanternStrings.SoundFormatExtension);
-            sounds.Initialize();
-            var soundEntries =
-                new EffSounds(
-                    _settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
-            soundEntries.Initialize();
-            soundEntries.ExportSoundData(shortName);
         }
     }
 }

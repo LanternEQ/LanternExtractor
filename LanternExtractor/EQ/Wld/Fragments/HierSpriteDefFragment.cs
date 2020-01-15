@@ -110,7 +110,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int entryFrag2 = reader.ReadInt32();
 
                 // Reference to a 0x2D
-                if (entryFrag2 != 0)
+                if (entryFrag2 >= 1 && entryFrag2 <= fragments.Count)
                 {
                     pieceNew.Mesh = fragments[entryFrag2 - 1] as MeshReference;
                 }
