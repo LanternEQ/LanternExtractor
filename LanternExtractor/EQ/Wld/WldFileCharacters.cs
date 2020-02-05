@@ -344,7 +344,7 @@ namespace LanternExtractor.EQ.Wld
                 string partName;
                 int skinId;
 
-                if (!WldMaterialPalette.ExplodeName(material.Name, out charName, out skinId, out partName))
+                if (!WldMaterialPalette.ExplodeName2(material.Name, out charName, out skinId, out partName))
                 {
                     _logger.LogError("WldFileCharacter: Error exploding material details: " + material.Name);
                     continue;

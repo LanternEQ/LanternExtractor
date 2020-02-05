@@ -7,7 +7,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// sforea  0x10 - Skeleton Track
+    /// 0x10 - Skeleton Track
     /// Describes the layout of a complete skeleton and which pieces connect to eachother
     /// </summary>
     public class HierSpriteDefFragment : WldFragment

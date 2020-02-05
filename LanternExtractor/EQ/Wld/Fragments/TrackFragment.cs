@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -16,6 +17,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public TrackDefFragment TrackDefFragment { get; set; }
         
         public bool IsProcessed { get; set; }
+        
+        // TODO: Determine what this does
+        public int SleepMs { get; set; }
 
         public override void Initialize(int index, int id, int size, byte[] data,
             Dictionary<int, WldFragment> fragments,
@@ -28,7 +32,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
             
             int reference = reader.ReadInt32();
+            
+            int flags = reader.ReadInt32();
 
+            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
+
+            if (bitAnalyzer.IsBitSet(0))
+            {
+                SleepMs = reader.ReadInt32();
+            }
+            else
+            {
+                SleepMs = 0;
+            }
+            
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
         }
 

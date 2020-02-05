@@ -97,7 +97,17 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             }
         }
     }
+    
+    public class SkyModel
+    {
+        public string RootName;
+        
+        public HierSpriteDefFragment Skeleton;
 
+        public Mesh Mesh;
+
+        public int Frames;
+    }
 
     /// <summary>
     /// A node in the skeleton tree
@@ -548,6 +558,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             // '02' : palette ID
             // '01' : piece (part 2)
             Regex expression = new Regex("^\\w{5}\\d{4}_MDF$");
+            
             if(expression.IsMatch(defName))
             {
                 charName = defName.Substring(0,3);
@@ -562,7 +573,56 @@ namespace LanternExtractor.EQ.Wld.DataTypes
 
             return false;
         }
+        
+        public static bool ExplodeName2(string defName, out string charName,
+            out int skinId, out string partName)
+        {
+            // e.g. defName == 'ORCCH0201_MDF'
+            // 'ORC' : character
+            // 'CH' : piece (part 1)
+            // '02' : palette ID
+            // '01' : piece (part 2)
+            
+            charName = string.Empty;
+            skinId = 0;
+            partName = string.Empty;            
+            
+            // piece
+            string materialName = defName.Replace("_MDF", string.Empty);
+            int currentIndex = materialName.Length;
+            currentIndex -= 2;
+            
+            if (currentIndex < 0)
+            {
+                return false;
+            }
+            
+            string piece2 = materialName.Substring(currentIndex, 2);
+            currentIndex -= 2;
+            
+            if (currentIndex < 0)
+            {
+                return false;
+            }
+            
+            string palette = materialName.Substring(currentIndex, 2);
+            currentIndex -= 2;
+            
+            if (currentIndex < 0)
+            {
+                return false;
+            }
+            
+            string piece1 = materialName.Substring(currentIndex, 2);
+            string character = materialName.Substring(0, currentIndex);
 
+            charName = character;
+            skinId = Convert.ToInt32(palette);
+            partName = piece1 + piece2;
+
+            return true;
+        }
+        
         public void AddMeshMaterials(Mesh meshDef, int skinId)
         {
             var uvs = meshDef.RenderGroups;

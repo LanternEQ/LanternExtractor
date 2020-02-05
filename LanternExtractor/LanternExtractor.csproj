@@ -111,6 +111,7 @@
     <Compile Include="EQ\Wld\WldFileLights.cs" />
     <Compile Include="EQ\Wld\WldFileModels.cs" />
     <Compile Include="EQ\Wld\WldFileObjects.cs" />
+    <Compile Include="EQ\Wld\WldFileSky.cs" />
     <Compile Include="EQ\Wld\WldFileZone.cs" />
     <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />

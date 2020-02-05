@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
@@ -59,6 +58,7 @@ namespace LanternExtractor
                     ExtractArchive(fileName);
                 });
                 tasks.Add(task);
+                
                 //ExtractArchive(file);
             }
 
@@ -171,6 +171,12 @@ namespace LanternExtractor
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Models", true);
             }
+            else if (IsSkyArchive(archiveName))
+            {
+                WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
+                wldFile.Initialize();
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone", true);
+            }
             else if (IsCharactersArchive(archiveName))
             {
                 WldFileCharacters wldFileToInject = null;
@@ -248,12 +254,18 @@ namespace LanternExtractor
 
         private static bool IsCharactersArchive(string archiveName)
         {
-            return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") || archiveName.Contains("_amr");
+            return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") || archiveName.Contains("_amr") ||
+                   archiveName == "sky";
         }
 
         private static bool IsObjectsArchive(string archiveName)
         {
             return archiveName.Contains("_obj");
+        }
+        
+        private static bool IsSkyArchive(string archiveName)
+        {
+            return archiveName == "sky";
         }
     }
 }
