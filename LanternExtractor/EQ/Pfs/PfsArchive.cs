@@ -50,9 +50,7 @@ namespace LanternExtractor.EQ.Pfs
         private readonly ILogger _logger;
 
         public bool IsWldArchive { get; set; }
-
-        public bool UseThreading = true;
-
+        
         /// <summary>
         /// Constructor that initializes the file path and logger
         /// </summary>
@@ -290,44 +288,18 @@ namespace LanternExtractor.EQ.Pfs
                 {
                     if (textureTypes == null || !textureTypes.ContainsKey(filename))
                     {
-                        if (UseThreading)
-                        {
-                            var i1 = i;
-                            Thread thread = new Thread(() => WriteImageAsPng(i1, ShaderType.Diffuse, folderName));
-                        }
-                        else
-                        {
-                            WriteImageAsPng(i, ShaderType.Diffuse, folderName);
-                        }
-                        
+                        WriteImageAsPng(i, ShaderType.Diffuse, folderName);
                         continue;
                     }
 
                     foreach (ShaderType type in textureTypes[filename])
                     {
-                        if (UseThreading)
-                        {
-                            var i1 = i;
-                            Thread thread = new Thread(() => WriteImageAsPng(i1, type, folderName));
-                        }
-                        else
-                        {
-                            WriteImageAsPng(i, type, folderName);
-                        }
-
+                        WriteImageAsPng(i, type, folderName);
                     }
                 }
                 else if(filename.EndsWith(".dds"))
                 {
-                    if (UseThreading)
-                    {
-                        var i1 = i;
-                        Thread thread = new Thread(() => WriteFile(i1, false, folderName));
-                    }
-                    else
-                    {
-                        WriteFile(i, false, folderName);
-                    }
+                    WriteFile(i, false, folderName);
                 }
                 else
                 {
@@ -335,16 +307,8 @@ namespace LanternExtractor.EQ.Pfs
                     {
                         continue;
                     }
-
-                    if (UseThreading)
-                    {
-                        var i1 = i;
-                        Thread thread = new Thread(() => WriteFile(i1, false, folderName));
-                    }
-                    else
-                    {
-                        WriteFile(i, false, folderName);
-                    }
+                    
+                    WriteFile(i, false, folderName);
                 }
             }
         }
