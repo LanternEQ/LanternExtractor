@@ -15,6 +15,8 @@ namespace LanternExtractor
         private static Settings _settings;
         
         private static ILogger _logger;
+
+        private static bool _useThreading = false;
         
         private static void Main(string[] args)
         {            
@@ -28,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "all";          
+            archiveName = "arena";          
 #else
             if (args.Length != 1)
             {
@@ -45,24 +47,31 @@ namespace LanternExtractor
             {
                 Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " + _settings.EverQuestDirectory);
                 return;
-            }      
-             
-            List<Task> tasks = new List<Task>();
-            
-            foreach (var file in eqFiles)
-            {
-                string fileName = file;
-                Task task = Task.Factory.StartNew(() =>
-                {
-                    _logger.LogError("Extracting: " + fileName);
-                    ExtractArchive(fileName);
-                });
-                tasks.Add(task);
-                
-                //ExtractArchive(file);
             }
 
-            Task.WaitAll(tasks.ToArray());
+            if (_useThreading)
+            {
+                List<Task> tasks = new List<Task>();
+
+                foreach (var file in eqFiles)
+                {
+                    string fileName = file;
+                    Task task = Task.Factory.StartNew(() =>
+                    {
+                        ExtractArchive(fileName);
+                    });
+                    tasks.Add(task);
+                }
+                
+                Task.WaitAll(tasks.ToArray());
+            }
+            else
+            {
+                foreach (var file in eqFiles)
+                {
+                    ExtractArchive(file);
+                }
+            }
             
             Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds})s");
         }

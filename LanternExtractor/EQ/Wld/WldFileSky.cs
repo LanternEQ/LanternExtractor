@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -19,8 +18,6 @@ namespace LanternExtractor.EQ.Wld
         {
         }
 
-        private List<HierSpriteDefFragment> skeletons = new List<HierSpriteDefFragment>();
-
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
@@ -29,7 +26,7 @@ namespace LanternExtractor.EQ.Wld
             base.ExportWldData();
             ExportZoneMeshes();
 
-            foreach (var skeletonFragment in _fragmentTypeDictionary[0x10])
+            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.HierSpriteFragment])
             {
                 HierSpriteDefFragment skeleton = skeletonFragment as HierSpriteDefFragment;
                 
@@ -53,12 +50,12 @@ namespace LanternExtractor.EQ.Wld
 
             Directory.CreateDirectory(folder);
             
-            if (!_fragmentTypeDictionary.ContainsKey(0x10))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteFragment))
             {
                 return;
             }
 
-            var skeletonFragments = _fragmentTypeDictionary[0x10];
+            var skeletonFragments = _fragmentTypeDictionary[FragmentType.HierSpriteFragment];
 
             foreach (var fragment in skeletonFragments)
             {
@@ -143,12 +140,12 @@ namespace LanternExtractor.EQ.Wld
 
             Directory.CreateDirectory(folder);
             
-            if (!_fragmentTypeDictionary.ContainsKey(0x13))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.TrackFragment))
             {
                 return;
             }
 
-            foreach (var fragment in _fragmentTypeDictionary[0x13])
+            foreach (var fragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
             {
                 TrackFragment track = fragment as TrackFragment;
 
@@ -257,7 +254,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportZoneMeshes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
                 _logger.LogWarning("Cannot export zone meshes. No meshes found.");
                 return;
@@ -274,9 +271,9 @@ namespace LanternExtractor.EQ.Wld
 
             // Loop through once and validate meshes
             // If all surfaces are solid, there is no reason to export a separate collision mesh
-            for (int i = 0; i < _fragmentTypeDictionary[0x36].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.Mesh].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x36][i] is Mesh zoneMesh))
+                if (!(_fragmentTypeDictionary[FragmentType.Mesh][i] is Mesh zoneMesh))
                 {
                     continue;
                 }
@@ -374,9 +371,9 @@ namespace LanternExtractor.EQ.Wld
 
             // Theoretically, there should only be one texture list here
             // Exceptions include sky.s3d
-            for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.MaterialList].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
+                if (!(_fragmentTypeDictionary[FragmentType.MaterialList][i] is MaterialList materialList))
                 {
                     continue;
                 }
@@ -386,185 +383,6 @@ namespace LanternExtractor.EQ.Wld
 
             File.WriteAllText(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension,
                 materialsExport.ToString());
-        }
-
-        /// <summary>
-        /// Export zone object meshes to .obj files and collision meshes if there are non-solid polygons
-        /// Additionally, it exports a list of vertex animated instances
-        /// </summary>
-        private void ExportZoneObjectMeshes()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(0x36))
-            {
-                _logger.LogWarning("Cannot export zone object meshes. No meshes found.");
-                return;
-            }
-
-            string objectsExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
-            Directory.CreateDirectory(objectsExportFolder);
-
-            // The information about models that use vertex animation
-            var animatedMeshInfo = new StringBuilder();
-
-            for (int i = 0; i < _fragmentTypeDictionary[0x36].Count; ++i)
-            {
-                if (!(_fragmentTypeDictionary[0x36][i] is Mesh objectMesh))
-                {
-                    continue;
-                }
-
-                string fixedObjectName = objectMesh.Name.Split('_')[0].ToLower();
-
-                // These values are not used
-                int addedVertices = 0;
-                Material lastUsedMaterial = null;
-
-                List<string> meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial,
-                    ObjExportType.Textured, out addedVertices, out lastUsedMaterial, _settings, _logger);
-
-                if (meshStrings == null || meshStrings.Count == 0)
-                {
-                    continue;
-                }
-
-                var objectExport = new StringBuilder();
-
-                // If there are more than one outputs, it's an additional frame for an animated mesh
-                for (int j = 0; j < meshStrings.Count; ++j)
-                {
-                    objectExport.AppendLine(LanternStrings.ExportHeaderTitle + "Object Mesh - " + fixedObjectName);
-                    objectExport.AppendLine(LanternStrings.ObjMaterialHeader + fixedObjectName +
-                                            LanternStrings.FormatMtlExtension);
-
-                    // Most of the time, there will only be one
-                    if (j == 0)
-                    {
-                        objectExport.Append(meshStrings[0]);
-                        File.WriteAllText(objectsExportFolder + fixedObjectName + LanternStrings.ObjFormatExtension,
-                            objectExport.ToString());
-
-                        if (meshStrings.Count != 1)
-                        {
-                            animatedMeshInfo.Append(fixedObjectName);
-                            animatedMeshInfo.Append(",");
-                            animatedMeshInfo.Append(meshStrings.Count);
-                            animatedMeshInfo.Append(",");
-                            animatedMeshInfo.Append(objectMesh.AnimatedVertices.Delay);
-                            animatedMeshInfo.AppendLine();
-                        }
-
-                        continue;
-                    }
-
-                    objectExport.Append(meshStrings[j - 1]);
-                    File.WriteAllText(
-                        objectsExportFolder + fixedObjectName + "_frame" + j + LanternStrings.ObjFormatExtension,
-                        objectExport.ToString());
-
-                    objectExport.Clear();
-                }
-
-                // Write animated mesh vertex entries (if they exist)
-                if (animatedMeshInfo.Length != 0)
-                {
-                    var animatedMeshesHeader = new StringBuilder();
-                    animatedMeshesHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Animated Vertex Meshes");
-                    animatedMeshesHeader.AppendLine(
-                        LanternStrings.ExportHeaderFormat + "ModelName, Frames, Frame Delay");
-
-                    File.WriteAllText(_zoneName + "/" + _zoneName + "_animated_meshes.txt",
-                        animatedMeshesHeader + animatedMeshInfo.ToString());
-                }
-
-                // Collision mesh
-                if (objectMesh.ExportSeparateCollision)
-                {
-                    var collisionExport = new StringBuilder();
-                    collisionExport.AppendLine(LanternStrings.ExportHeaderTitle + "Object Collision Mesh - " +
-                                               fixedObjectName);
-
-                    addedVertices = 0;
-                    lastUsedMaterial = null;
-                    meshStrings = objectMesh.GetMeshExport(0, lastUsedMaterial, ObjExportType.Collision,
-                        out addedVertices, out lastUsedMaterial, _settings, _logger);
-
-                    if (meshStrings == null || meshStrings.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    File.WriteAllText(
-                        objectsExportFolder + fixedObjectName + "_collision" + LanternStrings.ObjFormatExtension,
-                        meshStrings[0]);
-                }
-
-                // Materials
-                var materialsExport = new StringBuilder();
-                materialsExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material Definitions");
-                materialsExport.Append(objectMesh.MaterialList.GetMaterialListExport(_settings));
-
-                File.WriteAllText(objectsExportFolder + fixedObjectName + LanternStrings.FormatMtlExtension,
-                    materialsExport.ToString());
-            }
-        }
-
-        private void ExportBspTree()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(0x21))
-            {
-                _logger.LogWarning("Cannot export BSP tree. No tree found.");
-                return;
-            }
-
-            if (_fragmentTypeDictionary[0x21].Count != 1)
-            {
-                _logger.LogWarning("Cannot export BSP tree. Incorrect number of trees found.");
-                return;
-            }
-
-            if (_bspRegions.Count == 0)
-            {
-                return;
-            }
-
-            if (_fragmentTypeDictionary.ContainsKey(0x29))
-            {
-                foreach (WldFragment fragment in _fragmentTypeDictionary[0x29])
-                {
-                    RegionFlag region = fragment as RegionFlag;
-
-                    if (region == null)
-                    {
-                        continue;
-                    }
-
-                    region.LinkRegionType(_bspRegions);
-                }
-            }
-
-            string zoneExportFolder = _zoneName + "/";
-
-            Directory.CreateDirectory(zoneExportFolder);
-
-            // Used for ensuring the output uses a period for a decimal number
-            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
-
-            BspTree bspTree = _fragmentTypeDictionary[0x21][0] as BspTree;
-
-            if (bspTree == null)
-            {
-                return;
-            }
-
-            StringBuilder bspTreeExport = new StringBuilder();
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                     "Normal nodes: NormalX, NormalY, NormalZ, SplitDistance, LeftNodeId, RightNodeId");
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                     "Leaf nodes: BSPRegionId, RegionType");
-            bspTreeExport.AppendLine(bspTree.GetBspTreeExport(_fragmentTypeDictionary[0x22], _logger));
-
-            File.WriteAllText(zoneExportFolder + _zoneName + "_bsp_tree.txt", bspTreeExport.ToString());
         }
     }
 }

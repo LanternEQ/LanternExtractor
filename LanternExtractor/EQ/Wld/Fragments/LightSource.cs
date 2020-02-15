@@ -32,8 +32,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public int Attenuation { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
@@ -62,7 +62,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int unknown = reader.ReadInt32();
 
-                int unknown6 = reader.ReadInt32();
+                float unknown6 = reader.ReadSingle();
 
                 return;
             }
@@ -73,6 +73,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int unknown = reader.ReadInt32();
                 Color = new vec4(1.0f);
+                
+                int unknown2 = reader.ReadInt32();
+                int unknown3 = reader.ReadInt32();
+
             }
             else
             {

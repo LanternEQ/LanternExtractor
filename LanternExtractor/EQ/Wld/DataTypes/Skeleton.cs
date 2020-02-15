@@ -557,7 +557,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             // 'CH' : piece (part 1)
             // '02' : palette ID
             // '01' : piece (part 2)
-            Regex expression = new Regex("^\\w{5}\\d{4}_MDF$");
+            Regex expression = new Regex("^\\w{4,5}\\d{4}_MDF$");
             
             if(expression.IsMatch(defName))
             {
@@ -582,11 +582,17 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             // 'CH' : piece (part 1)
             // '02' : palette ID
             // '01' : piece (part 2)
-            
             charName = string.Empty;
             skinId = 0;
-            partName = string.Empty;            
+            partName = string.Empty;  
             
+            Regex expression = new Regex("^\\w{4,5}\\d{4}_MDF$");
+
+            if (!expression.IsMatch(defName))
+            {
+                return false;
+            }
+
             // piece
             string materialName = defName.Replace("_MDF", string.Empty);
             int currentIndex = materialName.Length;

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -14,6 +14,34 @@ namespace LanternExtractor.EQ.Wld
         public WldFileZone(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToIbject = null) : base(wldFile, zoneName, type, logger, settings, wldToIbject)
         {
+        }
+
+        protected override void ProcessData()
+        {
+            base.ProcessData();
+
+            LinkBspReferences();
+        }
+
+        private void LinkBspReferences()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.BspTree)
+            || !_fragmentTypeDictionary.ContainsKey(FragmentType.BspRegion)
+            || !_fragmentTypeDictionary.ContainsKey(FragmentType.BspRegionType))
+            {
+                return;
+            }
+            
+            BspTree tree = _fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree;
+
+            tree?.LinkBspRegions(_fragments);
+            
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.BspRegionType])
+            {
+                BspRegionType bspRegion = fragment as BspRegionType;
+
+                bspRegion?.LinkRegionType(_bspRegions);
+            }
         }
 
         /// <summary>
@@ -32,7 +60,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportZoneMeshes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
                 _logger.LogWarning("Cannot export zone meshes. No meshes found.");
                 return;
@@ -49,9 +77,9 @@ namespace LanternExtractor.EQ.Wld
 
             // Loop through once and validate meshes
             // If all surfaces are solid, there is no reason to export a separate collision mesh
-            for (int i = 0; i < _fragmentTypeDictionary[0x36].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.Mesh].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x36][i] is Mesh zoneMesh))
+                if (!(_fragmentTypeDictionary[FragmentType.Mesh][i] is Mesh zoneMesh))
                 {
                     continue;
                 }
@@ -149,9 +177,9 @@ namespace LanternExtractor.EQ.Wld
 
             // Theoretically, there should only be one texture list here
             // Exceptions include sky.s3d
-            for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.Material].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
+                if (!(_fragmentTypeDictionary[FragmentType.Material][i] is MaterialList materialList))
                 {
                     continue;
                 }
@@ -169,7 +197,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportZoneObjectMeshes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
                 _logger.LogWarning("Cannot export zone object meshes. No meshes found.");
                 return;
@@ -181,9 +209,9 @@ namespace LanternExtractor.EQ.Wld
             // The information about models that use vertex animation
             var animatedMeshInfo = new StringBuilder();
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x36].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.Mesh].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x36][i] is Mesh objectMesh))
+                if (!(_fragmentTypeDictionary[FragmentType.Mesh][i] is Mesh objectMesh))
                 {
                     continue;
                 }
@@ -285,61 +313,16 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportBspTree()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x21))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.BspTree))
             {
                 _logger.LogWarning("Cannot export BSP tree. No tree found.");
                 return;
             }
+            BspTreeExporter exporter = new BspTreeExporter();
 
-            if (_fragmentTypeDictionary[0x21].Count != 1)
-            {
-                _logger.LogWarning("Cannot export BSP tree. Incorrect number of trees found.");
-                return;
-            }
-
-            if (_bspRegions.Count == 0)
-            {
-                return;
-            }
-
-            if (_fragmentTypeDictionary.ContainsKey(0x29))
-            {
-                foreach (WldFragment fragment in _fragmentTypeDictionary[0x29])
-                {
-                    RegionFlag region = fragment as RegionFlag;
-
-                    if (region == null)
-                    {
-                        continue;
-                    }
-
-                    region.LinkRegionType(_bspRegions);
-                }
-            }
-
-            string zoneExportFolder = _zoneName + "/";
-
-            Directory.CreateDirectory(zoneExportFolder);
-
-            // Used for ensuring the output uses a period for a decimal number
-            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
-
-            BspTree bspTree = _fragmentTypeDictionary[0x21][0] as BspTree;
-
-            if (bspTree == null)
-            {
-                return;
-            }
-
-            StringBuilder bspTreeExport = new StringBuilder();
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                     "Normal nodes: NormalX, NormalY, NormalZ, SplitDistance, LeftNodeId, RightNodeId");
-            bspTreeExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                     "Leaf nodes: BSPRegionId, RegionType");
-            bspTreeExport.AppendLine(bspTree.GetBspTreeExport(_fragmentTypeDictionary[0x22], _logger));
-
-            File.WriteAllText(zoneExportFolder + _zoneName + "_bsp_tree.txt", bspTreeExport.ToString());
+            exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
+            
+            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_bsp_tree.txt");
         }
     }
 }

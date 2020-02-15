@@ -21,10 +21,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh RegionMesh { get; private set; }
 
-        public RegionFlag Flag { get; private set; }
+        public BspRegionType Type { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
@@ -106,9 +106,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public void SetRegionFlag(RegionFlag regionFlag)
+        public void SetRegionFlag(BspRegionType bspRegionType)
         {
-            Flag = regionFlag;
+            Type = bspRegionType;
         }
 
         public override void OutputInfo(ILogger logger)

@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x04 - Texture Info
     /// This fragment contains a reference to a 0x03 fragment and information about animation
     /// </summary>
-    public class TextureInfo : WldFragment
+    public class BitmapInfo : WldFragment
     {
         /// <summary>
         /// Is the texture animated?
@@ -19,20 +19,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The bitmap names (0x03) referenced
         /// </summary>
-        public List<BitmapName> BitmapNames { get; private set; }
+        public List<Bitmap> BitmapNames { get; private set; }
 
         /// <summary>
         /// The number of milliseconds before the next texture is swapped in (animation)
         /// </summary>
         public int AnimationDelayMs { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
-            BitmapNames = new List<BitmapName>();
+            BitmapNames = new List<Bitmap>();
 
             var reader = new BinaryReader(new MemoryStream(data));
 
@@ -56,7 +56,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int bitmapIndex = reader.ReadInt32();
 
-                BitmapNames.Add(fragments[bitmapIndex - 1] as BitmapName);
+                BitmapNames.Add(fragments[bitmapIndex - 1] as Bitmap);
             }
         }
 
@@ -80,8 +80,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     references += ", ";
                 }
 
-                BitmapName bitmapName = BitmapNames[i];
-                references += (bitmapName.Index + 1);
+                Bitmap bitmap = BitmapNames[i];
+                references += (bitmap.Index + 1);
             }
 
             logger.LogInfo("0x04: Reference(s): " + references);

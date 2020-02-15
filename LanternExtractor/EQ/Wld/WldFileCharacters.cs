@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Pfs;
@@ -27,16 +26,43 @@ namespace LanternExtractor.EQ.Wld
         public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
+            ParseModelAnimationLink();
+        }
+
+        private void ParseModelAnimationLink()
+        {
+            string filename = "models.txt";
+            if (!File.Exists(filename))
+            {
+                _logger.LogError("WldFileCharacters: No models.txt file found.");
+                return;
+            }
+
             AnimationModelLink = new Dictionary<string, string>();
 
-            var fileText = File.ReadAllText("models.txt");
-
-            var parsedText = TextParser.ParseTextByDelimitedLines(fileText, ',', '#');
+            string fileText = File.ReadAllText(filename);
+            List<List<string>> parsedText = TextParser.ParseTextByDelimitedLines(fileText, ',', '#');
 
             foreach (var line in parsedText)
             {
+                if (line.Count < 5)
+                {
+                    continue;
+                }
+                
                 AnimationModelLink[line[2]] = line[4];
+            }        
+        }
+        
+        private void GetAnimationModelLink(CharacterModel model, string modelName)
+        {
+            if (AnimationModelLink == null || !AnimationModelLink.ContainsKey(modelName))
+            {
+                return;
             }
+
+            var animationBase = AnimationModelLink[modelName];
+            model.SetAnimationBase(animationBase == string.Empty ? modelName : animationBase);
         }
 
         protected override void ProcessData()
@@ -139,13 +165,13 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            if (!_fragmentTypeDictionary.ContainsKey(0x14))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
             {
                 return;
             }
             
             StringBuilder exportListBuilder = new StringBuilder();
-            exportListBuilder.AppendLine("# Model list: " + _zoneName);
+            exportListBuilder.AppendLine("# Character list: " + _zoneName);
             exportListBuilder.AppendLine("# Total models: " + Models.Count);
 
             foreach (var model in Models)
@@ -161,12 +187,12 @@ namespace LanternExtractor.EQ.Wld
 
         private void ImportCharacters()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x14))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
             {
                 return;
             }
 
-            List<WldFragment> fragments = _fragmentTypeDictionary[0x14];
+            List<WldFragment> fragments = _fragmentTypeDictionary[FragmentType.ModelReference];
 
             foreach (WldFragment fragment in fragments)
             {
@@ -224,12 +250,12 @@ namespace LanternExtractor.EQ.Wld
 
                 // VERIFY ALL MODELS IN THE 0x14 fragment
 
-                FindModelAnimationBase(characterModel, actorName);
+                GetAnimationModelLink(characterModel, actorName);
                 Models[actorName] = characterModel;
             }
 
             // Look for alternate meshes (e.g. heads)
-            foreach (WldFragment meshFragment in _fragmentTypeDictionary[0x36])
+            foreach (WldFragment meshFragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
                 Mesh mesh = meshFragment as Mesh;
 
@@ -321,12 +347,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ImportCharacterPalettes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x30))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Material))
             {
                 return;
             }
 
-            foreach (WldFragment materialFragments in _fragmentTypeDictionary[0x30])
+            foreach (WldFragment materialFragments in _fragmentTypeDictionary[FragmentType.Material])
             {
                 Material material = materialFragments as Material;
 
@@ -346,7 +372,6 @@ namespace LanternExtractor.EQ.Wld
 
                 if (!WldMaterialPalette.ExplodeName2(material.Name, out charName, out skinId, out partName))
                 {
-                    _logger.LogError("WldFileCharacter: Error exploding material details: " + material.Name);
                     continue;
                 }
 
@@ -377,7 +402,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ImportSkeletons()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x12))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.TrackDefFragment))
             {
                 return;
             }
@@ -387,9 +412,9 @@ namespace LanternExtractor.EQ.Wld
             Dictionary<int, int> trackMap = new Dictionary<int, int>();
             int frameCount = 0;
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x12].Count; i++)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.TrackDefFragment].Count; i++)
             {
-                TrackDefFragment trackDef = _fragmentTypeDictionary[0x12][i] as TrackDefFragment;
+                TrackDefFragment trackDef = _fragmentTypeDictionary[FragmentType.TrackDefFragment][i] as TrackDefFragment;
 
                 if (trackDef == null)
                 {
@@ -414,9 +439,9 @@ namespace LanternExtractor.EQ.Wld
                 Frames.Add(new BoneTransform());
             }
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x12].Count; i++)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.TrackDefFragment].Count; i++)
             {
-                TrackDefFragment trackDef = _fragmentTypeDictionary[0x12][i] as TrackDefFragment;
+                TrackDefFragment trackDef = _fragmentTypeDictionary[FragmentType.TrackDefFragment][i] as TrackDefFragment;
 
                 if (trackDef == null)
                 {
@@ -437,10 +462,10 @@ namespace LanternExtractor.EQ.Wld
                 current += boneTrack._frameCount;
             }
 
-            if (_fragmentTypeDictionary.ContainsKey(0x10))
+            if (_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteDefFragment))
             {
                 // import skeletons which contain the pose animation
-                foreach (WldFragment fragment in _fragmentTypeDictionary[0x10])
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment])
                 {
                     HierSpriteDefFragment skelDef = fragment as HierSpriteDefFragment;
 
@@ -556,7 +581,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void FindAllAnimations()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x13))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.TrackFragment))
             {
                 return;
             }
@@ -567,11 +592,17 @@ namespace LanternExtractor.EQ.Wld
             string modelName = string.Empty;
 
             // Loop through each track
-            foreach (var fragment in _fragmentTypeDictionary[0x13])
+            foreach (var fragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
             {
                 TrackFragment track = fragment as TrackFragment;
 
                 if (track == null)
+                {
+                    continue;
+                }
+
+                // Ignore fragment of the skeleton POS
+                if (track.TrackDefFragment.IsAssigned)
                 {
                     continue;
                 }
@@ -583,7 +614,7 @@ namespace LanternExtractor.EQ.Wld
 
                 if (!Models.ContainsKey(modelNameCur))
                 {
-                    _logger.LogError("Cannot find model for animation.");
+                    _logger.LogError($"Cannot find model {modelNameCur} for animation {animNameCur}.");
                     continue;
                 }
 
@@ -659,6 +690,10 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
+        /// <summary>
+        /// Finds animations for each model and adds to the model
+        /// </summary>
+        /// <param name="modelName1"></param>
         private void FindAnimations(string modelName1)
         {
             if (!Models.ContainsKey(modelName1))
@@ -673,14 +708,14 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            string animationBade = model.AnimationBase;
+            string animationbase = model.AnimationBase;
 
             Dictionary<string, BoneTrack> currentTracks = new Dictionary<string, BoneTrack>();
 
             string animationName = string.Empty;
             string modelName = string.Empty;
 
-            foreach (var fragment in _fragmentTypeDictionary[0x13])
+            foreach (var fragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
             {
                 TrackFragment track = fragment as TrackFragment;
 
@@ -699,12 +734,8 @@ namespace LanternExtractor.EQ.Wld
                 string animNameCur = partName.Substring(0, 3);
                 string modelNameCur = partName.Substring(3, 3);
 
-                if (modelNameCur == "ELF")
-                {
-                }
-
                 // TODO: FIX THIS SHIT
-                if (modelNameCur != animationBade)
+                if (modelNameCur != animationbase)
                 {
                     continue;
                 }
@@ -1112,18 +1143,6 @@ namespace LanternExtractor.EQ.Wld
                 return true;
             }
             return false;*/
-        }
-
-        bool FindModelAnimationBase(CharacterModel model, string modelName)
-        {
-            if (!AnimationModelLink.ContainsKey(modelName))
-            {
-                return false;
-            }
-
-            var animationBase = AnimationModelLink[modelName];
-            model.SetAnimationBase(animationBase == string.Empty ? modelName : animationBase);
-            return false;
         }
     }
 }

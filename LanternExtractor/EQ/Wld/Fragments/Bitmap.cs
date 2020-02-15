@@ -9,15 +9,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// This fragment contains the name of a bitmap image
     /// It's theoretically possible for this fragment to have more than one bitmap but it hasn't been seen
     /// </summary>
-    public class BitmapName : WldFragment
+    public class Bitmap : WldFragment
     {
         /// <summary>
         /// The bitmap names of this fragment - stored as a list because the client supports more than one
         /// </summary>
         public string Filename { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);

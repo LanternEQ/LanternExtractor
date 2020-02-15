@@ -28,7 +28,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportLightInstanceList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x28))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.LightInstance))
             {
                 _logger.LogWarning("Unable to export light instance list. No instances found.");
                 return;
@@ -47,9 +47,9 @@ namespace LanternExtractor.EQ.Wld
             lightListExport.AppendLine(LanternStrings.ExportHeaderFormat +
                                        "PosX, PosY, PosZ, Radius, ColorR, ColorG, ColorB");
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x28].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.LightInstance].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x28][i] is LightInfo lightInfo))
+                if (!(_fragmentTypeDictionary[FragmentType.LightInstance][i] is LightInfo lightInfo))
                 {
                     continue;
                 }

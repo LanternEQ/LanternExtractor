@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x29 - Region Flag
     /// Associates a list of regions with a specified region flag (Water, Lava, PvP or Zoneline)
     /// </summary>
-    public class RegionFlag : WldFragment
+    public class BspRegionType : WldFragment
     {
         /// <summary>
         /// The region type associated with the region list
@@ -18,8 +18,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public List<int> BspRegionIndices { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -20,8 +21,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<int> Regions { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
@@ -33,7 +34,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int reference = reader.ReadInt32();
 
             LightReference = fragments[reference - 1] as LightSourceReference;
-
+            
             int flags = reader.ReadInt32();
 
             int regionCount = reader.ReadInt32();

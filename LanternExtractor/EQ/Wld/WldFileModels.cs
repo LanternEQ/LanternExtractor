@@ -29,12 +29,12 @@ namespace LanternExtractor.EQ.Wld
 
             Directory.CreateDirectory(objectsExportFolder);
             
-            if (!_fragmentTypeDictionary.ContainsKey(0x36))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
                 return;
             }
 
-            foreach (WldFragment model in _fragmentTypeDictionary[0x36])
+            foreach (WldFragment model in _fragmentTypeDictionary[FragmentType.Mesh])
             {
                 Mesh mesh = model as Mesh;
 

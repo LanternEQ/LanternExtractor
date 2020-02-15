@@ -1,7 +1,5 @@
-﻿using System.Globalization;
-using System.IO;
-using System.Text;
-using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -28,7 +26,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportObjectInstanceList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x15))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ObjectInstance))
             {
                 _logger.LogWarning("Cannot export object instance list. No object instances found.");
                 return;
@@ -36,47 +34,14 @@ namespace LanternExtractor.EQ.Wld
 
             string zoneExportFolder = _zoneName + "/";
 
-            Directory.CreateDirectory(zoneExportFolder);
+            ObjectInstanceExporter exporter = new ObjectInstanceExporter();
 
-            // Used for ensuring the output uses a period for a decimal number
-            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
-
-            var objectListExport = new StringBuilder();
-
-            objectListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");
-            objectListExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                        "ModelName, PosX, PosY, PosZ, RotX, RotY, RotZ, ScaleX, ScaleY, ScaleZ");
-
-            for (int i = 0; i < _fragmentTypeDictionary[0x15].Count; ++i)
+            foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
             {
-                if (!(_fragmentTypeDictionary[0x15][i] is ObjectInstance objectLocation))
-                {
-                    continue;
-                }
-
-                objectListExport.Append(objectLocation.ObjectName);
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.x.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.z.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Position.y.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.x.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.z.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Rotation.y.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.x.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.y.ToString(format));
-                objectListExport.Append(",");
-                objectListExport.Append(objectLocation.Scale.z.ToString(format));
-                objectListExport.AppendLine();
+                exporter.AddFragmentData(objectInstanceFragment);
             }
-
-            File.WriteAllText(zoneExportFolder + _zoneName + "_objects.txt", objectListExport.ToString());
+            
+            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_objects.txt");
         }
     }
 }

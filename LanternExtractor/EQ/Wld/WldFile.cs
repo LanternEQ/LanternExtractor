@@ -3,25 +3,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
 {
     /// <summary>
-    /// Contains logic for loading and extracting data from a WLD file
+    /// Contains shared logic for loading and extracting data from a WLD file
     /// </summary>
     public abstract class WldFile
     {
         /// <summary>
         /// The link between fragment types and fragment classes
         /// </summary>
-        private Dictionary<int, Func<WldFragment>> _fragmentBuilder;
+        private Dictionary<FragmentType, Func<WldFragment>> _fragmentBuilder;
 
         /// <summary>
         /// A link of indices to fragments
         /// </summary>
-        private Dictionary<int, WldFragment> _fragments;
+        protected List<WldFragment> _fragments;
 
         /// <summary>
         /// The string has containing the index in the hash and the decoded string that is there
@@ -31,12 +32,12 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// A collection of fragment lists that can be referenced by a fragment type
         /// </summary>
-        protected Dictionary<int, List<WldFragment>> _fragmentTypeDictionary;
+        protected Dictionary<FragmentType, List<WldFragment>> _fragmentTypeDictionary;
 
         /// <summary>
         /// A collection of fragment lists that can be referenced by a fragment type
         /// </summary>
-        private Dictionary<string, WldFragment> _fragmentNameDictionary;
+        protected Dictionary<string, WldFragment> _fragmentNameDictionary;
 
         protected List<BspRegion> _bspRegions;
 
@@ -48,7 +49,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// The logger to use to output WLD information
         /// </summary>
-        protected readonly ILogger _logger = null;
+        protected readonly ILogger _logger;
 
         /// <summary>
         /// The type of WLD file this is
@@ -100,8 +101,8 @@ namespace LanternExtractor.EQ.Wld
 
             InstantiateFragmentBuilder();
 
-            _fragments = new Dictionary<int, WldFragment>();
-            _fragmentTypeDictionary = new Dictionary<int, List<WldFragment>>();
+            _fragments = new List<WldFragment>();
+            _fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
 
@@ -148,7 +149,7 @@ namespace LanternExtractor.EQ.Wld
             for (int i = 0; i < fragmentCount; ++i)
             {
                 uint fragSize = reader.ReadUInt32();
-                int fragId = reader.ReadInt32();
+                FragmentType fragId = (FragmentType)reader.ReadInt32();
 
                 WldFragment newFrag = null;
 
@@ -165,7 +166,7 @@ namespace LanternExtractor.EQ.Wld
                     _logger);
                 newFrag.OutputInfo(_logger);
 
-                _fragments[i] = newFrag;
+                _fragments.Add(newFrag);
 
                 if (!_fragmentTypeDictionary.ContainsKey(fragId))
                 {
@@ -177,7 +178,7 @@ namespace LanternExtractor.EQ.Wld
                     _fragmentNameDictionary[newFrag.Name] = newFrag;
                 }
 
-                if (fragId == 0x22)
+                if (fragId == FragmentType.BspRegion)
                 {
                     _bspRegions.Add(newFrag as BspRegion);
                 }
@@ -208,54 +209,54 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void InstantiateFragmentBuilder()
         {
-            _fragmentBuilder = new Dictionary<int, Func<WldFragment>>
+            _fragmentBuilder = new Dictionary<FragmentType, Func<WldFragment>>
             {
-                {0x35, () => new FirstFragment()},
+                {FragmentType.FirstFragment, () => new FirstFragment()},
 
                 // Materials
-                {0x03, () => new BitmapName()},
-                {0x04, () => new TextureInfo()},
-                {0x05, () => new TextureInfoReference()},
-                {0x30, () => new Material()},
-                {0x31, () => new MaterialList()},
+                {FragmentType.Bitmap, () => new Bitmap()},
+                {FragmentType.BitmapInfo, () => new BitmapInfo()},
+                {FragmentType.BitmapInfoReference, () => new BitmapInfoReference()},
+                {FragmentType.Material, () => new Material()},
+                {FragmentType.MaterialList, () => new MaterialList()},
 
                 // BSP Tree
-                {0x21, () => new BspTree()},
-                {0x22, () => new BspRegion()},
-                {0x29, () => new RegionFlag()},
+                {FragmentType.BspTree, () => new BspTree()},
+                {FragmentType.BspRegion, () => new BspRegion()},
+                {FragmentType.BspRegionType, () => new BspRegionType()},
 
                 // Meshes
-                {0x36, () => new Mesh()},
-                {0x37, () => new MeshAnimatedVertices()},
-                {0x2D, () => new MeshReference()},
+                {FragmentType.Mesh, () => new Mesh()},
+                {FragmentType.MeshVertexAnimation, () => new MeshAnimatedVertices()},
+                {FragmentType.MeshReference, () => new MeshReference()},
 
                 // Animation
-                {0x14, () => new ModelReference()},
-                {0x10, () => new HierSpriteDefFragment()},
-                {0x11, () => new HierSpriteFragment()},
-                {0x12, () => new TrackDefFragment()},
-                {0x13, () => new TrackFragment()},
+                {FragmentType.ModelReference, () => new ModelReference()},
+                {FragmentType.HierSpriteDefFragment, () => new HierSpriteDefFragment()},
+                {FragmentType.HierSpriteFragment, () => new HierSpriteFragment()},
+                {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
+                {FragmentType.TrackFragment, () => new TrackFragment()},
 
                 // Lights
-                {0x1B, () => new LightSource()},
-                {0x1C, () => new LightSourceReference()},
-                {0x28, () => new LightInfo()},
-                {0x2A, () => new AmbientLight()},
+                {FragmentType.Light, () => new LightSource()},
+                {FragmentType.LightReference, () => new LightSourceReference()},
+                {FragmentType.LightInstance, () => new LightInfo()},
+                {FragmentType.AmbientLight, () => new AmbientLight()},
 
                 // Vertex colors
-                {0x32, () => new VertexColor()},
-                {0x33, () => new VertexColorReference()},
+                {FragmentType.VertexColor, () => new VertexColor()},
+                {FragmentType.VertexColorReference, () => new VertexColorReference()},
 
                 // General
-                {0x15, () => new ObjectInstance()},
+                {FragmentType.ObjectInstance, () => new ObjectInstance()},
 
-                // Unused
-                {0x08, () => new Camera()},
-                {0x09, () => new CameraReference()},
-                {0x16, () => new ZoneUnknown()},
-                {0x17, () => new Fragment17()},
-                {0x18, () => new Fragment18()},
-                {0x2F, () => new Fragment2F()},
+                // Not used/unknown
+                {FragmentType.Camera, () => new Camera()},
+                {FragmentType.CameraReference, () => new CameraReference()},
+                {FragmentType.Fragment16, () => new Fragment16()},
+                {FragmentType.Fragment17, () => new Fragment17()},
+                {FragmentType.Fragment18, () => new Fragment18()},
+                {FragmentType.Fragment2F, () => new Fragment2F()},
             };
         }
 
@@ -289,7 +290,7 @@ namespace LanternExtractor.EQ.Wld
         /// <returns>Dictionary with material to shader mapping</returns>
         public Dictionary<string, List<ShaderType>> GetMaterialTypes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x31))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
                 _logger.LogWarning("Cannot get material types. No texture list found.");
                 return null;
@@ -297,9 +298,9 @@ namespace LanternExtractor.EQ.Wld
 
             var materialTypes = new Dictionary<string, List<ShaderType>>();
 
-            for (int i = 0; i < _fragmentTypeDictionary[0x31].Count; ++i)
+            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.MaterialList].Count; ++i)
             {
-                if (!(_fragmentTypeDictionary[0x31][i] is MaterialList materialList))
+                if (!(_fragmentTypeDictionary[FragmentType.MaterialList][i] is MaterialList materialList))
                 {
                     continue;
                 }
@@ -350,48 +351,17 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected void ExportMaterialList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(0x30))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
-                _logger.LogWarning("Cannot export material list. No list found.");
+                _logger.LogWarning("Cannot export material lists. No lists found.");
                 return;
             }
 
-            var materialListExport = new StringBuilder();
+            MaterialListExporter exporter = new MaterialListExporter();
 
-            materialListExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
-            materialListExport.AppendLine(LanternStrings.ExportHeaderFormat +
-                                          "BitmapName, BitmapCount, AnimationDelayMs (optional)");
-
-            for (int i = 0; i < _fragmentTypeDictionary[0x30].Count; ++i)
+            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                if (!(_fragmentTypeDictionary[0x30][i] is Material material))
-                {
-                    continue;
-                }
-
-                if (material.ShaderType == ShaderType.Invisible)
-                {
-                    continue;
-                }
-
-                string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
-
-                string textureName = material.TextureInfoReference.TextureInfo.BitmapNames[0]
-                    .Filename;
-
-                textureName = textureName.Substring(0, textureName.Length - 4);
-                materialListExport.Append(materialPrefix);
-                materialListExport.Append(textureName);
-                materialListExport.Append(",");
-                materialListExport.Append(material.TextureInfoReference.TextureInfo.BitmapNames.Count);
-
-                if (material.TextureInfoReference.TextureInfo.IsAnimated)
-                {
-                    materialListExport.Append("," + material.TextureInfoReference.TextureInfo.AnimationDelayMs);
-                }
-
-                materialListExport.AppendLine();
-                
+                exporter.AddFragmentData(listFragment);
             }
 
             string fileName = _zoneName + "/" + _zoneName + "_materials";
@@ -407,16 +377,7 @@ namespace LanternExtractor.EQ.Wld
 
             fileName += ".txt";
 
-            string directory = Path.GetDirectoryName(fileName);
-
-            if (string.IsNullOrEmpty(directory))
-            {
-                return;
-            }
-            
-            Directory.CreateDirectory(directory);
-            
-            File.WriteAllText(fileName, materialListExport.ToString());
+            exporter.WriteAssetToFile(fileName);
         }
     }
 }

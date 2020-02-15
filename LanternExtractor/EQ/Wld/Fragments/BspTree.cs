@@ -2,7 +2,6 @@
 using System.IO;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
-using System.Text;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -18,8 +17,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<BspNode> Nodes { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
@@ -49,37 +48,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
+        public void LinkBspRegions(List<WldFragment> fragments)
+        {
+            foreach (var node in Nodes)
+            {
+                if (node.RegionId == 0)
+                {
+                    continue;
+                }
+
+                node.Region = fragments[node.RegionId] as BspRegion;
+            }
+        }
+
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
             logger.LogInfo("0x21: Node count: " + Nodes.Count);
-        }
-
-        public string GetBspTreeExport(List<WldFragment> fragments, ILogger logger)
-        {
-            StringBuilder treeExport = new StringBuilder();
-
-            foreach (var node in Nodes)
-            {
-                if (node.RegionId != 0)
-                {
-                    if(!(fragments[node.RegionId - 1] is BspRegion region))
-                    {
-                        continue;
-                    }
-
-                    RegionType type = region.Flag?.RegionType ?? RegionType.Normal;
-
-                    treeExport.AppendLine($"{node.RegionId}, {type.ToString()}");
-                }
-                else
-                {
-                    treeExport.AppendLine($"{node.NormalX}, {node.NormalZ}, {node.NormalY}, {node.SplitDistance}, {node.LeftNode}, {node.RightNode}");
-                }
-            }
-
-            return treeExport.ToString();
         }
     }
 }

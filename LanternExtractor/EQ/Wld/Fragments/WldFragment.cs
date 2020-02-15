@@ -8,6 +8,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// </summary>
     public abstract class WldFragment
     {
+        public int Index { get; private set; }
+
+        /// <summary>
+        /// The type of fragment this is - normally represented in hex
+        /// </summary>
+        public FragmentType Type { get; private set; }
+
+        /// <summary>
+        /// The size of the fragment in bytes
+        /// </summary>
+        public int Size { get; private set; }
+
+        /// <summary>
+        /// The name of the fragment - not always used
+        /// </summary>
+        public string Name { get; protected set; }
+
         /// <summary>
         /// Initializes the WLD fragment and handles it based on the type
         /// </summary>
@@ -17,9 +34,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="data">The bytes that make up the fragments</param>
         /// <param name="fragments">A dictionary of all other fragments for referencing</param>
         /// <param name="stringHash">The string hash - for fragment name assignment</param>
+        /// <param name="isNewWldFormat"></param>
         /// <param name="logger">Logger for debug output</param>
-        public virtual void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public virtual void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             Index = index;
@@ -40,22 +58,5 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("Size: " + Size + " bytes");
             logger.LogInfo("Name: " + (string.IsNullOrEmpty(Name) ? "(empty)" : Name));
         }
-
-        public int Index { get; private set; }
-
-        /// <summary>
-        /// The type of fragment this is - normally represented in hex
-        /// </summary>
-        public int Type { get; private set; }
-
-        /// <summary>
-        /// The size of the fragment in bytes
-        /// </summary>
-        public int Size { get; private set; }
-
-        /// <summary>
-        /// The name of the fragment - not always used
-        /// </summary>
-        public string Name { get; protected set; }
     }
 }

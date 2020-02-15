@@ -55,7 +55,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The TextureInfoReference (0x05) that this material uses
         /// </summary>
-        public TextureInfoReference TextureInfoReference { get; private set; }
+        public BitmapInfoReference BitmapInfoReference { get; private set; }
 
         /// <summary>
         /// The shader type that this material uses when rendering
@@ -87,8 +87,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             GlobalSkin,
         }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
+        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+            List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
@@ -117,7 +117,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (reference6 != 0)
             {
-                TextureInfoReference = fragments[reference6 - 1] as TextureInfoReference;
+                BitmapInfoReference = fragments[reference6 - 1] as BitmapInfoReference;
             }
 
             MaterialType materialType = (MaterialType) (Parameters & ~0x80000000);
@@ -170,7 +170,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = ShaderType.TransparentAdditiveUnlitSkydome;
                     break;
                 default:
-                    ShaderType = TextureInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
+                    ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
                     break;
             }
         }
@@ -184,9 +184,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x30: UnknownFloat1: " + UnknownFloat1);
             logger.LogInfo("0x30: UnknownFloat2: " + UnknownFloat2);
 
-            if (ShaderType != ShaderType.Invisible && TextureInfoReference != null)
+            if (ShaderType != ShaderType.Invisible && BitmapInfoReference != null)
             {
-                logger.LogInfo("0x30: Reference: " + (TextureInfoReference.Index + 1));
+                logger.LogInfo("0x30: Reference: " + (BitmapInfoReference.Index + 1));
             }
         }
 
@@ -194,12 +194,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             var bitmapNames = new List<string>();
 
-            if (TextureInfoReference == null)
+            if (BitmapInfoReference == null)
             {
                 return bitmapNames;
             }
 
-            foreach (BitmapName bitmapName in TextureInfoReference.TextureInfo.BitmapNames)
+            foreach (Bitmap bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
             {
                 bitmapNames.Add(bitmapName.Filename);
             }
@@ -240,14 +240,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public string GetFirstBitmapNameWithoutExtension()
         {
-            if (TextureInfoReference == null || TextureInfoReference.TextureInfo == null ||
-                TextureInfoReference.TextureInfo.BitmapNames == null ||
-                TextureInfoReference.TextureInfo.BitmapNames.Count == 0)
+            if (BitmapInfoReference == null || BitmapInfoReference.BitmapInfo == null ||
+                BitmapInfoReference.BitmapInfo.BitmapNames == null ||
+                BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
             {
                 return string.Empty;
             }
 
-            return TextureInfoReference.TextureInfo.BitmapNames[0].GetFilenameWithoutExtension();
+            return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetFilenameWithoutExtension();
         }
 
         public string GetSpecificMaterialSkinWithoutExtension(int specificSkin)
@@ -291,14 +291,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public string GetFirstBitmapExportFilename()
         {
-            if (TextureInfoReference == null || TextureInfoReference.TextureInfo == null ||
-                TextureInfoReference.TextureInfo.BitmapNames == null ||
-                TextureInfoReference.TextureInfo.BitmapNames.Count == 0)
+            if (BitmapInfoReference == null || BitmapInfoReference.BitmapInfo == null ||
+                BitmapInfoReference.BitmapInfo.BitmapNames == null ||
+                BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
             {
                 return string.Empty;
             }
 
-            return TextureInfoReference.TextureInfo.BitmapNames[0].GetExportFilename();
+            return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetExportFilename();
         }
 
         public void SetHandled(bool b)
