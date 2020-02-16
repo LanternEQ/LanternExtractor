@@ -76,8 +76,11 @@
     <Compile Include="EQ\Wld\Exporters\BspTreeExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MaterialListExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshFbxExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshIntermediateExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjMtlExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\ObjectInstanceExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ObjExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextAssetExporter.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\Bitmap.cs" />

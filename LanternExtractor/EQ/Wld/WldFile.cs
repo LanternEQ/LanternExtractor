@@ -65,13 +65,18 @@ namespace LanternExtractor.EQ.Wld
         /// Cached settings
         /// </summary>
         protected readonly Settings _settings;
+        
+        private const int WldFileIdentifier = 0x54503D02;
+        
+        private const int WldFormatOld = 0x00015500;
+        private const int WldFormatNew = 0x1000C800;
 
         /// <summary>
         /// Is this the new WLD format? Some data types are different
         /// </summary>
         private bool _isNewWldFormat;
 
-        protected WldFile _wldToInject;
+        protected readonly WldFile _wldToInject;
 
         /// <summary>
         /// Constructor setting data references used during the initialization process
@@ -110,7 +115,7 @@ namespace LanternExtractor.EQ.Wld
 
             int identifier = reader.ReadInt32();
 
-            if (identifier != 0x54503D02)
+            if (identifier != WldFileIdentifier)
             {
                 _logger.LogError("Not a valid WLD file!");
                 return false;
@@ -120,11 +125,11 @@ namespace LanternExtractor.EQ.Wld
 
             switch (version)
             {
-                case 0x00015500:
+                case WldFormatOld:
                     break;
-                case 0x1000C800:
+                case WldFormatNew:
                     _isNewWldFormat = true;
-                    _logger.LogWarning("New WLD format not fully spported.");
+                    _logger.LogWarning("New WLD format not fully supported.");
                     break;
                 default:
                     _logger.LogError("Unrecognized WLD format.");
@@ -151,39 +156,39 @@ namespace LanternExtractor.EQ.Wld
                 uint fragSize = reader.ReadUInt32();
                 FragmentType fragId = (FragmentType)reader.ReadInt32();
 
-                WldFragment newFrag = null;
+                WldFragment newFragment;
 
                 // Create the fragments
-                newFrag = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
+                newFragment = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
 
-                if (newFrag is Generic)
+                if (newFragment is Generic)
                 {
                     _logger.LogWarning($"Unhandled fragment type: {fragId:x}");
                 }
 
-                newFrag.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
+                newFragment.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
                     _isNewWldFormat,
                     _logger);
-                newFrag.OutputInfo(_logger);
+                newFragment.OutputInfo(_logger);
 
-                _fragments.Add(newFrag);
+                _fragments.Add(newFragment);
 
                 if (!_fragmentTypeDictionary.ContainsKey(fragId))
                 {
                     _fragmentTypeDictionary[fragId] = new List<WldFragment>();
                 }
 
-                if (!string.IsNullOrEmpty(newFrag.Name) && !_fragmentNameDictionary.ContainsKey(newFrag.Name))
+                if (!string.IsNullOrEmpty(newFragment.Name) && !_fragmentNameDictionary.ContainsKey(newFragment.Name))
                 {
-                    _fragmentNameDictionary[newFrag.Name] = newFrag;
+                    _fragmentNameDictionary[newFragment.Name] = newFragment;
                 }
 
                 if (fragId == FragmentType.BspRegion)
                 {
-                    _bspRegions.Add(newFrag as BspRegion);
+                    _bspRegions.Add(newFragment as BspRegion);
                 }
 
-                _fragmentTypeDictionary[fragId].Add(newFrag);
+                _fragmentTypeDictionary[fragId].Add(newFragment);
             }
 
             _logger.LogInfo("-----------------------------------");
@@ -193,7 +198,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (exportData)
             {
-                ExportWldData();
+                ExportData();
             }
 
             return true;
@@ -298,16 +303,18 @@ namespace LanternExtractor.EQ.Wld
 
             var materialTypes = new Dictionary<string, List<ShaderType>>();
 
-            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.MaterialList].Count; ++i)
+            foreach (WldFragment materialListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                if (!(_fragmentTypeDictionary[FragmentType.MaterialList][i] is MaterialList materialList))
+                MaterialList materialList= materialListFragment as MaterialList;
+
+                if (materialList == null)
                 {
                     continue;
                 }
-
+                
                 ProcessMaterialList(ref materialTypes, materialList.Materials);
             }
-
+          
             return materialTypes;
         }
 
@@ -340,7 +347,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
-        protected virtual void ExportWldData()
+        protected virtual void ExportData()
         {
             ExportMaterialList();
         }

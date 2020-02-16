@@ -76,9 +76,9 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
-        protected override void ExportWldData()
+        protected override void ExportData()
         {
-            base.ExportWldData();
+            base.ExportData();
 
             if (_wldToInject != null)
             {

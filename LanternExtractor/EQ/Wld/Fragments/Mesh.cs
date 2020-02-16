@@ -58,7 +58,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The polygon indices of the mesh
         /// </summary>
-        public List<Polygon> Polygons { get; private set; }
+        public List<Polygon> Indices { get; private set; }
 
         /// <summary>
         /// The UV texture coordinates of the vertex
@@ -190,7 +190,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 reader.BaseStream.Position += 4;
             }
 
-            Polygons = new List<Polygon>();
+            Indices = new List<Polygon>();
 
             for (int i = 0; i < polygonCount; ++i)
             {
@@ -201,7 +201,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ExportSeparateCollision = true;
                 }
 
-                Polygons.Add(new Polygon()
+                Indices.Add(new Polygon()
                 {
                     Solid = isSolid,
                     Vertex1 = reader.ReadInt16(),
@@ -271,7 +271,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x36: Max position: " + MaxDistance);
             logger.LogInfo("0x36: Texture list reference: " + MaterialList.Index);
             logger.LogInfo("0x36: Vertex count: " + Vertices.Count);
-            logger.LogInfo("0x36: Polygon count: " + Polygons.Count);
+            logger.LogInfo("0x36: Polygon count: " + Indices.Count);
             logger.LogInfo("0x36: Texture coordinate count: " + TextureUvCoordinates.Count);
             logger.LogInfo("0x36: Render group count: " + RenderGroups.Count);
             logger.LogInfo("0x36: Export separate collision: " + ExportSeparateCollision);
@@ -355,19 +355,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 for (int j = 0; j < polygonCount; ++j)
                 {
-                    if(currentPolygon < 0 || currentPolygon >= Polygons.Count)
+                    if(currentPolygon < 0 || currentPolygon >= Indices.Count)
                     {
                         logger.LogError("Invalid polygon index");
                         continue;
                     }
                     
                     // This is the culprit.
-                    if (!Polygons[currentPolygon].Solid && objExportType == ObjExportType.Collision)
+                    if (!Indices[currentPolygon].Solid && objExportType == ObjExportType.Collision)
                     {
                         activeArray = unusedVertices;
-                        AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex1);
-                        AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex2);
-                        AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex3);
+                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex1);
+                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex2);
+                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex3);
 
                         currentPolygon++;
                         continue;
@@ -379,9 +379,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         textureChange = string.Empty;
                     }
 
-                    int vertex1 = Polygons[currentPolygon].Vertex1 + baseVertex + 1;
-                    int vertex2 = Polygons[currentPolygon].Vertex2 + baseVertex + 1;
-                    int vertex3 = Polygons[currentPolygon].Vertex3 + baseVertex + 1;
+                    int vertex1 = Indices[currentPolygon].Vertex1 + baseVertex + 1;
+                    int vertex2 = Indices[currentPolygon].Vertex2 + baseVertex + 1;
+                    int vertex3 = Indices[currentPolygon].Vertex3 + baseVertex + 1;
 
                     if (activeArray == usedVertices)
                     {
@@ -404,9 +404,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         }
                     }
 
-                    AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex1);
-                    AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex2);
-                    AddIfNotContained(activeArray, Polygons[currentPolygon].Vertex3);
+                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex1);
+                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex2);
+                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex3);
 
                     currentPolygon++;
                 }
@@ -543,9 +543,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 for (int i = 0; i < group.PolygonCount; ++i)
                 {
-                    int vertex1 = Polygons[currentPolygon].Vertex1 + 1;
-                    int vertex2 = Polygons[currentPolygon].Vertex2 + 1;
-                    int vertex3 = Polygons[currentPolygon].Vertex3 + 1;
+                    int vertex1 = Indices[currentPolygon].Vertex1 + 1;
+                    int vertex2 = Indices[currentPolygon].Vertex2 + 1;
+                    int vertex3 = Indices[currentPolygon].Vertex3 + 1;
 
                     export.AppendLine("f " + vertex3 + "/" + vertex3 + " "
                                       + vertex2 + "/" + vertex2 + " " +
@@ -904,9 +904,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 for (int i = 0; i < group.PolygonCount; ++i)
                 {
-                    int vertex1 = Polygons[currentPolygon].Vertex1;
-                    int vertex2 = Polygons[currentPolygon].Vertex2;
-                    int vertex3 = Polygons[currentPolygon].Vertex3;
+                    int vertex1 = Indices[currentPolygon].Vertex1;
+                    int vertex2 = Indices[currentPolygon].Vertex2;
+                    int vertex3 = Indices[currentPolygon].Vertex3;
 
                     export.Append("i");
                     export.Append(",");

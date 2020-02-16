@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "arena";          
+            archiveName = "qeynos2";          
 #else
             if (args.Length != 1)
             {
@@ -216,13 +216,13 @@ namespace LanternExtractor
             {
                 WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Objects", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Objects/Textures", true);
             }
             else
             {
                 WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone/Textures", true);
                 
                 PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 

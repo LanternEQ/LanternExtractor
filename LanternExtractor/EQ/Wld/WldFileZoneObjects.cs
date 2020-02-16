@@ -11,19 +11,12 @@ namespace LanternExtractor.EQ.Wld
             wldFile, zoneName, type, logger, settings, wldToIbject)
         {
         }
-
-        /// <summary>
-        /// Writes the files relevant to this WLD type to disk
-        /// </summary>
-        protected override void ExportWldData()
+        
+        protected override void ExportData()
         {
             ExportObjectInstanceList();
         }
         
-        /// <summary>
-        /// Exports the list of objects instances
-        /// This includes information about position, rotation, and scaling
-        /// </summary>
         private void ExportObjectInstanceList()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ObjectInstance))

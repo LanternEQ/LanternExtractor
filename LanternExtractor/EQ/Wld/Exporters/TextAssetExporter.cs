@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public abstract void AddFragmentData(WldFragment data);
 
-        public void WriteAssetToFile(string fileName)
+        public virtual void WriteAssetToFile(string fileName)
         {
             string directory = Path.GetDirectoryName(fileName);
 
