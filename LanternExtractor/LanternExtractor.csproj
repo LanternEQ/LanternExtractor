@@ -75,6 +75,7 @@
     <Compile Include="EQ\Wld\DataTypes\SkeletonPiece.cs" />
     <Compile Include="EQ\Wld\Exporters\BspTreeExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\LightInstancesExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MaterialListExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshFbxExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshIntermediateExporter.cs" />
@@ -94,7 +95,7 @@
     <Compile Include="EQ\Wld\Fragments\Fragment2F.cs" />
     <Compile Include="EQ\Wld\Fragments\FragmentType.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
-    <Compile Include="EQ\Wld\Fragments\LightInfo.cs" />
+    <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSourceReference.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSource.cs" />
     <Compile Include="EQ\Wld\Fragments\Mesh.cs" />

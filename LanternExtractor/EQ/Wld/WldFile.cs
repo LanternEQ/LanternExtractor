@@ -245,7 +245,7 @@ namespace LanternExtractor.EQ.Wld
                 // Lights
                 {FragmentType.Light, () => new LightSource()},
                 {FragmentType.LightReference, () => new LightSourceReference()},
-                {FragmentType.LightInstance, () => new LightInfo()},
+                {FragmentType.LightInstance, () => new LightInstance()},
                 {FragmentType.AmbientLight, () => new AmbientLight()},
 
                 // Vertex colors

@@ -6,10 +6,10 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x28 - Light Info
+    /// 0x28 - Light Instance
     /// Defines a position and radius of a light instance 
     /// </summary>
-    class LightInfo : WldFragment
+    class LightInstance : WldFragment
     {
         /// <summary>
         /// The light reference (0x1C) this fragment refers to
