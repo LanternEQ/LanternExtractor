@@ -14,7 +14,7 @@ namespace LanternExtractor.EQ.Wld
         private List<SkyModel> _models = new List<SkyModel>();
 
         public WldFileSky(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToIbject = null) : base(wldFile, zoneName, type, logger, settings, wldToIbject)
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
 

@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
 
-        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, string zoneName) : base()
+        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, string zoneName)
         {
             _objExportType = exportType;
             _exportHiddenGeometry = exportHiddenGeometry;
@@ -40,7 +40,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (_isFirstMesh)
             {
-                _export.AppendLine(LanternStrings.ObjMaterialHeader + _zoneName + ".mtl");
+                _export.AppendLine(LanternStrings.ObjMaterialHeader + mesh.MaterialList.Name.Replace("_MP", "").ToLower() + ".mtl");
                 _isFirstMesh = false;
             }
 
@@ -259,16 +259,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
             list.Add(element);
         }
 
-        public override void WriteAssetToFile(string fileName)
-        {
-            if (!_hasCollisionModel)
-            {
-                return;
-            }
-
-            base.WriteAssetToFile(fileName);
-        }
-
         public void WriteAllFrames(string fileName)
         {
             if (_frames.Count == 1)
@@ -281,6 +271,16 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export = _frames[i];
                 WriteAssetToFile(fileName.Replace(".obj", "") + "_frame" + i + ".obj");
             }
+        }
+
+        public override void WriteAssetToFile(string fileName)
+        {
+            if (_objExportType == ObjExportType.Collision && !_hasCollisionModel)
+            {
+                return;
+            }
+            
+            base.WriteAssetToFile(fileName);
         }
     }
 }

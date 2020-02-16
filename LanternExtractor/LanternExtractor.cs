@@ -178,13 +178,13 @@ namespace LanternExtractor
             {
                 WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Models", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Models/Textures", true);
             }
             else if (IsSkyArchive(archiveName))
             {
                 WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone/Textures", true);
             }
             else if (IsCharactersArchive(archiveName))
             {
@@ -209,7 +209,7 @@ namespace LanternExtractor
 
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters/Textures", true);
 
             }
             else if (IsObjectsArchive(archiveName))

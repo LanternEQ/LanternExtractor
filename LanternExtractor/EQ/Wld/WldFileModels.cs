@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -9,18 +10,14 @@ namespace LanternExtractor.EQ.Wld
     public class WldFileModels : WldFile
     {
         public WldFileModels(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToIbject = null) : base(wldFile, zoneName, type, logger, settings, wldToIbject)
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
-
-        /// <summary>
-        /// Writes the files relevant to this WLD type to disk
-        /// </summary>
+        
         protected override void ExportData()
         {
             base.ExportData();
             ExportModels();
-            ExportMaterialList();
         }
 
         private void ExportModels()
@@ -34,20 +31,21 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            foreach (WldFragment model in _fragmentTypeDictionary[FragmentType.Mesh])
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
-                Mesh mesh = model as Mesh;
+                string meshName = fragment.Name.Replace("_DMSPRITEDEF", "").ToLower();
+                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, meshName);
+                exporter.AddFragmentData(fragment);
+                exporter.WriteAssetToFile(objectsExportFolder + "/" + meshName + ".obj");
+            }
+            
+            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            {
+                string listName = listFragment.Name.Replace("_MP", "").ToLower();
 
-                if (mesh == null)
-                {
-                    continue;
-                }
-
-                int vertexCount;
-                Material lastMaterialUsed = null;
-
-                var meshString = mesh.GetMeshExport(0, null, ObjExportType.Textured, out vertexCount, out lastMaterialUsed, _settings, _logger);
-                File.WriteAllText(objectsExportFolder + "/" + model.Name + ".obj", meshString[0]);
+                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+                mtlExporter.AddFragmentData(listFragment);
+                mtlExporter.WriteAssetToFile(objectsExportFolder + "/" + listName + LanternStrings.FormatMtlExtension);
             }
         }
     }
