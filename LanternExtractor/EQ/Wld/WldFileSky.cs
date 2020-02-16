@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -24,13 +25,13 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             base.ExportData();
-            ExportZoneMeshes();
+            
+            ExportSkyMeshes();
 
             foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.HierSpriteFragment])
             {
                 HierSpriteDefFragment skeleton = skeletonFragment as HierSpriteDefFragment;
-                
-                
+
                 if(skeleton == null)
                 {
                     continue;
@@ -252,137 +253,33 @@ namespace LanternExtractor.EQ.Wld
         /// Exports the zone meshes to an .obj file
         /// This includes the textures mesh, the collision mesh, and the water and lava meshes (if they exist)
         /// </summary>
-        private void ExportZoneMeshes()
+        private void ExportSkyMeshes()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
                 _logger.LogWarning("Cannot export zone meshes. No meshes found.");
                 return;
             }
-
+            
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
-            Directory.CreateDirectory(zoneExportFolder);
 
-            bool useMeshGroups = _settings.ExportZoneMeshGroups;
+            MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, "sky");
 
-            // Get all valid meshes
-            var zoneMeshes = new List<Mesh>();
-            bool shouldExportCollisionMesh = false;
-
-            // Loop through once and validate meshes
-            // If all surfaces are solid, there is no reason to export a separate collision mesh
-            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.Mesh].Count; ++i)
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
-                if (!(_fragmentTypeDictionary[FragmentType.Mesh][i] is Mesh zoneMesh))
-                {
-                    continue;
-                }
-
-                zoneMeshes.Add(zoneMesh);
-
-                if (!shouldExportCollisionMesh && zoneMesh.ExportSeparateCollision)
-                {
-                    shouldExportCollisionMesh = true;
-                }
+                exporter.AddFragmentData(fragment);
             }
+            
+            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
+            
+            MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
 
-            // Zone mesh
-            var zoneExport = new StringBuilder();
-            zoneExport.AppendLine(LanternStrings.ExportHeaderTitle + "Zone Mesh");
-            zoneExport.AppendLine(LanternStrings.ObjMaterialHeader + _zoneName + LanternStrings.FormatMtlExtension);
-
-            // Collision mesh
-            var collisionExport = new StringBuilder();
-            collisionExport.AppendLine(LanternStrings.ExportHeaderTitle + "Collision Mesh");
-
-            // Water mesh
-            var waterExport = new StringBuilder();
-            waterExport.AppendLine(LanternStrings.ExportHeaderTitle + "Water Mesh");
-            waterExport.AppendLine(LanternStrings.ObjMaterialHeader + _zoneName + LanternStrings.FormatMtlExtension);
-
-            // Lava mesh
-            var lavaExport = new StringBuilder();
-            lavaExport.AppendLine(LanternStrings.ExportHeaderTitle + "Lava Mesh");
-            lavaExport.AppendLine(LanternStrings.ObjMaterialHeader + _zoneName + LanternStrings.FormatMtlExtension);
-
-            // Materials file
-            var materialsExport = new StringBuilder();
-            materialsExport.AppendLine(LanternStrings.ExportHeaderTitle + "Material Definitions");
-
-            // Zone mesh export
-            int vertexBase = 0;
-            int addedVertices = 0;
-            Material lastUsedMaterial = null;
-
-            for (int i = 0; i < zoneMeshes.Count; ++i)
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                Mesh zoneMesh = zoneMeshes[i];
-
-                if (useMeshGroups)
-                {
-                    zoneExport.AppendLine("g " + zoneMesh.Name.Replace("_DMSPRITEDEF", ""));
-                }
-
-                List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                    ObjExportType.Textured, out addedVertices, out lastUsedMaterial, _settings, _logger);
-
-                if (outputStrings == null || outputStrings.Count == 0)
-                {
-                    _logger.LogError("Mesh has no valid output: " + zoneMesh);
-                    continue;
-                }
-
-                zoneExport.Append(outputStrings[0]);
-                vertexBase += addedVertices;
+                mtlExporter.AddFragmentData(fragment);
             }
-
-            File.WriteAllText(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension, zoneExport.ToString());
-
-            // Collision mesh export
-            if (shouldExportCollisionMesh)
-            {
-                vertexBase = 0;
-                lastUsedMaterial = null;
-
-                for (int i = 0; i < zoneMeshes.Count; ++i)
-                {
-                    Mesh zoneMesh = zoneMeshes[i];
-
-                    if (useMeshGroups)
-                    {
-                        collisionExport.AppendLine("g " + i);
-                    }
-
-                    List<string> outputStrings = zoneMesh.GetMeshExport(vertexBase, lastUsedMaterial,
-                        ObjExportType.Collision, out addedVertices, out lastUsedMaterial, _settings, _logger);
-
-                    if (outputStrings == null || outputStrings.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    collisionExport.Append(outputStrings[0]);
-                    vertexBase += addedVertices;
-                }
-
-                File.WriteAllText(zoneExportFolder + _zoneName + "_collision" + LanternStrings.ObjFormatExtension,
-                    collisionExport.ToString());
-            }
-
-            // Theoretically, there should only be one texture list here
-            // Exceptions include sky.s3d
-            for (int i = 0; i < _fragmentTypeDictionary[FragmentType.MaterialList].Count; ++i)
-            {
-                if (!(_fragmentTypeDictionary[FragmentType.MaterialList][i] is MaterialList materialList))
-                {
-                    continue;
-                }
-
-                materialsExport.Append(materialList.GetMaterialListExport(_settings));
-            }
-
-            File.WriteAllText(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension,
-                materialsExport.ToString());
+            
+            mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
         }
     }
 }

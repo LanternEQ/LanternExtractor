@@ -3,6 +3,7 @@ using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -33,7 +34,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
-                string meshName = fragment.Name.Replace("_DMSPRITEDEF", "").ToLower();
+                string meshName = FragmentNameCleaner.CleanName(fragment);
                 MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, meshName);
                 exporter.AddFragmentData(fragment);
                 exporter.WriteAssetToFile(objectsExportFolder + "/" + meshName + ".obj");
@@ -41,8 +42,7 @@ namespace LanternExtractor.EQ.Wld
             
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                string listName = listFragment.Name.Replace("_MP", "").ToLower();
-
+                string listName = FragmentNameCleaner.CleanName(listFragment);
                 MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
                 mtlExporter.AddFragmentData(listFragment);
                 mtlExporter.WriteAssetToFile(objectsExportFolder + "/" + listName + LanternStrings.FormatMtlExtension);

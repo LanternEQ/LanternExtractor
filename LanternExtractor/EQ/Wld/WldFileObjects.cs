@@ -2,6 +2,7 @@
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -32,28 +33,26 @@ namespace LanternExtractor.EQ.Wld
             }
             
             string objectsExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
-
             
-            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
-                string meshName = listFragment.Name.Replace("_DMSPRITEDEF", "").ToLower();
+                string meshName = FragmentNameCleaner.CleanName(fragment);
                 
                 MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, meshName);
                 MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, meshName);
-                meshExporter.AddFragmentData(listFragment);
-                collisionMeshExport.AddFragmentData(listFragment);
+                meshExporter.AddFragmentData(fragment);
+                collisionMeshExport.AddFragmentData(fragment);
 
                 meshExporter.WriteAssetToFile(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
                 meshExporter.WriteAllFrames(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
                 meshExporter.WriteAssetToFile(objectsExportFolder + meshName + "_collision" + LanternStrings.ObjFormatExtension);
             }
             
-            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                string listName = listFragment.Name.Replace("_MP", "").ToLower();
-
+                string listName = FragmentNameCleaner.CleanName(fragment);
                 MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
-                mtlExporter.AddFragmentData(listFragment);
+                mtlExporter.AddFragmentData(fragment);
                 mtlExporter.WriteAssetToFile(objectsExportFolder + listName + LanternStrings.FormatMtlExtension);
             }
         } 

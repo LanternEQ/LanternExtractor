@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "qeynos2";          
+            archiveName = "arena";          
 #else
             if (args.Length != 1)
             {

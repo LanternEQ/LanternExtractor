@@ -156,14 +156,12 @@ namespace LanternExtractor.EQ.Wld
                 uint fragSize = reader.ReadUInt32();
                 FragmentType fragId = (FragmentType)reader.ReadInt32();
 
-                WldFragment newFragment;
-
                 // Create the fragments
-                newFragment = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
+                var newFragment = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
 
                 if (newFragment is Generic)
                 {
-                    _logger.LogWarning($"Unhandled fragment type: {fragId:x}");
+                    _logger.LogWarning($"WldFile: Unhandled fragment type: {fragId:x}");
                 }
 
                 newFragment.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
@@ -264,11 +262,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.Fragment2F, () => new Fragment2F()},
             };
         }
-
-        /// <summary>
-        /// Parses the WLD string hash into a dictionary for easy character index access
-        /// </summary>
-        /// <param name="decodedHash">The decoded has to parse</param>
+        
         private void ParseStringHash(string decodedHash)
         {
             _stringHash = new Dictionary<int, string>();

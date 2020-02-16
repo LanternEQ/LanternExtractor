@@ -116,6 +116,7 @@
     <Compile Include="EQ\Wld\Fragments\VertexColorReference.cs" />
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
+    <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
     <Compile Include="EQ\Wld\WldFileCharacters.cs" />
