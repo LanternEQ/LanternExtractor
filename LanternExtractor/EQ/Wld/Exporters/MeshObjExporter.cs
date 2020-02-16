@@ -4,6 +4,7 @@ using System.Text;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -40,7 +41,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (_isFirstMesh)
             {
-                _export.AppendLine(LanternStrings.ObjMaterialHeader + mesh.MaterialList.Name.Replace("_MP", "").ToLower() + ".mtl");
+                _export.AppendLine(LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
+                                   ".mtl");
                 _isFirstMesh = false;
             }
 
@@ -279,7 +281,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             base.WriteAssetToFile(fileName);
         }
     }

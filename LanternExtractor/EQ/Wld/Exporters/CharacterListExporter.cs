@@ -1,4 +1,5 @@
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -13,14 +14,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public override void AddFragmentData(WldFragment data)
         {
             ModelReference model = data as ModelReference;
-
-
+            
             if (model == null)
             {
                 return;
             }
             
-            _export.AppendLine(data.Name.Replace("_ACTORDEF", ""));
+            _export.AppendLine(FragmentNameCleaner.CleanName(model));
         }
     }
 }
