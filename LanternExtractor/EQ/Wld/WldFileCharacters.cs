@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -102,7 +103,7 @@ namespace LanternExtractor.EQ.Wld
 
             FindAllAnimations();
             ExportAllAnimations();
-            ExportModelList();
+            ExportCharacterList();
         }
 
         private void ExportAllAnimations()
@@ -158,7 +159,7 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        private void ExportModelList()
+        private void ExportCharacterList()
         {
             if (_wldToInject != null)
             {
@@ -170,19 +171,16 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            StringBuilder exportListBuilder = new StringBuilder();
-            exportListBuilder.AppendLine("# Character list: " + _zoneName);
-            exportListBuilder.AppendLine("# Total models: " + Models.Count);
-
-            foreach (var model in Models)
-            {
-                exportListBuilder.AppendLine(model.Value.ModelBase);
-            }
-
             string zoneExportFolder = _zoneName + "/";
 
-            // create directory
-            File.WriteAllText(zoneExportFolder + _zoneName + "_characters.txt", exportListBuilder.ToString());
+            CharacterListExporter exporter = new CharacterListExporter(_zoneName, _fragmentTypeDictionary[FragmentType.ModelReference].Count);
+            
+            foreach(WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            {
+                exporter.AddFragmentData(fragment);
+            }
+            
+            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_characters.txt");
         }
 
         private void ImportCharacters()

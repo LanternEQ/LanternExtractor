@@ -227,9 +227,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 vertexOutput.Clear();
             }
 
-
-           // vertexCount = usedVertices.Count;
-           _lastMaterial = _activeMaterial;
+            _lastMaterial = _activeMaterial;
 
             // Ensure that output use the decimal point rather than the comma (as in Germany)
             for (var i = 0; i < frames.Count; i++)
