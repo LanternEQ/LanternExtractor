@@ -206,7 +206,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         vertex = mesh.AnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
-                    vertexOutput.AppendLine("v " + (-vertex.x + mesh.Center.x).ToString(_numberFormat) + " " +
+                    vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x)).ToString(_numberFormat) + " " +
                                             (vertex.z + mesh.Center.z).ToString(_numberFormat) + " " +
                                             (vertex.y + mesh.Center.y).ToString(_numberFormat));
 
