@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private string _zoneName;
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
-        
+
         public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, string zoneName) : base()
         {
             _objExportType = exportType;
@@ -66,7 +66,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 List<int> activeArray = null;
                 //bool bitmapValid = false;
 
-                if(mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
+                if (mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
                 {
                     activeArray = usedVertices;
                 }
@@ -81,40 +81,42 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                string filenameWithoutExtension = mesh.MaterialList.Materials[textureIndex].GetFirstBitmapNameWithoutExtension();
+                string filenameWithoutExtension =
+                    mesh.MaterialList.Materials[textureIndex].GetFirstBitmapNameWithoutExtension();
 
                 string textureChange = string.Empty;
-                
-                if(mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
-                    || (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible && _exportHiddenGeometry))
+
+                if (mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
+                    || (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible &&
+                        _exportHiddenGeometry))
                 {
                     // Material change
                     if (_activeMaterial != mesh.MaterialList.Materials[textureIndex])
                     {
                         if (string.IsNullOrEmpty(filenameWithoutExtension))
                         {
-                            textureChange = LanternStrings.ObjUseMtlPrefix 
+                            textureChange = LanternStrings.ObjUseMtlPrefix
                                             + "null";
                         }
                         else
                         {
                             string materialPrefix =
-                                    MaterialList.GetMaterialPrefix(mesh.MaterialList.Materials[textureIndex].ShaderType);
+                                MaterialList.GetMaterialPrefix(mesh.MaterialList.Materials[textureIndex].ShaderType);
                             textureChange = LanternStrings.ObjUseMtlPrefix + materialPrefix + filenameWithoutExtension;
                         }
-                        
+
                         _activeMaterial = mesh.MaterialList.Materials[textureIndex];
                     }
                 }
 
                 for (int j = 0; j < polygonCount; ++j)
                 {
-                    if(currentPolygon < 0 || currentPolygon >= mesh.Indices.Count)
+                    if (currentPolygon < 0 || currentPolygon >= mesh.Indices.Count)
                     {
                         //logger.LogError("Invalid polygon index");
                         continue;
                     }
-                    
+
                     // This is the culprit.
                     if (!mesh.Indices[currentPolygon].Solid && _objExportType == ObjExportType.Collision)
                     {
@@ -126,8 +128,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         currentPolygon++;
                         continue;
                     }
-                    
-                    if(textureChange != string.Empty)
+
+                    if (textureChange != string.Empty)
                     {
                         faceOutput.AppendLine(textureChange);
                         textureChange = string.Empty;
@@ -186,7 +188,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     if (i == 0)
                     {
-                        if(usedVertex < 0 || usedVertex >= mesh.Vertices.Count)
+                        if (usedVertex < 0 || usedVertex >= mesh.Vertices.Count)
                         {
                             //logger.LogError("Invalid vertex index: " + usedVertex);
                             continue;
@@ -204,23 +206,25 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         vertex = mesh.AnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
-                    vertexOutput.AppendLine("v " + -(vertex.x + mesh.Center.x) + " " + (vertex.z + mesh.Center.z) + " " +
-                                            (vertex.y + mesh.Center.y));
+                    vertexOutput.AppendLine("v " + (-vertex.x + mesh.Center.x).ToString(_numberFormat) + " " +
+                                            (vertex.z + mesh.Center.z).ToString(_numberFormat) + " " +
+                                            (vertex.y + mesh.Center.y).ToString(_numberFormat));
 
                     if (_objExportType == ObjExportType.Collision)
                     {
                         continue;
                     }
 
-                    if(usedVertex >= mesh.TextureUvCoordinates.Count)
+                    if (usedVertex >= mesh.TextureUvCoordinates.Count)
                     {
-                        vertexOutput.AppendLine("vt " + 0.0f + " " + 0.0f);
+                        vertexOutput.Append("vt " + 0.0f + " " + 0.0f);
 
                         continue;
                     }
 
                     vec2 vertexUvs = mesh.TextureUvCoordinates[usedVertex];
-                    vertexOutput.AppendLine("vt " + vertexUvs.x + " " + vertexUvs.y);
+                    vertexOutput.AppendLine("vt " + vertexUvs.x.ToString(_numberFormat) + " " +
+                                            vertexUvs.y.ToString(_numberFormat));
                 }
 
                 frames.Add(vertexOutput.ToString() + faceOutput);
@@ -229,11 +233,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             _lastMaterial = _activeMaterial;
 
-            // Ensure that output use the decimal point rather than the comma (as in Germany)
             for (var i = 0; i < frames.Count; i++)
             {
-                frames[i] = frames[i].Replace(',', '.');
-
                 if (i == 0)
                 {
                     _export.Append(frames[i]);
@@ -247,7 +248,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             _baseVertex += usedVertices.Count;
         }
-        
+
         private void AddIfNotContained(List<int> list, int element)
         {
             if (list.Contains(element))
@@ -264,7 +265,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             base.WriteAssetToFile(fileName);
         }
 

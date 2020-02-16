@@ -8,7 +8,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
     public abstract class TextAssetExporter
     {
         protected StringBuilder _export = new StringBuilder();
-        protected NumberFormatInfo format = new NumberFormatInfo {NumberDecimalSeparator = "."};
+        protected NumberFormatInfo _numberFormat = new NumberFormatInfo {NumberDecimalSeparator = "."};
 
         public abstract void AddFragmentData(WldFragment data);
 

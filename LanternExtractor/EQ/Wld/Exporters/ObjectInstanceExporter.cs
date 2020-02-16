@@ -21,31 +21,27 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
-            // Used for ensuring the output uses a period for a decimal number
-            var format = new NumberFormatInfo {NumberDecimalSeparator = "."};
-            
+
             _export.Append(instance.ObjectName);
             _export.Append(",");
-            _export.Append(instance.Position.x.ToString(format));
+            _export.Append(instance.Position.x.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Position.z.ToString(format));
+            _export.Append(instance.Position.z.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Position.y.ToString(format));
+            _export.Append(instance.Position.y.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Rotation.x.ToString(format));
+            _export.Append(instance.Rotation.x.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Rotation.z.ToString(format));
+            _export.Append(instance.Rotation.z.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Rotation.y.ToString(format));
+            _export.Append(instance.Rotation.y.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Scale.x.ToString(format));
+            _export.Append(instance.Scale.x.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Scale.y.ToString(format));
+            _export.Append(instance.Scale.y.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(instance.Scale.z.ToString(format));
+            _export.Append(instance.Scale.z.ToString(_numberFormat));
             _export.AppendLine();
-            
         }        
     }
 }
