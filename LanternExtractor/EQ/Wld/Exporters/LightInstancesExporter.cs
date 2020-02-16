@@ -20,19 +20,19 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            _export.Append(light.Position.x.ToString(format));
+            _export.Append(light.Position.x.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.Position.z.ToString(format));
+            _export.Append(light.Position.z.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.Position.y.ToString(format));
+            _export.Append(light.Position.y.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.Radius.ToString(format));
+            _export.Append(light.Radius.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.r.ToString(format));
+            _export.Append(light.LightReference.LightSource.Color.r.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.g.ToString(format));
+            _export.Append(light.LightReference.LightSource.Color.g.ToString(_numberFormat));
             _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.b.ToString(format));
+            _export.Append(light.LightReference.LightSource.Color.b.ToString(_numberFormat));
             _export.AppendLine();
         }
     }
