@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "arena";          
+            archiveName = "crushbone";          
 #else
             if (args.Length != 1)
             {
@@ -184,7 +184,7 @@ namespace LanternExtractor
             {
                 WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Textures", true);
             }
             else if (IsCharactersArchive(archiveName))
             {

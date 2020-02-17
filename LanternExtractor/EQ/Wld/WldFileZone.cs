@@ -57,8 +57,8 @@ namespace LanternExtractor.EQ.Wld
             
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
 
-            MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, _zoneName);
-            MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, _zoneName);
+            MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
+            MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
             
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {

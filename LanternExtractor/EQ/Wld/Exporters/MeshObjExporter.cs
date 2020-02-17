@@ -18,14 +18,18 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private Material _lastMaterial;
         private bool _isFirstMesh = true;
         private string _zoneName;
+        private bool _exportGroups;
+        private string _forcedMeshList;
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
 
-        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, string zoneName)
+        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, bool exportGroups, string zoneName, string forcedMeshList = "")
         {
             _objExportType = exportType;
             _exportHiddenGeometry = exportHiddenGeometry;
             _zoneName = zoneName;
+            _exportGroups = exportGroups;
+            _forcedMeshList = forcedMeshList;
         }
 
         private bool _hasCollisionModel = false;
@@ -41,9 +45,21 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (_isFirstMesh)
             {
-                _export.AppendLine(LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
-                                   ".mtl");
+                string name = LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
+                              ".mtl";
+
+                if (!string.IsNullOrEmpty(_forcedMeshList))
+                {
+                    name = LanternStrings.ObjMaterialHeader + _forcedMeshList + ".mtl";
+                }
+                
+                _export.AppendLine(name);
                 _isFirstMesh = false;
+            }
+            
+            if (_exportGroups)
+            {
+                _export.AppendLine("g " + FragmentNameCleaner.CleanName(mesh));
             }
 
             if (mesh.ExportSeparateCollision)

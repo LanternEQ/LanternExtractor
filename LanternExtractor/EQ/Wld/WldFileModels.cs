@@ -35,7 +35,7 @@ namespace LanternExtractor.EQ.Wld
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
                 string meshName = FragmentNameCleaner.CleanName(fragment);
-                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, meshName);
+                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, false, meshName);
                 exporter.AddFragmentData(fragment);
                 exporter.WriteAssetToFile(objectsExportFolder + "/" + meshName + ".obj");
             }

@@ -38,8 +38,8 @@ namespace LanternExtractor.EQ.Wld
             {
                 string meshName = FragmentNameCleaner.CleanName(fragment);
                 
-                MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, meshName);
-                MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, meshName);
+                MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, false, meshName);
+                MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, false, meshName);
                 meshExporter.AddFragmentData(fragment);
                 collisionMeshExport.AddFragmentData(fragment);
 

@@ -37,7 +37,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             ushort nameLength = reader.ReadUInt16();
 
             // Decode the bitmap name and trim the null character (c style strings)
-            Filename = WldStringDecoder.DecodeString(reader.ReadBytes(nameLength));
+            Filename = WldStringDecoder.DecodeString(reader.ReadBytes(nameLength)).ToLower();
             Filename = Filename.Substring(0, Filename.Length - 1);
         }
 

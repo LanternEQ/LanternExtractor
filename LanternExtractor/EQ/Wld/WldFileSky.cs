@@ -28,7 +28,7 @@ namespace LanternExtractor.EQ.Wld
             
             ExportSkyMeshes();
 
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.HierSpriteFragment])
+            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment])
             {
                 HierSpriteDefFragment skeleton = skeletonFragment as HierSpriteDefFragment;
 
@@ -51,12 +51,12 @@ namespace LanternExtractor.EQ.Wld
 
             Directory.CreateDirectory(folder);
             
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteFragment))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteDefFragment))
             {
                 return;
             }
 
-            var skeletonFragments = _fragmentTypeDictionary[FragmentType.HierSpriteFragment];
+            var skeletonFragments = _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment];
 
             foreach (var fragment in skeletonFragments)
             {
@@ -261,9 +261,9 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
+            string zoneExportFolder = _zoneName + "/";
 
-            MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, "sky");
+            MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, true, "sky", "sky");
 
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
