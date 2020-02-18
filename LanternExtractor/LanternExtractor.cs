@@ -16,7 +16,7 @@ namespace LanternExtractor
         
         private static ILogger _logger;
 
-        private static bool _useThreading = false;
+        private static bool _useThreading = true;
         
         private static void Main(string[] args)
         {            
@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "crushbone";          
+            archiveName = "all";          
 #else
             if (args.Length != 1)
             {
@@ -192,7 +192,6 @@ namespace LanternExtractor
                 
                 if (archiveName.StartsWith("global3_chr"))
                 {
-                    return;
                     var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), _logger);
 
                     if (!s3dArchive2.Initialize())

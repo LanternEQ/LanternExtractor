@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Pfs
         /// The OS path to which the files will be extracted if we are doing a raw export
         /// </summary>
         private readonly string _rawExportPath;
-        
+
         /// <summary>
         /// The OS path to which the files will be extracted if we are processing the files
         /// </summary>
@@ -43,14 +43,14 @@ namespace LanternExtractor.EQ.Pfs
         /// A dictionary of all files allowing direct name access
         /// </summary>
         private readonly Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
-        
+
         /// <summary>
         /// The logger for debug output
         /// </summary>
         private readonly ILogger _logger;
 
         public bool IsWldArchive { get; set; }
-        
+
         /// <summary>
         /// Constructor that initializes the file path and logger
         /// </summary>
@@ -69,7 +69,7 @@ namespace LanternExtractor.EQ.Pfs
                 logger.LogError("Invalid PFS path");
                 return;
             }
-            
+
             if (filePath.EndsWith("_obj.s3d") || filePath.EndsWith("_chr.s3d") || filePath.EndsWith("_amr.s3d"))
             {
                 _exportPath = _rawExportPath.Substring(0, _rawExportPath.Length - 4);
@@ -94,106 +94,111 @@ namespace LanternExtractor.EQ.Pfs
                 return false;
             }
 
-            var reader = new BinaryReader(File.Open(_filePath, FileMode.Open));
+            BinaryReader reader;
 
-            int directoryOffset = reader.ReadInt32();
-
-            reader.BaseStream.Position = directoryOffset;
-
-            int fileCount = reader.ReadInt32();
-
-            var fileNames = new List<string>();
-
-            for (int i = 0; i < fileCount; i++)
+            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read))
             {
-                uint crc = reader.ReadUInt32();
-                uint offset = reader.ReadUInt32();
-                uint size = reader.ReadUInt32();
+                reader = new BinaryReader(fileStream);
 
-                // Check for corrupt S3Ds
-                if (offset > reader.BaseStream.Length)
+                int directoryOffset = reader.ReadInt32();
+
+                reader.BaseStream.Position = directoryOffset;
+
+                int fileCount = reader.ReadInt32();
+
+                var fileNames = new List<string>();
+
+                for (int i = 0; i < fileCount; i++)
                 {
-                    _logger.LogError("Corrupted file detected!");
-                    return false;
-                }
+                    uint crc = reader.ReadUInt32();
+                    uint offset = reader.ReadUInt32();
+                    uint size = reader.ReadUInt32();
 
-                var cachedOffset = reader.BaseStream.Position;
-
-                var fileBytes = new byte[size];
-
-                reader.BaseStream.Position = offset;
-
-                uint inflatedSize = 0;
-
-                while (inflatedSize != size)
-                {
-                    uint deflatedLength = reader.ReadUInt32();
-                    uint inflatedLength = reader.ReadUInt32();
-
-                    // Sometimes there can be incorrect values 
-                    if (deflatedLength >= reader.BaseStream.Length)
+                    // Check for corrupt S3Ds
+                    if (offset > reader.BaseStream.Length)
                     {
                         _logger.LogError("Corrupted file detected!");
                         return false;
                     }
-                    
-                    byte[] compressedBytes = reader.ReadBytes((int) deflatedLength);
 
-                    byte[] inflatedBytes;
+                    var cachedOffset = reader.BaseStream.Position;
 
-                    if (!InflateBlock(compressedBytes, (int) inflatedLength, out inflatedBytes, _logger))
+                    var fileBytes = new byte[size];
+
+                    reader.BaseStream.Position = offset;
+
+                    uint inflatedSize = 0;
+
+                    while (inflatedSize != size)
                     {
-                        _logger.LogError("An error occured while inflating data");
-                        return false;
+                        uint deflatedLength = reader.ReadUInt32();
+                        uint inflatedLength = reader.ReadUInt32();
+
+                        // Sometimes there can be incorrect values 
+                        if (deflatedLength >= reader.BaseStream.Length)
+                        {
+                            _logger.LogError("Corrupted file detected!");
+                            return false;
+                        }
+
+                        byte[] compressedBytes = reader.ReadBytes((int) deflatedLength);
+
+                        byte[] inflatedBytes;
+
+                        if (!InflateBlock(compressedBytes, (int) inflatedLength, out inflatedBytes, _logger))
+                        {
+                            _logger.LogError("An error occured while inflating data");
+                            return false;
+                        }
+
+                        inflatedBytes.CopyTo(fileBytes, inflatedSize);
+
+                        //reader.BaseStream.Position += deflatedLength;
+                        inflatedSize += inflatedLength;
                     }
 
-                    inflatedBytes.CopyTo(fileBytes, inflatedSize);
-
-                    //reader.BaseStream.Position += deflatedLength;
-                    inflatedSize += inflatedLength;
-                }
-
-                if (crc == 0x61580AC9)
-                {
-                    var dictionaryStream = new MemoryStream(fileBytes);
-                    var dictionary = new BinaryReader(dictionaryStream);
-                    uint filenameCount = dictionary.ReadUInt32();
-
-                    for (uint j = 0; j < filenameCount; ++j)
+                    if (crc == 0x61580AC9)
                     {
-                        uint fileNameLength = dictionary.ReadUInt32();
-                        string filename = new string(dictionary.ReadChars((int) fileNameLength));
-                        fileNames.Add(filename.Substring(0, filename.Length - 1));
+                        var dictionaryStream = new MemoryStream(fileBytes);
+                        var dictionary = new BinaryReader(dictionaryStream);
+                        uint filenameCount = dictionary.ReadUInt32();
+
+                        for (uint j = 0; j < filenameCount; ++j)
+                        {
+                            uint fileNameLength = dictionary.ReadUInt32();
+                            string filename = new string(dictionary.ReadChars((int) fileNameLength));
+                            fileNames.Add(filename.Substring(0, filename.Length - 1));
+                        }
+
+                        reader.BaseStream.Position = cachedOffset;
+
+                        continue;
                     }
+
+                    _files.Add(new PfsFile(crc, size, offset, fileBytes));
 
                     reader.BaseStream.Position = cachedOffset;
-
-                    continue;
                 }
 
-                _files.Add(new PfsFile(crc, size, offset, fileBytes));
+                // Sort by offset
+                _files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
-                reader.BaseStream.Position = cachedOffset;
-            }
-
-            // Sort by offset
-            _files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
-
-            for (int i = 0; i < _files.Count; ++i)
-            {
-                _files[i].SetFileName(fileNames[i]);
-                _fileNameReference.Add(fileNames[i], _files[i]);
-
-                if (!IsWldArchive)
+                for (int i = 0; i < _files.Count; ++i)
                 {
-                    if (fileNames[i].EndsWith(".wld"))
+                    _files[i].SetFileName(fileNames[i]);
+                    _fileNameReference.Add(fileNames[i], _files[i]);
+
+                    if (!IsWldArchive)
                     {
-                        IsWldArchive = true;
+                        if (fileNames[i].EndsWith(".wld"))
+                        {
+                            IsWldArchive = true;
+                        }
                     }
                 }
-            }
 
-            _logger.LogInfo("Finished initialization of archive: " + _fileName);
+                _logger.LogInfo("Finished initialization of archive: " + _fileName);
+            }
 
             return true;
         }
@@ -297,7 +302,7 @@ namespace LanternExtractor.EQ.Pfs
                         WriteImageAsPng(i, type, folderName);
                     }
                 }
-                else if(filename.EndsWith(".dds"))
+                else if (filename.EndsWith(".dds"))
                 {
                     WriteFile(i, false, folderName);
                 }
@@ -307,7 +312,7 @@ namespace LanternExtractor.EQ.Pfs
                     {
                         continue;
                     }
-                    
+
                     WriteFile(i, false, folderName);
                 }
             }
@@ -326,7 +331,7 @@ namespace LanternExtractor.EQ.Pfs
                 return;
             }
 
-            string directoryPath = rawExport ? _rawExportPath :_exportPath;
+            string directoryPath = rawExport ? _rawExportPath : _exportPath;
 
             if (string.IsNullOrEmpty(directoryPath))
             {
