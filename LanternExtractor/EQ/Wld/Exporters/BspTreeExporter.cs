@@ -28,17 +28,25 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 if (node.Region == null)
                 {
                     _export.Append(node.NormalX.ToString(_numberFormat));
+                    _export.Append(",");
                     _export.Append(node.NormalZ.ToString(_numberFormat));
+                    _export.Append(",");
                     _export.Append(node.NormalY.ToString(_numberFormat));
+                    _export.Append(",");
                     _export.Append(node.SplitDistance.ToString(_numberFormat));
+                    _export.Append(",");
                     _export.Append(node.LeftNode.ToString(_numberFormat));
+                    _export.Append(",");
                     _export.Append(node.RightNode.ToString(_numberFormat));
+                    _export.AppendLine();
                 }
                 else
                 {
                     RegionType type = node.Region.Type?.RegionType ?? RegionType.Normal;
-                    _export.AppendLine(node.RegionId.ToString(_numberFormat));
-                    _export.AppendLine(type.ToString());
+                    _export.Append(node.RegionId.ToString(_numberFormat));
+                    _export.Append(",");
+                    _export.Append(type.ToString());
+                    _export.AppendLine();
                 }
             }
         }
