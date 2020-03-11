@@ -1,4 +1,3 @@
-using System.Globalization;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
@@ -10,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +
-                                        "ModelName, PosX, PosY, PosZ, RotX, RotY, RotZ, ScaleX, ScaleY, ScaleZ");
+                                        "ModelName, PosX, PosY, PosZ, RotX, RotY, RotZ, ScaleX, ScaleY, ScaleZ, ColorIndex");
         }
         
         public override void AddFragmentData(WldFragment data)
@@ -21,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-
+            
             _export.Append(instance.ObjectName);
             _export.Append(",");
             _export.Append(instance.Position.x.ToString(_numberFormat));
@@ -41,6 +40,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             _export.Append(instance.Scale.y.ToString(_numberFormat));
             _export.Append(",");
             _export.Append(instance.Scale.z.ToString(_numberFormat));
+
+            if (instance.Colors != null)
+            {
+                _export.Append(",");
+                _export.Append(instance.Colors.Index);
+            }
+            
             _export.AppendLine();
         }        
     }

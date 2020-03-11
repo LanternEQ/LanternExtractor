@@ -31,7 +31,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public vec3 Scale { get; private set; }
 
-        //public VertexColors VertexColor;
+        public VertexColors Colors;
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -85,7 +85,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             Scale = new vec3(scaleY, scaleY, scaleY);
 
-            // Vertex colors are not used
+            int colorFragment = reader.ReadInt32();
+
+            if (colorFragment != 0)
+            {
+                Colors = (fragments[colorFragment - 1 ] as VertexColorReference)?.VertexColors;
+            }
         }
 
         public override void OutputInfo(ILogger logger)

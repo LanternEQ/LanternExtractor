@@ -16,7 +16,7 @@ namespace LanternExtractor
         
         private static ILogger _logger;
 
-        private static bool _useThreading = true;
+        private static bool _useThreading = false;
         
         private static void Main(string[] args)
         {            
@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "all";          
+            archiveName = "freportn";          
 #else
             if (args.Length != 1)
             {
@@ -219,6 +219,8 @@ namespace LanternExtractor
             }
             else
             {
+                _logger.LogError("Extracting: " + Path.GetFileNameWithoutExtension(path));
+
                 WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone/Textures", true);

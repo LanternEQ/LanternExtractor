@@ -79,10 +79,13 @@
     <Compile Include="EQ\Wld\Exporters\MaterialListExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshFbxExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshIntermediateExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshIntermediateMaterialsExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshObjMtlExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\ObjectInstanceExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshObjExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectListExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextAssetExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\VertexColorsExporter.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\Bitmap.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
@@ -112,7 +115,7 @@
     <Compile Include="EQ\Wld\Fragments\BitmapInfo.cs" />
     <Compile Include="EQ\Wld\Fragments\BitmapInfoReference.cs" />
     <Compile Include="EQ\Wld\Fragments\MaterialList.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColor.cs" />
+    <Compile Include="EQ\Wld\Fragments\VertexColors.cs" />
     <Compile Include="EQ\Wld\Fragments\VertexColorReference.cs" />
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />

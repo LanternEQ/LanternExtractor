@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
@@ -9,12 +10,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x32 - Vertex Color
     /// A list of colors, one per vertex, representing baked lighting data
     /// </summary>
-    class VertexColor : WldFragment
+    class VertexColors : WldFragment
     {
         /// <summary>
         /// The vertex colors corresponding with each vertex
         /// </summary>
-        public List<Color> VertexColors { get; private set; }
+        public List<Color> Colors { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -39,17 +40,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Typically contains 0
             int unknown4 = reader.ReadInt32();
 
-            VertexColors = new List<Color>();
+            Colors = new List<Color>();
 
             for (int i = 0; i < vertexColorCount / 4; ++i)
             {
-                VertexColors.Add(new Color
-                {
-                    R = reader.ReadInt32(),
-                    G = reader.ReadInt32(),
-                    B = reader.ReadInt32(),
-                    A = reader.ReadInt32()
-                });
+                int color = reader.ReadInt32();
+                
+                byte[] colorBytes = BitConverter.GetBytes(color);
+                int r = colorBytes[0];
+                int g = colorBytes[1];
+                int b = colorBytes[2];
+                int a = colorBytes[3];
+                
+                Colors.Add(new Color{R = r, G = g, B = b, A = a});
             }
         }
 
@@ -57,7 +60,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x32: Vertex color count: " + VertexColors.Count);
+            logger.LogInfo("0x32: Vertex color count: " + Colors.Count);
         }
     }
 }

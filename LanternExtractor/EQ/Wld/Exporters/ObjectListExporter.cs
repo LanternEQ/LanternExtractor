@@ -3,24 +3,22 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class CharacterListExporter : TextAssetExporter
+    public class ObjectListExporter : TextAssetExporter
     {
-        public CharacterListExporter(int modelCount)
+        public ObjectListExporter(int modelCount)
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Character List");
-            _export.AppendLine("# Total models: " + modelCount);
+            _export.AppendLine("# Total models: " + modelCount);        
         }
         
         public override void AddFragmentData(WldFragment data)
         {
-            ModelReference model = data as ModelReference;
-            
-            if (model == null)
+            if (!(data is Mesh))
             {
                 return;
             }
-            
-            _export.AppendLine(FragmentNameCleaner.CleanName(model));
+
+            _export.AppendLine(FragmentNameCleaner.CleanName(data));
         }
     }
 }

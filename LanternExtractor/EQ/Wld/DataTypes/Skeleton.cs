@@ -631,10 +631,10 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         
         public void AddMeshMaterials(Mesh meshDef, int skinId)
         {
-            var uvs = meshDef.RenderGroups;
+            var uvs = meshDef.MaterialGroups;
             for(int i = 0; i < uvs.Count; i++)
             {
-                int slotId = uvs[i].TextureIndex;
+                int slotId = uvs[i].MaterialIndex;
                 WldMaterialSlot slot = _materialSlots[slotId];
                 slot.AddSkinMaterial(skinId, meshDef.MaterialList.Materials[slotId]);
             }

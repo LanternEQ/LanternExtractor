@@ -18,6 +18,14 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             ExportLightInstanceList();
+            
+            if (_fragmentTypeDictionary.ContainsKey(FragmentType.AmbientLight))
+            {
+                if (_fragmentTypeDictionary[FragmentType.AmbientLight].Count > 1)
+                {
+                    
+                }
+            }
         }
         
         /// <summary>

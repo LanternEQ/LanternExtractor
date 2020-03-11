@@ -18,6 +18,10 @@ ExportZoneMeshGroups = false
 # Will also affect exporting of collision models.
 ExportHiddenGeometry = false
 
+# Sets the desired export format for models
+# 0 = Intermediate, 1 = OBJ, 2 = FBX
+ModelExportFormat = 0
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
 LoggerVerbosity = 0

@@ -247,7 +247,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.AmbientLight, () => new AmbientLight()},
 
                 // Vertex colors
-                {FragmentType.VertexColor, () => new VertexColor()},
+                {FragmentType.VertexColor, () => new VertexColors()},
                 {FragmentType.VertexColorReference, () => new VertexColorReference()},
 
                 // General
@@ -367,7 +367,11 @@ namespace LanternExtractor.EQ.Wld
 
             string fileName = _zoneName + "/" + _zoneName + "_materials";
 
-            if (_wldType == WldType.Objects)
+            if (_wldType == WldType.Zone)
+            {
+                fileName += "_zone";
+            }
+            else if (_wldType == WldType.Objects)
             {
                 fileName += "_objects";
             }

@@ -16,7 +16,7 @@ namespace LanternExtractor.EQ.Wld
         
         protected override void ExportData()
         {
-            ExportZoneObjectMeshes();
+            ExportZoneObjectData();
             ExportMaterialList();
         }
         
@@ -24,7 +24,7 @@ namespace LanternExtractor.EQ.Wld
         /// Export zone object meshes to .obj files and collision meshes if there are non-solid polygons
         /// Additionally, it exports a list of vertex animated instances
         /// </summary>
-        private void ExportZoneObjectMeshes()
+        private void ExportZoneObjectData()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
@@ -32,28 +32,54 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
+            ObjectListExporter objectListExporter = new ObjectListExporter(_fragmentTypeDictionary[FragmentType.Mesh].Count);
+            
             string objectsExportFolder = _zoneName + "/" + LanternStrings.ExportObjectsFolder;
+            string rootExportFolder = _zoneName + "/";
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
-                string meshName = FragmentNameCleaner.CleanName(fragment);
+                objectListExporter.AddFragmentData(fragment);
                 
-                MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, false, meshName);
-                MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, false, meshName);
-                meshExporter.AddFragmentData(fragment);
-                collisionMeshExport.AddFragmentData(fragment);
+                string meshName = FragmentNameCleaner.CleanName(fragment);
 
-                meshExporter.WriteAssetToFile(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
-                meshExporter.WriteAllFrames(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
-                meshExporter.WriteAssetToFile(objectsExportFolder + meshName + "_collision" + LanternStrings.ObjFormatExtension);
+                if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+                {
+                    MeshIntermediateExporter meshExporter = new MeshIntermediateExporter();
+                    meshExporter.AddFragmentData(fragment);
+                    meshExporter.WriteAssetToFile(objectsExportFolder + meshName + ".txt");
+                }
+                else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
+                {
+                    MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, false, meshName);
+                    MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, false, meshName);
+                    meshExporter.AddFragmentData(fragment);
+                    collisionMeshExport.AddFragmentData(fragment);
+
+                    meshExporter.WriteAssetToFile(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
+                    meshExporter.WriteAllFrames(objectsExportFolder + meshName + LanternStrings.ObjFormatExtension);
+                    meshExporter.WriteAssetToFile(objectsExportFolder + meshName + "_collision" + LanternStrings.ObjFormatExtension);
+                }
             }
+            
+            objectListExporter.WriteAssetToFile(rootExportFolder + _zoneName + "_objects.txt");
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
                 string listName = FragmentNameCleaner.CleanName(fragment);
-                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
-                mtlExporter.AddFragmentData(fragment);
-                mtlExporter.WriteAssetToFile(objectsExportFolder + listName + LanternStrings.FormatMtlExtension);
+
+                if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+                {
+                    MeshIntermediateMaterialsExport mtlExporter = new MeshIntermediateMaterialsExport(_settings, _zoneName);
+                    mtlExporter.AddFragmentData(fragment);
+                    mtlExporter.WriteAssetToFile(objectsExportFolder + listName + "_materials.txt");
+                }
+                else
+                {
+                    MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+                    mtlExporter.AddFragmentData(fragment);
+                    mtlExporter.WriteAssetToFile(objectsExportFolder + listName + LanternStrings.FormatMtlExtension);
+                }
             }
         } 
     }

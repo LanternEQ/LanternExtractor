@@ -3,6 +3,6 @@
     public class RenderGroup
     {
         public int PolygonCount { get; set; }
-        public int TextureIndex { get; set; }
+        public int MaterialIndex { get; set; }
     }
 }

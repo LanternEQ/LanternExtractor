@@ -1,0 +1,101 @@
+# Files that should be in LFS...
+*.psd filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.a filter=lfs diff=lfs merge=lfs -text
+*.so filter=lfs diff=lfs merge=lfs -text
+
+# Commit lf. We shouldn't have any windows line endings in the project
+* text=auto
+
+# all text files should be lf, but "* eol=lf" causes too many problems with unrecognized binary types
+*.cs               text eol=lf
+*.xml              text eol=lf
+*.py               text eol=lf
+*.groovy           text eol=lf
+*.sh               text eol=lf
+*.c                text eol=lf
+*.h                text eol=lf
+
+# Apply Windows/DOS-style CR-LF line-endings on checkout of these files...
+*.bat              text eol=crlf
+*.cmd              text eol=crlf
+
+# Collapse Unity-generated files on GitHub
+*.asset            text eol=lf linguist-generated
+*.mat              text eol=lf linguist-generated
+*.meta             text eol=lf linguist-generated
+*.prefab           text eol=lf linguist-generated
+*.unity            text eol=lf linguist-generated
+*.scene            text eol=lf linguist-generated
+*.anim             text eol=lf linguist-generated
+
+# No end-of-line conversions are applied (i.e., "-text -diff") to these files...
+*.7z               binary
+*.a                binary
+*.aar              binary
+*.ai               binary
+*.apk              binary
+*.bin              binary
+*.bmp              binary
+*.BMP              binary
+*.com              binary
+*.COM              binary
+*.controller       binary
+*.cubemap          binary
+*.dex              binary
+*.dll              binary
+*.DLL              binary
+*.dylib            binary
+*.eps              binary
+*.exe              binary
+*.EXE              binary
+*.exr              binary
+*.fbx              binary
+*.FBX              binary
+*.fla              binary
+*.flare            binary
+*.flv              binary
+*.gif              binary
+*.guiskin          binary
+*.gz               binary
+*.ht               binary
+*.ico              binary
+*.jar              binary
+*.jpeg             binary
+*.jpg              binary
+*.keystore         binary
+*.mask             binary
+*.mb               binary
+*.mdb              binary
+*.mp3              binary
+*.mp4              binary
+*.mpg              binary
+*.ogg              binary
+*.PCX              binary
+*.pcx              binary
+*.pdb              binary
+*.pdf              binary
+*.physicMaterial   binary
+*.physicmaterial   binary
+*.png              binary
+*.ps               binary
+*.psd              binary
+*.qt               binary
+*.so               binary
+*.swf              binary
+*.tga              binary
+*.tif              binary
+*.tiff             binary
+*.ttf              binary
+*.TTF              binary
+*.unitypackage     binary
+*.unityPackage     binary
+*.wav              binary
+*.wmv              binary
+*.zip              binary
+*.ZIP              binary
+
+# folders containing binaries
+*.framework/*      binary

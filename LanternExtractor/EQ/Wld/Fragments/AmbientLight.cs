@@ -37,14 +37,36 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             int flags = reader.ReadInt32();
 
+            if (flags != 0)
+            {
+                
+            }
+
+            if (LightReference.LightSource.IsColoredLight)
+            {
+                logger.LogError("Ambient light value (true): " + LightReference.LightSource.Color);
+            }
+            else
+            {
+                logger.LogError("Ambient light value (false): " + LightReference.LightSource.SomeValue);
+            }
+            
+            
+
             int regionCount = reader.ReadInt32();
 
             Regions = new List<int>();
-
+            
             for (int i = 0; i < regionCount; ++i)
             {
                 int regionId = reader.ReadInt32();
                 Regions.Add(regionId);
+                //logger.LogError("Region: " + regionId);
+
+                if (regionId != i)
+                {
+                    
+                }
             }
         }
 

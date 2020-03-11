@@ -25,5 +25,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             File.WriteAllText(fileName, _export.ToString());
         }
+
+        public virtual void ClearExportData()
+        {
+            _export.Clear();
+        }
     }
 }

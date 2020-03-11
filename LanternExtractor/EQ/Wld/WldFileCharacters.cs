@@ -173,7 +173,7 @@ namespace LanternExtractor.EQ.Wld
             
             string zoneExportFolder = _zoneName + "/";
 
-            CharacterListExporter exporter = new CharacterListExporter(_zoneName, _fragmentTypeDictionary[FragmentType.ModelReference].Count);
+            CharacterListExporter exporter = new CharacterListExporter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
             
             foreach(WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {

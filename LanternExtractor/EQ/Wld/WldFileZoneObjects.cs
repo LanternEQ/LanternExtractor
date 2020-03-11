@@ -15,6 +15,7 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             ExportObjectInstanceList();
+            ExportObjectVertexColors();
         }
         
         private void ExportObjectInstanceList()
@@ -34,7 +35,34 @@ namespace LanternExtractor.EQ.Wld
                 exporter.AddFragmentData(objectInstanceFragment);
             }
             
-            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_objects.txt");
+            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_object_instances.txt");
+        }
+        
+        private void ExportObjectVertexColors()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ObjectInstance))
+            {
+                _logger.LogWarning("Cannot export vertex colors. No object instances found.");
+                return;
+            }
+
+            string zoneExportFolder = _zoneName + "/Objects/VertexColors/";
+
+            VertexColorsExporter exporter = new VertexColorsExporter();
+
+            foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
+            {
+                VertexColors vertexColors = (objectInstanceFragment as ObjectInstance)?.Colors;
+
+                if (vertexColors == null)
+                {
+                    continue;
+                }
+                
+                exporter.AddFragmentData(vertexColors);
+                exporter.WriteAssetToFile(zoneExportFolder + "vc_" + vertexColors.Index + ".txt");
+                exporter.ClearExportData();
+            }
         }
     }
 }

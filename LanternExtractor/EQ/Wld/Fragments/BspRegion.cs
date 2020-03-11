@@ -45,18 +45,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 ContainsPolygons = true;
             }
 
+            // Always 0
             int unknown1 = reader.ReadInt32();
 
             int data1Size = reader.ReadInt32();
 
             int data2Size = reader.ReadInt32();
 
+            // Always 0
             int unknown2 = reader.ReadInt32();
 
             int data3Size = reader.ReadInt32();
 
             int data4Size = reader.ReadInt32();
 
+            // Always 0
             int unknown3 = reader.ReadInt32();
 
             int data5Size = reader.ReadInt32();

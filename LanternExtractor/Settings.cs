@@ -6,6 +6,13 @@ using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor
 {
+    public enum ModelExportFormat
+    {
+        Intermediate = 0,
+        Obj = 1,
+        Fbx = 2
+    }
+    
     /// <summary>
     /// Simple class that parses settings for the extractor
     /// </summary>
@@ -41,6 +48,11 @@ namespace LanternExtractor
         /// Exports hidden geometry like zone boundaries
         /// </summary>
         public bool ExportHiddenGeometry { get; private set; }
+
+        /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public ModelExportFormat ModelExportFormat { get; private set; }
 
         /// <summary>
         /// The verbosity of the logger
@@ -107,6 +119,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportHiddenGeometry"))
             {
                 ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
+            }
+            
+            if (parsedSettings.ContainsKey("ModelExportFormat"))
+            {
+                ModelExportFormat = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

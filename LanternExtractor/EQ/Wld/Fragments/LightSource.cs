@@ -31,6 +31,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The attenuation (?) - guess from Windcatcher. Not sure what it is.
         /// </summary>
         public int Attenuation { get; private set; }
+        public float SomeValue { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -56,9 +57,55 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 IsColoredLight = true;
             }
 
+            if (!IsPlacedLightSource)
+            {
+                if (!IsColoredLight)
+                {
+                    int something1 = reader.ReadInt32();
+                    SomeValue = reader.ReadSingle();
+
+                    // Always 1 and 1.0f
+                    if (something1 != 1 || SomeValue < 1.0f)
+                    {
+                        
+                    }
+                    
+                    return;
+                }
+                else
+                {
+                    Attenuation = reader.ReadInt32();
+
+                    float alpha = reader.ReadSingle();
+                    float red = reader.ReadSingle();
+                    float green = reader.ReadSingle();
+                    float blue = reader.ReadSingle();
+                    Color = new vec4(red, green, blue, alpha);
+
+                    if (Attenuation != 1)
+                    {
+                        
+                    }
+                }
+
+                return;
+            }
+
+            if (!IsColoredLight)
+            {
+                int something1 = reader.ReadInt32();
+                float something2 = reader.ReadSingle();
+
+                //float something3 = reader.ReadSingle();
+                //float something4 = reader.ReadSingle();
+                //float something5 = reader.ReadSingle();
+                return;
+            }
+            
+
             // Not sure yet what the purpose of this fragment is in the main zone file
             // For now, return
-            if (!IsPlacedLightSource)
+            if (!IsPlacedLightSource && Name == "DEFAULT_LIGHTDEF")
             {
                 int unknown = reader.ReadInt32();
 

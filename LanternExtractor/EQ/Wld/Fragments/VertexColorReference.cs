@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// Reference to a vertex color
         /// </summary>
-        public VertexColor VertexColor { get; private set; }
+        public VertexColors VertexColors { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -27,20 +27,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             int reference = reader.ReadInt32();
 
-            VertexColor = fragments[reference - 1] as VertexColor;
+            VertexColors = fragments[reference - 1] as VertexColors;
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
 
-            if (VertexColor == null)
+            if (VertexColors == null)
             {
                 return;
             }
 
             logger.LogInfo("-----");
-            logger.LogInfo("0x33: Vertex color reference: " + VertexColor.Index + 1);
+            logger.LogInfo("0x33: Vertex color reference: " + VertexColors.Index + 1);
         }
     }
 }

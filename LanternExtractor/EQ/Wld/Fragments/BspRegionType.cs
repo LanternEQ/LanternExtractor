@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Security.Policy;
+using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -17,6 +20,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public RegionType RegionType { get; private set; }
 
         public List<int> BspRegionIndices { get; private set; }
+        
+        public string RegionString { get; set; }
+
+        public enum ZonelineType
+        {
+            Reference,
+            Absolute
+        }
+        
+        public class ZonelineInfo
+        {
+            public ZonelineType Type;
+            public int Index;
+            public vec3 Position;
+            public int Heading;
+            public int ZoneIndex { get; set; }
+        }
+
+        public ZonelineInfo Zoneline;
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -58,10 +80,62 @@ namespace LanternExtractor.EQ.Wld.Fragments
             else if (regionTypeString.StartsWith("drn"))
             {
                 RegionType = RegionType.Zoneline;
+                DecodeZoneline(regionTypeString);
+
+                RegionString = regionTypeString;
             }
             else
             {
-                logger.LogError("Unknown region type: " + regionTypeString);
+                //logger.LogError("Unknown region type: " + regionTypeString);
+            }
+        }
+
+        private void DecodeZoneline(string regionTypeString)
+        {
+            Zoneline = new ZonelineInfo();
+            
+            // TODO: Verify this
+            if (regionTypeString == "drntp_zone")
+            {
+                Zoneline.Type = ZonelineType.Reference;
+                Zoneline.Index = 0;
+                return;
+            }
+            
+            int zoneId = Convert.ToInt32(regionTypeString.Substring(5, 5));
+
+            if (zoneId == 255)
+            {
+                int zonelineId = Convert.ToInt32(regionTypeString.Substring(10, 6));
+
+                Zoneline.Type = ZonelineType.Reference;
+                Zoneline.Index = zonelineId;
+                
+                return;
+            }
+
+            Zoneline.ZoneIndex = zoneId;
+
+            
+            float x = GetValueFromRegionString(regionTypeString.Substring(10, 6));
+            float y = GetValueFromRegionString(regionTypeString.Substring(16, 6));
+            float z = GetValueFromRegionString(regionTypeString.Substring(22, 6));
+            int rot = Convert.ToInt32(regionTypeString.Substring(28, 3));
+            
+            Zoneline.Type = ZonelineType.Absolute;
+            Zoneline.Position = new vec3(x, y, z);
+            Zoneline.Heading = rot;
+        }
+
+        private float GetValueFromRegionString(string substring)
+        {
+            if (substring.StartsWith("-"))
+            {
+                return -Convert.ToSingle(substring.Substring(1, 5));
+            }
+            else
+            {
+                return Convert.ToSingle(substring);
             }
         }
 
@@ -76,6 +150,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             foreach(var regionIndex in BspRegionIndices)
             {
+                if (RegionType == RegionType.Zoneline)
+                {
+                    
+                }
+                
                 bspRegions[regionIndex].SetRegionFlag(this);
             }
         }

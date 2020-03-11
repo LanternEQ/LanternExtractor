@@ -48,7 +48,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public void LinkBspRegions(List<WldFragment> fragments)
+        public void LinkBspRegions(List<BspRegion> fragments)
         {
             foreach (var node in Nodes)
             {
@@ -57,7 +57,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     continue;
                 }
 
-                node.Region = fragments[node.RegionId] as BspRegion;
+                node.Region = fragments[node.RegionId - 1];
+            }
+
+            foreach (var node in Nodes)
+            {
+                if (node.LeftNode == 0 && node.RightNode == 0 && node.Region == null)
+                {
+                    
+                }
             }
         }
 

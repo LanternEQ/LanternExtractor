@@ -30,7 +30,12 @@ namespace LanternExtractor.EQ.Wld
             
             BspTree tree = _fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree;
 
-            tree?.LinkBspRegions(_fragments);
+            if (tree == null)
+            {
+                return;
+            }
+            
+            tree.LinkBspRegions(_bspRegions);
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.BspRegionType])
             {
@@ -45,6 +50,14 @@ namespace LanternExtractor.EQ.Wld
             base.ExportData();
             ExportZoneMeshes();
             ExportBspTree();
+
+            if (_fragmentTypeDictionary.ContainsKey(FragmentType.AmbientLight))
+            {
+                if (_fragmentTypeDictionary[FragmentType.AmbientLight].Count > 1)
+                {
+                    
+                }
+            }
         }
 
         private void ExportZoneMeshes()
@@ -57,26 +70,51 @@ namespace LanternExtractor.EQ.Wld
             
             string zoneExportFolder = _zoneName + "/" + LanternStrings.ExportZoneFolder;
 
-            MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
-            MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
-            
-            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
             {
-                meshExporter.AddFragmentData(listFragment);
-                collisionMeshExport.AddFragmentData(listFragment);
-            }
-            
-            meshExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
-            collisionMeshExport.WriteAssetToFile(zoneExportFolder + _zoneName +  "_collision" + LanternStrings.ObjFormatExtension);
+                MeshIntermediateExporter meshExporter = new MeshIntermediateExporter();
 
-            MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+                foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    meshExporter.AddFragmentData(listFragment);
+                }
+                
+                meshExporter.WriteAssetToFile(zoneExportFolder + _zoneName + ".txt");
+                
+                MeshIntermediateMaterialsExport materialsExport = new MeshIntermediateMaterialsExport(_settings, _zoneName);
+
+                foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    materialsExport.AddFragmentData(listFragment);
+                }
             
-            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                materialsExport.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
+            }
+            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
             {
-                mtlExporter.AddFragmentData(listFragment);
+                MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
+                MeshObjExporter collisionMeshExport = new MeshObjExporter(ObjExportType.Collision, _settings.ExportHiddenGeometry, _settings.ExportZoneMeshGroups, _zoneName);
+            
+                foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    meshExporter.AddFragmentData(listFragment);
+                    collisionMeshExport.AddFragmentData(listFragment);
+                }
+            
+                meshExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
+                collisionMeshExport.WriteAssetToFile(zoneExportFolder + _zoneName +  "_collision" + LanternStrings.ObjFormatExtension);
+
+                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+            
+                foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    mtlExporter.AddFragmentData(listFragment);
+                }
+            
+                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
             }
             
-            mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
+            // TODO: FBX integration
         }
         
         private void ExportBspTree()

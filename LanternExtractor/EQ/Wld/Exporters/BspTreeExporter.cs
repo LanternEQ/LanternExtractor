@@ -39,13 +39,55 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
                     _export.Append(node.RightNode.ToString(_numberFormat));
                     _export.AppendLine();
+
+
+                    if (node.RightNode == -1 && node.LeftNode == -1)
+                    {
+                        
+                    }
                 }
                 else
                 {
-                    RegionType type = node.Region.Type?.RegionType ?? RegionType.Normal;
+                    RegionType type = RegionType.Normal;
+
+                    if (node.Region.Type != null)
+                    {
+                        type = node.Region.Type.RegionType;
+                    }
+                    
                     _export.Append(node.RegionId.ToString(_numberFormat));
                     _export.Append(",");
                     _export.Append(type.ToString());
+
+                    if (type != RegionType.Normal)
+                    {
+                        BspRegionType.ZonelineInfo zoneline = node.Region.Type?.Zoneline;
+
+                        if (zoneline != null)
+                        {
+                            _export.Append(",");
+                            _export.Append(zoneline.Type.ToString()); 
+                            _export.Append(",");
+
+                            if (zoneline.Type == BspRegionType.ZonelineType.Reference)
+                            {
+                                _export.Append(zoneline.Index);
+                            }
+                            else
+                            {                                
+                                _export.Append(zoneline.ZoneIndex);
+                                _export.Append(",");
+                                _export.Append(zoneline.Position.x);
+                                _export.Append(",");
+                                _export.Append(zoneline.Position.y);
+                                _export.Append(",");
+                                _export.Append(zoneline.Position.z);
+                                _export.Append(",");
+                                _export.Append(zoneline.Heading);
+                            }
+                        }
+                    }
+                    
                     _export.AppendLine();
                 }
             }

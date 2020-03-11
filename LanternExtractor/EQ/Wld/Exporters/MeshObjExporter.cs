@@ -15,9 +15,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private bool _exportHiddenGeometry;
         private int _usedVertices;
         private int _baseVertex;
-        private Material _lastMaterial;
         private bool _isFirstMesh = true;
-        private string _zoneName;
         private bool _exportGroups;
         private string _forcedMeshList;
 
@@ -27,7 +25,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             _objExportType = exportType;
             _exportHiddenGeometry = exportHiddenGeometry;
-            _zoneName = zoneName;
             _exportGroups = exportGroups;
             _forcedMeshList = forcedMeshList;
         }
@@ -76,9 +73,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var faceOutput = new StringBuilder();
 
             // First assemble the faces that are needed
-            foreach (RenderGroup group in mesh.RenderGroups)
+            foreach (RenderGroup group in mesh.MaterialGroups)
             {
-                int textureIndex = group.TextureIndex;
+                int textureIndex = group.MaterialIndex;
                 int polygonCount = group.PolygonCount;
 
                 List<int> activeArray = null;
@@ -248,8 +245,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 frames.Add(vertexOutput.ToString() + faceOutput);
                 vertexOutput.Clear();
             }
-
-            _lastMaterial = _activeMaterial;
 
             for (var i = 0; i < frames.Count; i++)
             {

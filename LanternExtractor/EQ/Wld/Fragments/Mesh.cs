@@ -59,6 +59,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The polygon indices of the mesh
         /// </summary>
         public List<Polygon> Indices { get; private set; }
+        
+        public List<Color> Colors { get; private set; }
 
         /// <summary>
         /// The UV texture coordinates of the vertex
@@ -69,7 +71,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The mesh render groups
         /// Defines which texture index corresponds with groups of vertices
         /// </summary>
-        public List<RenderGroup> RenderGroups { get; private set; }
+        public List<RenderGroup> MaterialGroups { get; private set; }
 
         /// <summary>
         /// The animated vertex fragment (0x37) reference
@@ -140,6 +142,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Vertices = new List<vec3>();
             Normals = new List<vec3>();
+            Colors = new List<Color>();
             TextureUvCoordinates = new List<vec2>();
 
             short vertexCount = reader.ReadInt16();
@@ -187,7 +190,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < colorsCount; ++i)
             {
-                reader.BaseStream.Position += 4;
+                int color = reader.ReadInt32();
+                
+                byte[] colorBytes = BitConverter.GetBytes(color);
+                int r = colorBytes[0];
+                int g = colorBytes[1];
+                int b = colorBytes[2];
+                int a = colorBytes[3];
+                
+                Colors.Add(new Color{R = r, G = g, B = b, A = a});
             }
 
             Indices = new List<Polygon>();
@@ -228,7 +239,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 MobPieces[index1] = mobVertexPiece;
             }
 
-            RenderGroups = new List<RenderGroup>();
+            MaterialGroups = new List<RenderGroup>();
 
             StartTextureIndex = Int32.MaxValue;
             
@@ -236,18 +247,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 var group = new RenderGroup();
                 group.PolygonCount = reader.ReadUInt16();
-                group.TextureIndex = reader.ReadUInt16();
-                RenderGroups.Add(group);
+                group.MaterialIndex = reader.ReadUInt16();
+                MaterialGroups.Add(group);
 
-                if (group.TextureIndex < StartTextureIndex)
+                if (group.MaterialIndex < StartTextureIndex)
                 {
-                    StartTextureIndex = group.TextureIndex;
+                    StartTextureIndex = group.MaterialIndex;
                 }
-            }
-            
-            if (Name.StartsWith("DRA"))
-            {
-                
             }
 
             for (int i = 0; i < vertexTextureCount; ++i)
@@ -273,295 +279,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x36: Vertex count: " + Vertices.Count);
             logger.LogInfo("0x36: Polygon count: " + Indices.Count);
             logger.LogInfo("0x36: Texture coordinate count: " + TextureUvCoordinates.Count);
-            logger.LogInfo("0x36: Render group count: " + RenderGroups.Count);
+            logger.LogInfo("0x36: Render group count: " + MaterialGroups.Count);
             logger.LogInfo("0x36: Export separate collision: " + ExportSeparateCollision);
 
             if (AnimatedVertices != null)
             {
                 logger.LogInfo("0x36: Animated mesh vertices reference: " + AnimatedVertices.Index);
             }
-        }
-
-        /// <summary>
-        /// Exports the model to an .obj file
-        /// </summary>
-        /// <param name="baseVertex">The number of vertices we have processed so far in the model</param>
-        /// <param name="objExportType"></param>
-        /// <param name="vertexCount">The number of vertices in this model</param>
-        /// <param name="activeMaterial"></param>
-        /// <param name="lastUsedMaterial"></param>
-        /// <param name="settings"></param>
-        /// <param name="logger"></param>
-        /// <returns></returns>
-        public List<string> GetMeshExport(int baseVertex, Material activeMaterial, ObjExportType objExportType,
-            out int vertexCount, out Material lastUsedMaterial, Settings settings, ILogger logger)
-        {
-            var frames = new List<string>();
-            var usedVertices = new List<int>();
-            var unusedVertices = new List<int>();
-
-            int currentPolygon = 0;
-
-            var faceOutput = new StringBuilder();
-
-            // First assemble the faces that are needed
-            foreach (RenderGroup group in RenderGroups)
-            {
-                int textureIndex = group.TextureIndex;
-                int polygonCount = group.PolygonCount;
-
-                List<int> activeArray = null;
-                //bool bitmapValid = false;
-
-                if(MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
-                {
-                    activeArray = usedVertices;
-                }
-                else
-                {
-                    activeArray = settings.ExportHiddenGeometry ? usedVertices : unusedVertices;
-                }
-                
-                if (textureIndex < 0 || textureIndex >= MaterialList.Materials.Count)
-                {
-                    logger.LogError("Invalid texture index");
-                    continue;
-                }
-
-                string filenameWithoutExtension = MaterialList.Materials[textureIndex].GetFirstBitmapNameWithoutExtension();
-
-                string textureChange = string.Empty;
-                
-                if(MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
-                    || (MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible && settings.ExportHiddenGeometry))
-                {
-                    // Material change
-                    if (activeMaterial != MaterialList.Materials[textureIndex])
-                    {
-                        if (string.IsNullOrEmpty(filenameWithoutExtension))
-                        {
-                            textureChange = LanternStrings.ObjUseMtlPrefix + "null";
-                        }
-                        else
-                        {
-                            string materialPrefix =
-                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[textureIndex].ShaderType);
-                            textureChange = LanternStrings.ObjUseMtlPrefix + materialPrefix + filenameWithoutExtension;
-                        }
-                        
-                        activeMaterial = MaterialList.Materials[textureIndex];
-                    }
-                }
-
-                for (int j = 0; j < polygonCount; ++j)
-                {
-                    if(currentPolygon < 0 || currentPolygon >= Indices.Count)
-                    {
-                        logger.LogError("Invalid polygon index");
-                        continue;
-                    }
-                    
-                    // This is the culprit.
-                    if (!Indices[currentPolygon].Solid && objExportType == ObjExportType.Collision)
-                    {
-                        activeArray = unusedVertices;
-                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex1);
-                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex2);
-                        AddIfNotContained(activeArray, Indices[currentPolygon].Vertex3);
-
-                        currentPolygon++;
-                        continue;
-                    }
-                    
-                    if(textureChange != string.Empty)
-                    {
-                        faceOutput.AppendLine(textureChange);
-                        textureChange = string.Empty;
-                    }
-
-                    int vertex1 = Indices[currentPolygon].Vertex1 + baseVertex + 1;
-                    int vertex2 = Indices[currentPolygon].Vertex2 + baseVertex + 1;
-                    int vertex3 = Indices[currentPolygon].Vertex3 + baseVertex + 1;
-
-                    if (activeArray == usedVertices)
-                    {
-                        int index1 = vertex1 - unusedVertices.Count;
-                        int index2 = vertex2 - unusedVertices.Count;
-                        int index3 = vertex3 - unusedVertices.Count;
-
-                        // Vertex + UV
-                        if (objExportType != ObjExportType.Collision)
-                        {
-                            faceOutput.AppendLine("f " + index3 + "/" + index3 + " "
-                                                  + index2 + "/" + index2 + " " +
-                                                  +index1 + "/" + index1);
-                        }
-                        else
-                        {
-                            faceOutput.AppendLine("f " + index3 + " "
-                                                  + index2 + " " +
-                                                  +index1);
-                        }
-                    }
-
-                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex1);
-                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex2);
-                    AddIfNotContained(activeArray, Indices[currentPolygon].Vertex3);
-
-                    currentPolygon++;
-                }
-            }
-
-            var vertexOutput = new StringBuilder();
-
-            usedVertices.Sort();
-
-            int frameCount = 1;
-
-            if (AnimatedVertices != null)
-            {
-                frameCount += AnimatedVertices.Frames.Count;
-            }
-
-            for (int i = 0; i < frameCount; ++i)
-            {
-                // Add each vertex
-                foreach (var usedVertex in usedVertices)
-                {
-                    vec3 vertex;
-
-                    if (i == 0)
-                    {
-                        if(usedVertex < 0 || usedVertex >= Vertices.Count)
-                        {
-                            logger.LogError("Invalid vertex index: " + usedVertex);
-                            continue;
-                        }
-
-                        vertex = Vertices[usedVertex];
-                    }
-                    else
-                    {
-                        if (AnimatedVertices == null)
-                        {
-                            continue;
-                        }
-
-                        vertex = AnimatedVertices.Frames[i - 1][usedVertex];
-                    }
-
-                    vertexOutput.AppendLine("v " + -(vertex.x + Center.x) + " " + (vertex.z + Center.z) + " " +
-                                            (vertex.y + Center.y));
-
-                    if (objExportType == ObjExportType.Collision)
-                    {
-                        continue;
-                    }
-
-                    if(usedVertex >= TextureUvCoordinates.Count)
-                    {
-                        vertexOutput.AppendLine("vt " + 0.0f + " " + 0.0f);
-
-                        continue;
-                    }
-
-                    vec2 vertexUvs = TextureUvCoordinates[usedVertex];
-                    vertexOutput.AppendLine("vt " + vertexUvs.x + " " + vertexUvs.y);
-                }
-
-                frames.Add(vertexOutput.ToString() + faceOutput);
-                vertexOutput.Clear();
-            }
-
-
-            vertexCount = usedVertices.Count;
-            lastUsedMaterial = activeMaterial;
-
-            // Ensure that output use the decimal point rather than the comma (as in Germany)
-            for (var i = 0; i < frames.Count; i++)
-            {
-                frames[i] = frames[i].Replace(',', '.');
-            }
-
-            return frames;
-        }
-
-        /// <summary>
-        /// Returns a string containing an OBJ export for this mesh
-        /// </summary>
-        /// <param name="forceMaterialList">Forces the export to use a specific material list - e.g. model head</param>
-        /// <returns>The OBJ export</returns>
-        public string GetSkeletonMeshExport(string forceMaterialList = null)
-        {
-            var export = new StringBuilder();
-
-            export.AppendLine(LanternStrings.ObjMaterialHeader + (string.IsNullOrEmpty(forceMaterialList)
-                                  ? FixCharacterMeshName(Name, true)
-                                  : FixCharacterMeshName(forceMaterialList, true)) + LanternStrings.FormatMtlExtension);
-
-            int vertexCount = Vertices.Count;
-            for (var i = 0; i < Vertices.Count; i++)
-            {
-                vec3 vertex = Vertices[i];
-                vec2 uvs = TextureUvCoordinates[i];
-                vec3 normals = Normals[i];
-                export.AppendLine("v " + -(vertex.x + Center.x) + " " + (vertex.z + Center.z) + " " +
-                                  (vertex.y + Center.y));
-                export.AppendLine("vt " + uvs.x + " " + uvs.y);
-                export.AppendLine("vn " + normals.x + " " + normals.y + " " + normals.z);
-            }
-
-            int currentPolygon = 0;
-            int index = 0;
-            foreach (RenderGroup group in RenderGroups)
-            {              
-                string bitmapName = MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
-
-                if (bitmapName == string.Empty)
-                {
-                    continue;
-                }
-                
-                string slotName = string.Empty;
-
-                slotName = MaterialList.Materials[group.TextureIndex].ExportName;
-
-                if (bitmapName.Length < 4)
-                {
-                    // TODO: Handle
-                    continue;
-                }
-                
-                string pngName = bitmapName.Substring(0, bitmapName.Length - 4);
-                
-                string materialPrefix =
-                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType);
-                var line = LanternStrings.ObjUseMtlPrefix + materialPrefix + bitmapName;
-
-                
-                export.AppendLine(line);
-                
-                for (int i = 0; i < group.PolygonCount; ++i)
-                {
-                    int vertex1 = Indices[currentPolygon].Vertex1 + 1;
-                    int vertex2 = Indices[currentPolygon].Vertex2 + 1;
-                    int vertex3 = Indices[currentPolygon].Vertex3 + 1;
-
-                    export.AppendLine("f " + vertex3 + "/" + vertex3 + " "
-                                      + vertex2 + "/" + vertex2 + " " +
-                                      +vertex1 + "/" + vertex1);
-
-                    currentPolygon++;
-                }
-
-                export.AppendLine("g group" + group.TextureIndex);
-            }
-
-            // Ensure that output use the decimal point rather than the comma (as in Germany)
-            // TODO: Use invariant culture
-            string exportString = export.ToString().Replace(',', '.');
-            
-            return exportString;
         }
 
         public void ShiftVertices(vec3 shift, int index)
@@ -818,14 +542,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             int currentPolygon = 0;
-            foreach (RenderGroup group in RenderGroups)
+            foreach (RenderGroup group in MaterialGroups)
             {
                 string materialName = string.Empty;
 
                 if (skinId == -1)
                 {
                     //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
-                    materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetMaterialSkinWithoutExtension();
+                    materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.MaterialIndex].ShaderType) + MaterialList.Materials[group.MaterialIndex].GetMaterialSkinWithoutExtension();
                 }
                 else
                 {
@@ -833,7 +557,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetMaterialSkinWithoutExtension();
                     //materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) + MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();
 
-                    string nameOfMaterial = MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension().ToUpper() + "_MDF";
+                    string nameOfMaterial = MaterialList.Materials[group.MaterialIndex].GetFirstBitmapNameWithoutExtension().ToUpper() + "_MDF";
                     
                     if (nameOfMaterial.ToLower().Contains("fun"))
                     {
@@ -852,8 +576,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     if (!WldMaterialPalette.ExplodeName(nameOfMaterial, out charName, out skinIdUnused, out partName))
                     {
                         materialName =
-                            MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
-                            MaterialList.Materials[group.TextureIndex].GetFirstBitmapNameWithoutExtension();                    }
+                            MaterialList.GetMaterialPrefix(MaterialList.Materials[group.MaterialIndex].ShaderType) +
+                            MaterialList.Materials[group.MaterialIndex].GetFirstBitmapNameWithoutExtension();                    }
                     else
                     {
                         if (materials.ContainsKey(partName))
@@ -864,7 +588,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                             if (specific.ContainsKey(skinId))
                             {
                                 materialName =
-                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.MaterialIndex].ShaderType) +
                                     specific[skinId].GetFirstBitmapNameWithoutExtension();
 
                             }
@@ -882,13 +606,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                                 }
                                 
                                 materialName =
-                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                                    MaterialList.GetMaterialPrefix(MaterialList.Materials[group.MaterialIndex].ShaderType) +
                                     specific[lowest].GetFirstBitmapNameWithoutExtension();
                             }
                         }
                         else
                         {
-                            materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.TextureIndex].ShaderType) +
+                            materialName = MaterialList.GetMaterialPrefix(MaterialList.Materials[group.MaterialIndex].ShaderType) +
                                            nameOfMaterial;
                             // what the fuck?
                         }
@@ -897,7 +621,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 export.Append("mg");
                 export.Append(",");
-                export.Append(group.TextureIndex - StartTextureIndex);
+                export.Append(group.MaterialIndex - StartTextureIndex);
                 export.Append(",");
                 export.Append(materialName);
                 export.AppendLine();
@@ -910,7 +634,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     export.Append("i");
                     export.Append(",");
-                    export.Append(group.TextureIndex - StartTextureIndex);
+                    export.Append(group.MaterialIndex - StartTextureIndex);
                     export.Append(",");
                     export.Append(vertex3);
                     export.Append(",");
