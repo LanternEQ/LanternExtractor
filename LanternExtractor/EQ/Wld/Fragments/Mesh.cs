@@ -265,6 +265,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 reader.BaseStream.Position += 12;
             }
+            
+            // In some rare cases, the number of uvs does not match the number of vertices
+            if (Vertices.Count != TextureUvCoordinates.Count)
+            {
+                int difference = Vertices.Count - TextureUvCoordinates.Count;
+
+                for (int i = 0; i < difference; ++i)
+                {
+                    TextureUvCoordinates.Add(new vec2(0.0f, 0.0f));
+                }
+            }
         }
 
         public override void OutputInfo(ILogger logger)
