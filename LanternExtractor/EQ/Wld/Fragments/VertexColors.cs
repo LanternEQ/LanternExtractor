@@ -42,14 +42,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Colors = new List<Color>();
 
-            for (int i = 0; i < vertexColorCount / 4; ++i)
+            for (int i = 0; i < vertexColorCount; ++i)
             {
                 int color = reader.ReadInt32();
                 
                 byte[] colorBytes = BitConverter.GetBytes(color);
-                int r = colorBytes[0];
+                int b = colorBytes[0];
                 int g = colorBytes[1];
-                int b = colorBytes[2];
+                int r = colorBytes[2];
                 int a = colorBytes[3];
                 
                 Colors.Add(new Color{R = r, G = g, B = b, A = a});

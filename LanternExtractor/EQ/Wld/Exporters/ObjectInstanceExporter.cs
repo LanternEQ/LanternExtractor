@@ -40,13 +40,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
             _export.Append(instance.Scale.y.ToString(_numberFormat));
             _export.Append(",");
             _export.Append(instance.Scale.z.ToString(_numberFormat));
+            _export.Append(",");
+            _export.Append(instance.Colors == null ? -1 :instance.Colors.Index);
 
-            if (instance.Colors != null)
-            {
-                _export.Append(",");
-                _export.Append(instance.Colors.Index);
-            }
-            
             _export.AppendLine();
         }        
     }

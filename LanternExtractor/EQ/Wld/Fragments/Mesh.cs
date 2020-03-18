@@ -185,7 +185,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < normalsCount; ++i)
             {
-                Normals.Add(new vec3(reader.ReadByte() * (1.0f / 127.0f), reader.ReadByte() * (1.0f / 127.0f), reader.ReadByte() * (1.0f / 127.0f)));
+                float x = reader.ReadSByte() / 127.0f;
+                float y = reader.ReadSByte() / 127.0f;
+                float z = reader.ReadSByte() / 127.0f;
+                
+                Normals.Add(new vec3(x, y, z));
             }
 
             for (int i = 0; i < colorsCount; ++i)
@@ -193,9 +197,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int color = reader.ReadInt32();
                 
                 byte[] colorBytes = BitConverter.GetBytes(color);
-                int r = colorBytes[0];
+                int b = colorBytes[0];
                 int g = colorBytes[1];
-                int b = colorBytes[2];
+                int r = colorBytes[2];
                 int a = colorBytes[3];
                 
                 Colors.Add(new Color{R = r, G = g, B = b, A = a});
