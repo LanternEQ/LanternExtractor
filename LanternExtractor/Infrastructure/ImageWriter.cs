@@ -1,9 +1,9 @@
-﻿using System.Drawing;
-using System.Drawing.Imaging;
+﻿using System;
 using System.IO;
-using LanternExtractor.EQ.Wld;
-using System;
 using LanternExtractor.Infrastructure.Logger;
+using System.Drawing;
+using System.Drawing.Imaging;
+using LanternExtractor.EQ.Wld;
 
 namespace LanternExtractor.Infrastructure
 {
@@ -20,8 +20,8 @@ namespace LanternExtractor.Infrastructure
         /// <param name="fileName">The output file name</param>
         /// <param name="type">The type of shader (affects the output process)</param>
         /// <param name="logger">Logger for debug output</param>
-
-        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, bool rotate, ILogger logger)
+        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, bool rotate,
+            ILogger logger)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -52,33 +52,51 @@ namespace LanternExtractor.Infrastructure
 
             if (type == ShaderType.TransparentMasked)
             {
-                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format8bppIndexed);
+                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height),
+                    PixelFormat.Format8bppIndexed);
             }
             else
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
             }
-                
-            // Handle special cases
+            
             if (type == ShaderType.TransparentMasked)
             {
-                // For masked diffuse textures, the first index in the palette is the mask index.
-                // We simply set it to invisible
                 var palette = cloneBitmap.Palette;
-        
-                for (int i = 0; i < palette.Entries.Length; ++i)
+                Color transparencyColor = palette.Entries[0];
+                bool isUnique = false;
+
+                // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
+                // transparent does not work. The workaround is to ensure that the first palette value (the transparent
+                // key) is unique and then use MakeTransparent(). 
+                while (!isUnique)
                 {
-                    palette.Entries[0] = Color.FromArgb(0, 0, 0, 0);              
+                    isUnique = true;
+
+                    for (var i = 1; i < cloneBitmap.Palette.Entries.Length; i++)
+                    {
+                        Color paletteValue = cloneBitmap.Palette.Entries[i];
+
+                        if (paletteValue == transparencyColor)
+                        {
+                            Random random = new Random();
+                            transparencyColor = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
+                            isUnique = false;
+                            break;
+                        }
+                    }
                 }
 
+                palette.Entries[0] = transparencyColor;
                 cloneBitmap.Palette = palette;
+                cloneBitmap.MakeTransparent(transparencyColor);
             }
-
+            
             if (rotate)
             {
                 cloneBitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
             }
-            
+
             cloneBitmap.Save(filePath + fileName, ImageFormat.Png);
         }
     }
