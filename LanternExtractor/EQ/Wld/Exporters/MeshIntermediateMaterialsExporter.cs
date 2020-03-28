@@ -6,13 +6,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         private Settings _settings;
         private string _modelName;
-        
+
         public MeshIntermediateMaterialsExport(Settings settings, string modelName)
         {
             _settings = settings;
             _modelName = modelName;
         }
-        
+
         public override void AddFragmentData(WldFragment data)
         {
             MaterialList list = data as MaterialList;
@@ -21,7 +21,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             for (var i = 0; i < list.Materials.Count; i++)
             {
                 Material material = list.Materials[i];
@@ -31,11 +31,21 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                string materialName = MaterialList.GetMaterialPrefix(material.ShaderType) + material.GetFirstBitmapNameWithoutExtension();
-                
+                string materialName = MaterialList.GetMaterialPrefix(material.ShaderType) +
+                                      material.GetFirstBitmapNameWithoutExtension();
+
                 _export.Append(i);
                 _export.Append(",");
                 _export.Append(materialName);
+                _export.Append(",");
+                _export.Append(material.BitmapInfoReference.BitmapInfo.BitmapNames.Count);
+
+                if (material.BitmapInfoReference.BitmapInfo.IsAnimated)
+                {
+                    _export.Append(",");
+                    _export.Append(material.BitmapInfoReference.BitmapInfo.AnimationDelayMs);
+                }
+
                 _export.AppendLine();
             }
         }

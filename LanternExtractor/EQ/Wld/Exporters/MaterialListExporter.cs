@@ -1,14 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class MaterialListExporter : TextAssetExporter
     {
+        private List<string> _processedFragments = new List<string>();
+        
         public MaterialListExporter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +
-                                          "BitmapName, BitmapCount, AnimationDelayMs (optional)");        
+                               "MaterialName, FrameCount, FrameTimeMs");
         }
 
         public override void AddFragmentData(WldFragment data)
@@ -32,24 +38,45 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
+                if (_processedFragments.Contains(material.Name))
+                {
+                    continue;
+                }
+                
+                _processedFragments.Add(material.Name);
+
                 string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
+                string materialName = materialPrefix + FragmentNameCleaner.CleanName(material);
 
-                string textureName = material.BitmapInfoReference.BitmapInfo.BitmapNames[0]
-                    .Filename;
-
-                textureName = textureName.Substring(0, textureName.Length - 4);
-                _export.Append(materialPrefix);
-                _export.Append(textureName);
+                _export.Append(materialName);
                 _export.Append(",");
                 _export.Append(material.BitmapInfoReference.BitmapInfo.BitmapNames.Count);
+                _export.Append(",");
 
-                if (material.BitmapInfoReference.BitmapInfo.IsAnimated)
+                if (!material.BitmapInfoReference.BitmapInfo.IsAnimated)
                 {
-                    _export.Append("," + material.BitmapInfoReference.BitmapInfo.AnimationDelayMs);
+                    _export.Append(material.GetFirstBitmapNameWithoutExtension());
                 }
+                else
+                {
+                    _export.Append(material.BitmapInfoReference.BitmapInfo.AnimationDelayMs);
+                    _export.Append(",");
 
+                    var allBitmapNames = material.GetAllBitmapNames();
+                    
+                    foreach (string bitmapName in allBitmapNames)
+                    {
+                        _export.Append(bitmapName);
+
+                        if (bitmapName != allBitmapNames.Last())
+                        {
+                            _export.Append(";");
+                        }
+                    }
+                }
+                
                 _export.AppendLine();
-            }        
+            }
         }
     }
 }

@@ -282,7 +282,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="textureTypes">The types (shader) of all textures</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
         /// <param name="onlyTextures">Are we exporting only textures?</param>
-        public void WriteAllFiles(Dictionary<string, List<ShaderType>> textureTypes, string folderName = "",
+        public void WriteAllFiles(List<string> maskedTextures, string folderName = "",
             bool onlyTextures = false)
         {
             for (int i = 0; i < _files.Count; ++i)
@@ -291,16 +291,13 @@ namespace LanternExtractor.EQ.Pfs
 
                 if (filename.EndsWith(".bmp"))
                 {
-                    if (textureTypes == null || !textureTypes.ContainsKey(filename))
+                    if (maskedTextures == null || !maskedTextures.Contains(filename))
                     {
-                        WriteImageAsPng(i, ShaderType.Diffuse, folderName);
+                        WriteImageAsPng(i, false, folderName);
                         continue;
                     }
-
-                    foreach (ShaderType type in textureTypes[filename])
-                    {
-                        WriteImageAsPng(i, type, folderName);
-                    }
+                    
+                    WriteImageAsPng(i, true, folderName);
                 }
                 else if (filename.EndsWith(".dds"))
                 {
@@ -380,7 +377,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index">The index in the file list</param>
         /// <param name="type">The shader type</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
-        private void WriteImageAsPng(int index, ShaderType type, string folderName = "")
+        private void WriteImageAsPng(int index, bool isMasked, string folderName = "")
         {
             if (index < 0 || index >= _files.Count)
             {
@@ -411,7 +408,7 @@ namespace LanternExtractor.EQ.Pfs
             }
 
             var byteStream = new MemoryStream(_files[index].Bytes);
-            ImageWriter.WriteImage(byteStream, exportPath, pngName, type, !IsWldArchive, _logger);
+            ImageWriter.WriteImage(byteStream, exportPath, pngName, isMasked, !IsWldArchive, _logger);
         }
 
         /// <summary>

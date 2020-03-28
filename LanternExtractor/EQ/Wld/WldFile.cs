@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -110,8 +112,11 @@ namespace LanternExtractor.EQ.Wld
             _fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
-
+            
             var reader = new BinaryReader(new MemoryStream(_wldFile.Bytes));
+            
+            var writer = new BinaryWriter(new MemoryStream(_wldFile.Bytes));            
+
 
             int identifier = reader.ReadInt32();
 
@@ -151,6 +156,8 @@ namespace LanternExtractor.EQ.Wld
 
             ParseStringHash(WldStringDecoder.DecodeString(stringHash));
 
+            long readPosition = 0;
+            
             for (int i = 0; i < fragmentCount; ++i)
             {
                 uint fragSize = reader.ReadUInt32();
@@ -163,6 +170,8 @@ namespace LanternExtractor.EQ.Wld
                 {
                     _logger.LogWarning($"WldFile: Unhandled fragment type: {fragId:x}");
                 }
+
+                readPosition = reader.BaseStream.Position;
 
                 newFragment.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
                     _isNewWldFormat,
@@ -186,6 +195,21 @@ namespace LanternExtractor.EQ.Wld
                     _bspRegions.Add(newFragment as BspRegion);
                 }
 
+               /*if (fragId == FragmentType.Light)
+                {
+                    // write something here
+                    writer.BaseStream.Position = readPosition + 12;
+
+                    float newValue = 1.1f;
+
+                    var bytes = BitConverter.GetBytes(newValue);
+
+                    writer.Write(bytes);
+                    writer.Write(bytes);
+                    writer.Write(bytes);
+                    writer.Write(bytes);
+                }*/
+                
                 _fragmentTypeDictionary[fragId].Add(newFragment);
             }
 
@@ -198,6 +222,15 @@ namespace LanternExtractor.EQ.Wld
             {
                 ExportData();
             }
+
+            if (_wldType == WldType.Zone)
+            {
+                var fileStream = File.Create("output.wld");
+                writer.BaseStream.Seek(0, SeekOrigin.Begin);
+                writer.BaseStream.CopyTo(fileStream);
+                fileStream.Close();
+            }
+            
 
             return true;
         }
@@ -287,7 +320,7 @@ namespace LanternExtractor.EQ.Wld
         /// Used in exporting the bitmaps from the PFS archive
         /// </summary>
         /// <returns>Dictionary with material to shader mapping</returns>
-        public Dictionary<string, List<ShaderType>> GetMaterialTypes()
+        public List<string> GetMaskedTextures()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
@@ -295,47 +328,29 @@ namespace LanternExtractor.EQ.Wld
                 return null;
             }
 
-            var materialTypes = new Dictionary<string, List<ShaderType>>();
+            List<string> maskedTextures = new List<string>();
 
             foreach (WldFragment materialListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                MaterialList materialList= materialListFragment as MaterialList;
+                MaterialList materialList = materialListFragment as MaterialList;
 
                 if (materialList == null)
                 {
                     continue;
                 }
-                
-                ProcessMaterialList(ref materialTypes, materialList.Materials);
+
+                foreach (var material in materialList.Materials)
+                {
+                    if (material.ShaderType != ShaderType.TransparentMasked)
+                    {
+                        continue;
+                    }
+                    
+                    maskedTextures.AddRange(material.GetAllBitmapNames(true));
+                }
             }
           
-            return materialTypes;
-        }
-
-        private void ProcessMaterialList(ref Dictionary<string, List<ShaderType>> materialTypes,
-            List<Material> materialList)
-        {
-            foreach (Material material in materialList)
-            {
-                if (material.GetFirstBitmapNameWithoutExtension() == string.Empty)
-                {
-                    continue;
-                }
-
-                List<string> bitmapNames = material.GetAllBitmapNames();
-
-                ShaderType shaderType = material.ShaderType;
-
-                foreach (var bitmapName in bitmapNames)
-                {
-                    if (!materialTypes.ContainsKey(bitmapName))
-                    {
-                        materialTypes[bitmapName] = new List<ShaderType>();
-                    }
-
-                    materialTypes[bitmapName].Add(shaderType);
-                }
-            }
+            return maskedTextures;
         }
 
         /// <summary>
@@ -344,45 +359,124 @@ namespace LanternExtractor.EQ.Wld
         protected virtual void ExportData()
         {
             ExportMaterialList();
+            ExportMeshes();
         }
 
         /// <summary>
-        /// Exports the list of material and their associated shader types
+        /// Exports the list of all textures
         /// This is not the same as the material definition files associated with each model
         /// </summary>
         protected void ExportMaterialList()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
-                _logger.LogWarning("Cannot export material lists. No lists found.");
+                _logger.LogWarning("Cannot export texture lists. No materials found.");
                 return;
             }
 
-            MaterialListExporter exporter = new MaterialListExporter();
+            MaterialListExporter export = new MaterialListExporter();
 
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
-                exporter.AddFragmentData(listFragment);
+                export.AddFragmentData(listFragment);
             }
 
-            string fileName = _zoneName + "/" + _zoneName + "_materials";
+            string exportFilename = _zoneName + "/" + _zoneName + "_materials";
 
             if (_wldType == WldType.Zone)
             {
-                fileName += "_zone";
+                exportFilename += "_zone";
             }
             else if (_wldType == WldType.Objects)
             {
-                fileName += "_objects";
+                exportFilename += "_objects";
             }
             else if (_wldType == WldType.Characters)
             {
-                fileName += "_characters";
+                exportFilename += "_characters";
+            }
+            else if (_wldType == WldType.Sky)
+            {
+                exportFilename += "_sky";
             }
 
-            fileName += ".txt";
+            exportFilename += ".txt";
 
-            exporter.WriteAssetToFile(fileName);
+            export.WriteAssetToFile(exportFilename);
         }
+        
+        private void ExportMeshes()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
+            {
+                _logger.LogWarning("Cannot export meshes. No meshes found.");
+                return;
+            }
+
+            string zoneExportFolder = _zoneName + "/";
+
+            switch (_wldType)
+            {
+                case WldType.Zone:
+                    zoneExportFolder += "Zone/";
+                    break;
+            }
+            
+            bool useGroups = _settings.ExportZoneMeshGroups;
+
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+            {
+                MeshIntermediateExporter exporter = new MeshIntermediateExporter();
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    exporter.AddFragmentData(fragment);
+
+                    if (useGroups)
+                    {
+                        exporter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ ".txt");
+                        exporter.ClearExportData();
+                    }
+                }
+
+                if (!useGroups)
+                {
+                    exporter.WriteAssetToFile(zoneExportFolder + _zoneName + ".txt");
+                }
+
+                MeshIntermediateMaterialsExport mtlExporter = new MeshIntermediateMaterialsExport(_settings, _zoneName);
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    mtlExporter.AddFragmentData(fragment);
+                }
+            
+                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
+            }
+            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
+            {
+                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, true, "sky", "sky");
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    exporter.AddFragmentData(fragment);
+                }
+            
+                exporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
+            
+                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    mtlExporter.AddFragmentData(fragment);
+                }
+            
+                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
+            }
+        }
+    }
+
+    internal class FragmentNameCleanerfragment
+    {
     }
 }

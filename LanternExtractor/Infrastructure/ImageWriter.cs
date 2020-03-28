@@ -20,7 +20,7 @@ namespace LanternExtractor.Infrastructure
         /// <param name="fileName">The output file name</param>
         /// <param name="type">The type of shader (affects the output process)</param>
         /// <param name="logger">Logger for debug output</param>
-        public static void WriteImage(Stream bytes, string filePath, string fileName, ShaderType type, bool rotate,
+        public static void WriteImage(Stream bytes, string filePath, string fileName, bool isMasked, bool rotate,
             ILogger logger)
         {
             if (string.IsNullOrEmpty(filePath))
@@ -50,18 +50,11 @@ namespace LanternExtractor.Infrastructure
 
             Bitmap cloneBitmap;
 
-            if (type == ShaderType.TransparentMasked)
+            if (isMasked)
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height),
                     PixelFormat.Format8bppIndexed);
-            }
-            else
-            {
-                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
-            }
-            
-            if (type == ShaderType.TransparentMasked)
-            {
+                
                 var palette = cloneBitmap.Palette;
                 Color transparencyColor = palette.Entries[0];
                 bool isUnique = false;
@@ -90,6 +83,10 @@ namespace LanternExtractor.Infrastructure
                 palette.Entries[0] = transparencyColor;
                 cloneBitmap.Palette = palette;
                 cloneBitmap.MakeTransparent(transparencyColor);
+            }
+            else
+            {
+                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
             }
             
             if (rotate)

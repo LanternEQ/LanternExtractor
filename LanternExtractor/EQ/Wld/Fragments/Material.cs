@@ -14,8 +14,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         // Standard diffuse shader
         Diffuse = 0x01,
 
-        // 
-        UnknownDiffuse = 0x02,
+        // Diffuse variant
+        Diffuse2 = 0x02,
 
         // Transparent with 0.5 blend strength
         Transparent50 = 0x05,
@@ -30,15 +30,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
         TransparentMaskedPassable = 0x07,
         TransparentAdditiveUnlit = 0x0B,
         TransparentMasked = 0x13,
-        DiffuseUnknown = 0x14,
-        DiffuseUnknown2 = 0x15,
+        Diffuse3 = 0x14,
+        Diffuse4 = 0x15,
         TransparentAdditive = 0x17,
-        DiffuseUnknown7 = 0x19,
+        Diffuse5 = 0x19,
         InvisibleUnknown = 0x53,
-        DiffuseUnknown3 = 0x553,
+        Diffuse6 = 0x553,
         CompleteUnknown = 0x1A, // TODO: Analyze this
-        DiffuseUnknown5 = 0x12,
-        DiffuseUnknown6 = 0x31,
+        Diffuse7 = 0x12,
+        Diffuse8 = 0x31,
         InvisibleUnknown2 = 0x4B,
         DiffuseSkydome = 0x0D, // Need to confirm
         TransparentSkydome = 0x0F, // Need to confirm
@@ -131,13 +131,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = ShaderType.Invisible;
                     break;
                 case MaterialType.Diffuse:
-                case MaterialType.DiffuseUnknown:
-                case MaterialType.DiffuseUnknown2:
-                case MaterialType.DiffuseUnknown3:
-                case MaterialType.DiffuseUnknown7:
-                case MaterialType.DiffuseUnknown5:
-                case MaterialType.DiffuseUnknown6:
-                case MaterialType.UnknownDiffuse:
+                case MaterialType.Diffuse3:
+                case MaterialType.Diffuse4:
+                case MaterialType.Diffuse6:
+                case MaterialType.Diffuse5:
+                case MaterialType.Diffuse7:
+                case MaterialType.Diffuse8:
+                case MaterialType.Diffuse2:
                 case MaterialType.CompleteUnknown: // TODO: Figure out where this is used
                 case MaterialType.TransparentMaskedPassable: // TODO: Add special handling
                     ShaderType = ShaderType.Diffuse;
@@ -190,7 +190,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public List<string> GetAllBitmapNames()
+        public List<string> GetAllBitmapNames(bool includeExtension = false)
         {
             var bitmapNames = new List<string>();
 
@@ -201,7 +201,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             foreach (Bitmap bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
             {
-                bitmapNames.Add(bitmapName.Filename);
+                string filename = bitmapName.Filename;
+
+                if (!includeExtension)
+                {
+                    filename = filename.Substring(0, filename.Length - 4);
+                }
+                
+                bitmapNames.Add(filename);
             }
 
             return bitmapNames;

@@ -43,6 +43,7 @@ namespace LanternExtractor.EQ.Wld
             
             ExportSkySkeletons();
             ExportSkyAnimations();
+            ExportMaterialList();
         }
 
         private void ExportSkySkeletons()
@@ -260,26 +261,48 @@ namespace LanternExtractor.EQ.Wld
                 _logger.LogWarning("Cannot export zone meshes. No meshes found.");
                 return;
             }
-            
+
             string zoneExportFolder = _zoneName + "/";
 
-            MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, true, "sky", "sky");
-
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
             {
-                exporter.AddFragmentData(fragment);
-            }
-            
-            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
-            
-            MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
 
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
-            {
-                mtlExporter.AddFragmentData(fragment);
-            }
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    MeshIntermediateExporter exporter = new MeshIntermediateExporter();
+                    exporter.AddFragmentData(fragment);
+                    exporter.WriteAssetToFile(zoneExportFolder + _zoneName + fragment.Name + ".txt");
+                }
+
+                MeshIntermediateMaterialsExport mtlExporter = new MeshIntermediateMaterialsExport(_settings, _zoneName);
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    mtlExporter.AddFragmentData(fragment);
+                }
             
-            mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
+                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
+            }
+            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
+            {
+                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, true, "sky", "sky");
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                {
+                    exporter.AddFragmentData(fragment);
+                }
+            
+                exporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
+            
+                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
+
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+                {
+                    mtlExporter.AddFragmentData(fragment);
+                }
+            
+                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
+            }
         }
     }
 }
