@@ -38,12 +38,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                if (_processedFragments.Contains(material.Name))
+                if (_processedFragments.Contains(material.ShaderType + material.Name))
                 {
                     continue;
                 }
-                
-                _processedFragments.Add(material.Name);
+
+                _processedFragments.Add(material.ShaderType + material.Name);
 
                 string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
                 string materialName = materialPrefix + FragmentNameCleaner.CleanName(material);
@@ -63,12 +63,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
 
                     var allBitmapNames = material.GetAllBitmapNames();
-                    
-                    foreach (string bitmapName in allBitmapNames)
+
+                    for (var i = 0; i < allBitmapNames.Count; i++)
                     {
+                        string bitmapName = allBitmapNames[i];
                         _export.Append(bitmapName);
 
-                        if (bitmapName != allBitmapNames.Last())
+                        if (i < allBitmapNames.Count - 1)
                         {
                             _export.Append(";");
                         }

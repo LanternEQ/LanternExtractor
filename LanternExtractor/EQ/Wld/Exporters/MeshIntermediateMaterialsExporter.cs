@@ -1,4 +1,5 @@
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -32,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
 
                 string materialName = MaterialList.GetMaterialPrefix(material.ShaderType) +
-                                      material.GetFirstBitmapNameWithoutExtension();
+                                      FragmentNameCleaner.CleanName(material);
 
                 _export.Append(i);
                 _export.Append(",");
