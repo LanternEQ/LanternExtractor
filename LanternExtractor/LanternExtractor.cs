@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "freportn";          
+            archiveName = "qeynos";          
 #else
             if (args.Length != 1)
             {
@@ -178,16 +178,17 @@ namespace LanternExtractor
             {
                 WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Models/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);
             }
             else if (IsSkyArchive(archiveName))
             {
                 WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Textures", true);
             }
             else if (IsCharactersArchive(archiveName))
             {
+                return;
                 WldFileCharacters wldFileToInject = null;
                 
                 if (archiveName.StartsWith("global3_chr"))
@@ -208,14 +209,14 @@ namespace LanternExtractor
 
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Characters/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);
 
             }
             else if (IsObjectsArchive(archiveName))
             {
                 WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Objects/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Objects/Textures", true);
             }
             else
             {
@@ -223,7 +224,7 @@ namespace LanternExtractor
 
                 WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaterialTypes(), "Zone/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Zone/Textures", true);
                 
                 PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 

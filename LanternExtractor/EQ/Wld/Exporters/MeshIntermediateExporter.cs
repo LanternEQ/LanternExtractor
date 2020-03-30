@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 
@@ -99,6 +101,32 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(_currentBaseIndex + vertex3);
                     _export.AppendLine();
                     currentPolygon++;
+                }
+            }
+
+            if (mesh.AnimatedVertices != null)
+            {
+                _export.Append("ad");
+                _export.Append(",");
+                _export.Append(mesh.AnimatedVertices.Delay);
+                _export.AppendLine();
+
+                for (var i = 0; i < mesh.AnimatedVertices.Frames.Count; i++)
+                {
+                    List<vec3> frame = mesh.AnimatedVertices.Frames[i];
+                    foreach (vec3 position in frame)
+                    {
+                        _export.Append("av");
+                        _export.Append(",");
+                        _export.Append(i);
+                        _export.Append(",");
+                        _export.Append(position.x + mesh.Center.x);
+                        _export.Append(",");
+                        _export.Append(position.z + mesh.Center.z);
+                        _export.Append(",");
+                        _export.Append(position.y + mesh.Center.y);
+                        _export.AppendLine();
+                    }
                 }
             }
             
