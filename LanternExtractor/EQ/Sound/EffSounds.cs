@@ -22,7 +22,7 @@ namespace LanternExtractor.EQ.Sound
         
         private readonly List<SoundEntry> _soundEntries = new List<SoundEntry>();
         
-        private readonly Dictionary<string, string> _musicTrackEntries = new Dictionary<string, string>();
+        private readonly List<string> _musicTrackEntries = new List<string>();
         
         private const int EntryLengthInBytes = 84;
         
@@ -90,8 +90,8 @@ namespace LanternExtractor.EQ.Sound
                 }
                 else
                 {
-                    newSound.SoundIdDay = GetMusicTrackName(zoneShortName, soundId1);
-                    newSound.SoundIdNight = GetMusicTrackName(zoneShortName, soundId1);
+                    newSound.SoundIdDay = GetMusicTrackName(soundId1);
+                    newSound.SoundIdNight = GetMusicTrackName(soundId1);
                 }
 
                 newSound.UnkPad57 = reader.ReadByte();
@@ -114,30 +114,28 @@ namespace LanternExtractor.EQ.Sound
         
         private void LoadMusicTrackNames(string zoneShortName)
         {
-            string trackContents = File.ReadAllText("musictracks.txt");
+            string[] trackLines = File.ReadAllLines("musictracks.txt");
 
-            var splitZones = TextParser.ParseTextByEmptyLines(trackContents);
-
-            foreach (string entry in splitZones)
+            bool isTargetZone = false;
+            
+            foreach (string line in trackLines)
             {
-                var trackEntries = TextParser.ParseTextByNewline(entry);
-
-                if (trackEntries[0] != zoneShortName)
+                if (!isTargetZone)
                 {
+                    if (line == "#" + zoneShortName)
+                    {
+                        isTargetZone = true;
+                    }
+
                     continue;
                 }
 
-                for (int i = 1; i < trackEntries.Count; ++i)
+                if (line == string.Empty)
                 {
-                    var trackDetails = trackEntries[i].Split(',');
-
-                    if (trackDetails.Length != 3)
-                    {
-                        continue;
-                    }
-
-                    _musicTrackEntries[zoneShortName + trackDetails[0]] = trackDetails[1];
+                    break;
                 }
+
+                _musicTrackEntries.Add(line);
             }
         }
 
@@ -210,6 +208,10 @@ namespace LanternExtractor.EQ.Sound
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.SoundIdNight);
                     musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.AsDistance);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.UnkRange64);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.PosX);
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.PosZ);
@@ -219,7 +221,6 @@ namespace LanternExtractor.EQ.Sound
                     musicExport.Append(entry.Radius);
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.FadeOutMs);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.AppendLine();
                 }
                 else
@@ -246,7 +247,7 @@ namespace LanternExtractor.EQ.Sound
             if (musicExport.Length != 0)
             {
                 string exportHeader = LanternStrings.ExportHeaderTitle + "Music Instances\n";
-                exportHeader += "# Format: SoundIdDay, SoundIdNight, PosX, PosY, PosZ, Radius, FadeOutMs\n";
+                exportHeader += "# Format: SoundIdDay, SoundIdNight, DayLoopCount, NightLoopCount, PosX, PosY, PosZ, Radius, FadeOutMs\n";
 
                 Directory.CreateDirectory(zoneName + "/");
                 File.WriteAllText(zoneName + "/" + zoneName + "_music.txt", exportHeader + musicExport);
@@ -259,11 +260,14 @@ namespace LanternExtractor.EQ.Sound
         /// <param name="zoneName">The zone shortname</param>
         /// <param name="index">The index of the track</param>
         /// <returns>The name of the track</returns>
-        private string GetMusicTrackName(string zoneName, int index)
+        private string GetMusicTrackName(int index)
         {
-            return !_musicTrackEntries.ContainsKey(zoneName + index)
-                ? "UnknownMusic"
-                : _musicTrackEntries[zoneName + index];
+            if (index < 0 || index >= _musicTrackEntries.Count)
+            {
+                return "NoTrack";
+            }
+            
+            return _musicTrackEntries[index];
         }
     }
 }
