@@ -4,8 +4,10 @@ using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
-    class Fragment18 : WldFragment
+    public class Fragment18 : WldFragment
     {
+        public Fragment17 _fragment17Reference;
+        
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -15,7 +17,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-            
+
+            int fragment17Reference = reader.ReadInt32();
+
+            _fragment17Reference = fragments[fragment17Reference - 1] as Fragment17;
         }
         
         public override void OutputInfo(ILogger logger)

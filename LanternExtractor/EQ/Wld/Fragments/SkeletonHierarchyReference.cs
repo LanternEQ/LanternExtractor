@@ -8,9 +8,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// 0x11 - Skeleton Track Reference
     /// A reference to a skeleton track fragment (0x12)
     /// </summary>
-    class HierSpriteFragment : WldFragment
+    class SkeletonHierarchyReference : WldFragment
     {
-        public HierSpriteDefFragment HierSpriteDefFragment { get; private set; }
+        public SkeletonHierarchy SkeletonHierarchy { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -24,7 +24,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             int reference = reader.ReadInt32();
 
-            HierSpriteDefFragment = fragments[reference - 1] as HierSpriteDefFragment;
+            SkeletonHierarchy = fragments[reference - 1] as SkeletonHierarchy;
 
             //Console.WriteLine("0x11: " + Name);
         }
@@ -33,10 +33,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
 
-            if (HierSpriteDefFragment != null)
+            if (SkeletonHierarchy != null)
             {
                 logger.LogInfo("-----");
-                logger.LogInfo("0x11: Skeleton track reference: " + HierSpriteDefFragment.Index + 1);
+                logger.LogInfo("0x11: Skeleton track reference: " + SkeletonHierarchy.Index + 1);
             }
         }
     }

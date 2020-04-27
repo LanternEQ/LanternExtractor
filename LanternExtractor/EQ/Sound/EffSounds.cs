@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using LanternExtractor.Infrastructure;
 
 namespace LanternExtractor.EQ.Sound
 {
@@ -161,7 +160,7 @@ namespace LanternExtractor.EQ.Sound
                 return soundBank.EmitSounds[soundId - 1];
             }
 
-            // Hardcoded client sounds
+            // Hardcoded client sounds - verified that no other references exist in Trilogy client
             if (soundId >= 32 && soundId < 162)
             {
                 soundType = EmissionType.Internal;

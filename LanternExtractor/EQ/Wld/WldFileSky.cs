@@ -28,9 +28,9 @@ namespace LanternExtractor.EQ.Wld
             
             ExportSkyMeshes();
 
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment])
+            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
             {
-                HierSpriteDefFragment skeleton = skeletonFragment as HierSpriteDefFragment;
+                SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
 
                 if(skeleton == null)
                 {
@@ -52,16 +52,16 @@ namespace LanternExtractor.EQ.Wld
 
             Directory.CreateDirectory(folder);
             
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteDefFragment))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
             {
                 return;
             }
 
-            var skeletonFragments = _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment];
+            var skeletonFragments = _fragmentTypeDictionary[FragmentType.SkeletonHierarchy];
 
             foreach (var fragment in skeletonFragments)
             {
-                var skeleton = fragment as HierSpriteDefFragment;
+                var skeleton = fragment as SkeletonHierarchy;
 
                 if (skeleton == null)
                 {

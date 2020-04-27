@@ -451,7 +451,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="skeletonPieceData">The data about this specific piece</param>
         /// <param name="parentShift">The shift value to apply to this piece</param>
         /// <param name="index">The current bone index</param>
-        public void ShiftSkeletonValues(HierSpriteDefFragment track, SkeletonPieceData skeletonPieceData,
+        public void ShiftSkeletonValues(SkeletonHierarchy track, SkeletonPieceData skeletonPieceData,
             vec3 parentShift, int index)
         {
             vec3 newShift = parentShift + skeletonPieceData.AnimationTracks.First().Value.TrackDefFragment.Frames[0].Translation;
