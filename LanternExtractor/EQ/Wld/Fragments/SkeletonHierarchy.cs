@@ -37,7 +37,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int flags = reader.ReadInt32();
-            
+
             AnimationList = new Dictionary<string, int>();
             
             Tree = new List<SkeletonNode>();
@@ -48,6 +48,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool hasUnknownParams = ba.IsBitSet(0);
             bool hasBoundingRadius = ba.IsBitSet(1);
             bool hasMeshReferences = ba.IsBitSet(9);
+
+            if (hasUnknownParams)
+            {
+                
+            }
+            
+            logger.LogError("Skeleton: " + Name);
+            
+            if (hasMeshReferences)
+            {
+                
+            }
             
             // Number of bones in the skeleton
             int boneCount = reader.ReadInt32();
@@ -95,6 +107,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // usually 0
                 int entryFlags = reader.ReadInt32();
                 pieceNew.Flags = entryFlags;
+
+                if (entryFlags != 0)
+                {
+                    
+                }
 
                 // reference to an 0x13
                 int entryFrag = reader.ReadInt32();
@@ -175,8 +192,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     }
                 }
             }
+            if (hasMeshReferences)
+            {
+                
+            }
+            
+            // Confirmed end
             
             BuildSkeletonTreeData(0, Tree, string.Empty, string.Empty, new Dictionary<int, string>());
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

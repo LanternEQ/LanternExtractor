@@ -66,16 +66,19 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Translation.y);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.x);
+                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.x);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.z);
+                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.z);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.y);
+                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.y);
                     _export.Append(",");
 
                     _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.w);
+                    _export.Append(",");
+                    
+                    _export.Append(skeleton.Tree[i].Track.FrameMs);
                     _export.AppendLine();
                 }
             }

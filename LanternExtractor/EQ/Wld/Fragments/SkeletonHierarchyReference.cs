@@ -26,7 +26,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             SkeletonHierarchy = fragments[reference - 1] as SkeletonHierarchy;
 
-            //Console.WriteLine("0x11: " + Name);
+            int params1 = reader.ReadInt32();
+
+            if (params1 != 0)
+            {
+                
+            }
+            
+            // Confirmed end
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

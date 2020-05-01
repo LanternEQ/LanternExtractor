@@ -33,10 +33,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int flags = reader.ReadInt32();
-            
+
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
 
-            if (bitAnalyzer.IsBitSet(3))
+            bool hasData2Values = bitAnalyzer.IsBitSet(3);
+
+            // seems to always be set
+            if (hasData2Values)
+            {
+                
+            }
+            else
             {
                 
             }
@@ -98,7 +105,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     //logger.LogError($"{i}: NORM {frameTransform.Rotation.Normalized}");
                 }
                 
+                
+                
                 Frames2.Add(frameTransform);
+            }
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
             }
         }
         private float RadianToDegree(float angle)

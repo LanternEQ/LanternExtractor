@@ -44,12 +44,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // No name reference
             int unknown = reader.ReadInt32();
 
-            // in main zone, points to 0x14, in object wld, it contains the object name
+            // in main zone, points to 0x16, in object wld, it contains the object name
             int reference = reader.ReadInt32();
 
             if (reference < 0)
             {
                 ObjectName = stringHash[-reference].Replace("_ACTORDEF", "");
+            }
+            else
+            {
+                ObjectName = string.Empty;
             }
 
             int flags = reader.ReadInt32();
@@ -63,8 +67,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // object wld
             }
 
+            // Fragment reference
             int unknown2 = reader.ReadInt32();
 
+            if (unknown2 != 0)
+            {
+                
+            }
+            
             Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
             
             // Rotation is strange. There is never any x rotation (roll)
@@ -82,14 +92,31 @@ namespace LanternExtractor.EQ.Wld.Fragments
             scaleX = reader.ReadSingle();    
             scaleY = reader.ReadSingle();
             scaleZ = reader.ReadSingle();
+
+            if (scaleX != 0f)
+            {
+                
+            }
             
             Scale = new vec3(scaleY, scaleY, scaleY);
-
+            
             int colorFragment = reader.ReadInt32();
 
             if (colorFragment != 0)
             {
                 Colors = (fragments[colorFragment - 1 ] as VertexColorReference)?.VertexColors;
+                
+                int something = reader.ReadInt32();
+
+                if (something != 0)
+                {
+                    
+                }
+            }
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
             }
         }
 

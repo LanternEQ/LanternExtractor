@@ -164,7 +164,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             short size9 = reader.ReadInt16();
 
             float scale = 1.0f / (1 << reader.ReadInt16());
-
+            
             for (int i = 0; i < vertexCount; ++i)
             {
                 Vertices.Add(new vec3(reader.ReadInt16() * scale, reader.ReadInt16() * scale,

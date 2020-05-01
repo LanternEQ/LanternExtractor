@@ -28,6 +28,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int reference = reader.ReadInt32();
 
             Mesh = fragments[reference - 1] as Mesh;
+
+            int something = reader.ReadInt32();
+
+            if (something != 0)
+            {
+                
+            }
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

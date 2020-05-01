@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public bool IsProcessed { get; set; }
         
         // TODO: Determine what this does
-        public int SleepMs { get; set; }
+        public int FrameMs { get; set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -33,20 +33,28 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             int reference = reader.ReadInt32();
             
+            // Either 4 or 5 - maybe something to look into
+            // Bits are set 0, or 2. 0 has the extra field for delay.
+            // 2 doesn't have any additional fields.
             int flags = reader.ReadInt32();
 
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
 
             if (bitAnalyzer.IsBitSet(0))
             {
-                SleepMs = reader.ReadInt32();
+                FrameMs = reader.ReadInt32();
             }
             else
             {
-                SleepMs = 0;
+                FrameMs = 0;
             }
             
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

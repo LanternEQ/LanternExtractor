@@ -231,7 +231,6 @@ namespace LanternExtractor.EQ.Wld
                 fileStream.Close();
             }
             
-
             return true;
         }
 

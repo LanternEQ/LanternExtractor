@@ -39,7 +39,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export.Append(",");
                 _export.Append(childrenList);
 
-                if (node.MeshReference != null)
+                if (node.MeshReference?.Mesh != null)
                 {
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
