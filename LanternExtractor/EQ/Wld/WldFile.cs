@@ -114,9 +114,7 @@ namespace LanternExtractor.EQ.Wld
             _bspRegions = new List<BspRegion>();
             
             var reader = new BinaryReader(new MemoryStream(_wldFile.Bytes));
-            
-            var writer = new BinaryWriter(new MemoryStream(_wldFile.Bytes));            
-
+            var writer = new BinaryWriter(new MemoryStream(_wldFile.Bytes));
 
             int identifier = reader.ReadInt32();
 
@@ -194,22 +192,49 @@ namespace LanternExtractor.EQ.Wld
                 {
                     _bspRegions.Add(newFragment as BspRegion);
                 }
-
-               /*if (fragId == FragmentType.Light)
+                
+                // Make UFOS
+                /*if (fragId == FragmentType.MeshReference)
                 {
-                    // write something here
-                    writer.BaseStream.Position = readPosition + 12;
+                    long cachedPos = reader.BaseStream.Position;
+                    long newPos = reader.BaseStream.Position = readPosition + 4;
 
-                    float newValue = 1.1f;
+                    int value = reader.ReadInt32();
 
-                    var bytes = BitConverter.GetBytes(newValue);
+                    if (value > 625)
+                    {
+                        // write something here
+                        writer.BaseStream.Position = readPosition + 4;
 
-                    writer.Write(bytes);
-                    writer.Write(bytes);
-                    writer.Write(bytes);
-                    writer.Write(bytes);
+                        int newValue = 621;
+
+                        var bytes = BitConverter.GetBytes(newValue);
+
+                        writer.Write(bytes[0]);
+                        writer.Write(bytes[1]);
+                        writer.Write(bytes[2]);
+                        writer.Write(bytes[3]);
+                    }
+
+                    reader.BaseStream.Position = cachedPos;
                 }*/
                 
+                if (fragId == FragmentType.SkeletonHierarchy)
+                {
+                    
+                        // write something here
+                        writer.BaseStream.Position = readPosition + 16;
+
+                        float newValue = 10f;
+
+                        var bytes = BitConverter.GetBytes(newValue);
+
+                        writer.Write(bytes[0]);
+                        writer.Write(bytes[1]);
+                        writer.Write(bytes[2]);
+                        writer.Write(bytes[3]);
+                }
+
                 _fragmentTypeDictionary[fragId].Add(newFragment);
             }
 
@@ -223,9 +248,9 @@ namespace LanternExtractor.EQ.Wld
                 ExportData();
             }
 
-            if (_wldType == WldType.Zone)
+            if (_wldType == WldType.Objects)
             {
-                var fileStream = File.Create("output.wld");
+                var fileStream = File.Create("objects.wld");
                 writer.BaseStream.Seek(0, SeekOrigin.Begin);
                 writer.BaseStream.CopyTo(fileStream);
                 fileStream.Close();

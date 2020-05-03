@@ -34,28 +34,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             int flags = reader.ReadInt32();
 
+            // Flags are always 8 when dealing with object animations
+            if (flags != 8)
+            {
+                
+            }
+
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
 
             bool hasData2Values = bitAnalyzer.IsBitSet(3);
-
-            // seems to always be set
-            if (hasData2Values)
-            {
-                
-            }
-            else
-            {
-                
-            }
-
-            int size1 = reader.ReadInt32();
+            
+            int frameCount = reader.ReadInt32();
 
             Frames = new List<BonePosition>();
             Frames2 = new List<BoneTransform>();
 
             float l = 0.0f;
             
-            for (int i = 0; i < size1; ++i)
+            for (int i = 0; i < frameCount; ++i)
             {
                 // Windcatcher
                 Int16 rotDenominator = reader.ReadInt16();

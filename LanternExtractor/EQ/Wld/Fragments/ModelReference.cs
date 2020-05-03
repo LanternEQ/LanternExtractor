@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -29,43 +30,64 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
+            SkeletonReferences = new List<SkeletonHierarchyReference>();
+
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-
-            SkeletonReferences = new List<SkeletonHierarchyReference>();
-
+            
             int flags = reader.ReadInt32();
 
+            BitAnalyzer ba = new BitAnalyzer(flags);
+
+            // For most objects, false, false true
+            // For UFO false, false, false
+            bool params1Exist = ba.IsBitSet(0);
+            bool params2Exist = ba.IsBitSet(1);
+            bool fragment2MustContainZero = ba.IsBitSet(7);
+
+            if (Name.ToLower().Contains("temple"))
+            {
+                
+            }
+            
+            // Is an index in the string hash
             int fragment1 = reader.ReadInt32();
 
+            // For objects, SPRITECALLBACK
+            string stringValue = stringHash[-fragment1];
+            
+            // 1 for both static and animated objects
             int size1 = reader.ReadInt32();
 
+            // 1 for both static and animated objects
             int size2 = reader.ReadInt32();
 
+            // 0 for both static and animated objects
             int fragment2 = reader.ReadInt32();
-
-            var bitAnalyzer = new BitAnalyzer(flags);
-
-            if (bitAnalyzer.IsBitSet(0))
+            
+            if (params1Exist)
             {
                 int params1 = reader.ReadInt32();
             }
 
-            if (bitAnalyzer.IsBitSet(1))
+            if (params2Exist)
             {
                 reader.BaseStream.Position += 7 * sizeof(int);
             }
-
-            // size 1 entries
+            
+            // Size 1 entries
             for (int i = 0; i < size1; ++i)
             {
+                // Always 1
                 int numOfDatapair = reader.ReadInt32();
 
+                // Unsure what this is
+                // Always 0 and 1.00000002E+30 
                 for (int j = 0; j < numOfDatapair; ++j)
                 {
-                    reader.ReadInt32();
-                    reader.ReadSingle();
+                    int value = reader.ReadInt32();
+                    float value2 = reader.ReadSingle();
                 }
             }
 
@@ -88,6 +110,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     _meshes.Add(meshReference);
                     continue;
                 }
+                
+                // In main zone, PLAYER1 reference fragment 14?
+                logger.LogError("Cannot link skeleton or mesh reference");
+            }
+
+            // Always 0 in qeynos2 objects
+            int name3Bytes = reader.ReadInt32();
+            
+            if (name3Bytes != 0)
+            {
+                
+            }
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
             }
         }
 

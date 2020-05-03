@@ -15,6 +15,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
+
+            int flags = reader.ReadInt32();
+
+            int size1 = reader.ReadInt32();
+            int size2 = reader.ReadInt32();
+            float unknown = reader.ReadSingle();
+
+            for (int i = 0; i < size1; ++i)
+            {
+                float x = reader.ReadSingle();
+                float y = reader.ReadSingle();
+                float z = reader.ReadSingle();
+            }
+            
+            
         }
         
         public override void OutputInfo(ILogger logger)

@@ -176,9 +176,9 @@ namespace LanternExtractor
 
             if (IsModelsArchive(archiveName))
             {
-                WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
+                /*WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);*/
             }
             else if (IsSkyArchive(archiveName))
             {

@@ -50,6 +50,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
+
+            if (TrackDefFragment == null)
+            {
+                logger.LogError("Bad track def reference'");
+            }
             
             if (reader.BaseStream.Position != reader.BaseStream.Length)
             {

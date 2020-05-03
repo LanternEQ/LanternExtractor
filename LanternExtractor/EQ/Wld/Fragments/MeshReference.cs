@@ -25,6 +25,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Name = stringHash[-reader.ReadInt32()];
 
+            if (Name.ToLower().Contains("templife"))
+            {
+                
+            }
             int reference = reader.ReadInt32();
 
             Mesh = fragments[reference - 1] as Mesh;

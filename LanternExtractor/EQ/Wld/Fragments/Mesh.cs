@@ -114,6 +114,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // placeable object
             }
 
+            if (Name.ToLower().Contains("templife"))
+            {
+                
+            }
+
             int textureList = reader.ReadInt32();
 
             MaterialList = fragments[textureList - 1] as MaterialList;
