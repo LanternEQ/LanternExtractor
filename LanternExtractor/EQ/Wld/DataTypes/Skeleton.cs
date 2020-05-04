@@ -102,7 +102,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
     {
         public string RootName;
         
-        public HierSpriteDefFragment Skeleton;
+        public SkeletonHierarchy Skeleton;
 
         public Mesh Mesh;
 
@@ -124,9 +124,11 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         
         // Track fragment (TrackFragment) 0x13
         public TrackFragment Track;
+
+        public Dictionary<string, TrackFragment> Tracks;
         
         // MeshFragment (MeshFragment) 0x2D
-        public MeshReference Mesh;
+        public MeshReference MeshReference;
 
         // The children indices in the tree
         public List<int> Children;

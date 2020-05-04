@@ -47,8 +47,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Frames2 = new List<BoneTransform>();
 
             float l = 0.0f;
-
-
             
             for (int i = 0; i < size1; ++i)
             {

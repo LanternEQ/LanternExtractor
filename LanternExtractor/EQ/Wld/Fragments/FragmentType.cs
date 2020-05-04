@@ -26,7 +26,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         CameraReference = 0x09,
         
         // TODO: Rename these
-        HierSpriteDefFragment = 0x10,
+        SkeletonHierarchy = 0x10,
         HierSpriteFragment = 0x11,
         TrackDefFragment = 0x12,
         TrackFragment = 0x13,

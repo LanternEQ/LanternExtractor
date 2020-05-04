@@ -104,6 +104,7 @@ namespace LanternExtractor.EQ.Wld
             FindAllAnimations();
             ExportAllAnimations();
             ExportCharacterList();
+            //ExportSkeletons();
         }
 
         private void ExportAllAnimations()
@@ -460,12 +461,12 @@ namespace LanternExtractor.EQ.Wld
                 current += boneTrack._frameCount;
             }
 
-            if (_fragmentTypeDictionary.ContainsKey(FragmentType.HierSpriteDefFragment))
+            if (_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
             {
                 // import skeletons which contain the pose animation
-                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.HierSpriteDefFragment])
+                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
                 {
-                    HierSpriteDefFragment skelDef = fragment as HierSpriteDefFragment;
+                    SkeletonHierarchy skelDef = fragment as SkeletonHierarchy;
 
                     if (skelDef == null)
                     {
@@ -942,21 +943,21 @@ namespace LanternExtractor.EQ.Wld
             }
 
             // TODO: Set this up to work with all types of fragments
-            foreach (HierSpriteFragment skeletonReference in model.SkeletonReferences)
+            foreach (SkeletonHierarchyReference skeletonReference in model.SkeletonReferences)
             {
                 // Should be meshes in here
-                foreach (MeshReference meshReference in skeletonReference.HierSpriteDefFragment.Meshes)
+                foreach (MeshReference meshReference in skeletonReference.SkeletonHierarchy.Meshes)
                 {
                     meshes.Add(meshReference);
                 }
 
-                var tree = skeletonReference.HierSpriteDefFragment.Tree;
+                var tree = skeletonReference.SkeletonHierarchy.Tree;
 
                 foreach (var node in tree)
                 {
-                    if (node.Mesh != null)
+                    if (node.MeshReference != null)
                     {
-                        meshes.Add(node.Mesh);
+                        meshes.Add(node.MeshReference);
                     }
                 }
             }

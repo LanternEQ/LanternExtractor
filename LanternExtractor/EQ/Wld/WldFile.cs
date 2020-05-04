@@ -268,8 +268,8 @@ namespace LanternExtractor.EQ.Wld
 
                 // Animation
                 {FragmentType.ModelReference, () => new ModelReference()},
-                {FragmentType.HierSpriteDefFragment, () => new HierSpriteDefFragment()},
-                {FragmentType.HierSpriteFragment, () => new HierSpriteFragment()},
+                {FragmentType.SkeletonHierarchy, () => new SkeletonHierarchy()},
+                {FragmentType.HierSpriteFragment, () => new SkeletonHierarchyReference()},
                 {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
                 {FragmentType.TrackFragment, () => new TrackFragment()},
 
@@ -360,6 +360,7 @@ namespace LanternExtractor.EQ.Wld
         {
             ExportMaterialList();
             ExportMeshes();
+            ExportAnimations();
         }
 
         /// <summary>
@@ -474,9 +475,78 @@ namespace LanternExtractor.EQ.Wld
                 mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
             }
         }
-    }
 
-    internal class FragmentNameCleanerfragment
-    {
+        private string GetExportFolderForWldType()
+        {
+            switch (_wldType)
+            {
+                case WldType.Zone:
+                    return _zoneName + "/Zone/";
+                case WldType.ZoneObjects:
+                case WldType.Lights:
+                    return _zoneName;
+                case WldType.Objects:
+                    return _zoneName + "/Objects/";
+                case WldType.Sky:
+                    return "Sky/";
+                case WldType.Characters:
+                    return _zoneName + "/Characters/";
+                case WldType.Models:
+                default:
+                    return "?";
+            }
+        }
+
+        private void ExportAnimations()
+        {
+            string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
+            string animationsFolder = GetExportFolderForWldType() + "Animations/";
+
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
+            {
+                _logger.LogWarning("Cannot export animations. No model references.");
+                return;
+            }
+            
+            AnimatedMeshListExporter animatedMeshList = new AnimatedMeshListExporter();
+            
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            {
+                ModelReference modelReference = fragment as ModelReference;
+
+                if (modelReference == null)
+                {
+                    continue;
+                }
+
+                if (modelReference.SkeletonReferences.Count == 0)
+                {
+                    continue;
+                }
+
+                foreach (var skeletonReference in modelReference.SkeletonReferences)
+                {
+                    SkeletonHierarchy skeleton = skeletonReference.SkeletonHierarchy;
+                    
+                    SkeletonHierarchyExporter skeletonExporter = new SkeletonHierarchyExporter();
+                    skeletonExporter.AddFragmentData(skeleton);
+                    skeletonExporter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
+                    
+                    animatedMeshList.AddFragmentData(skeleton);
+
+                    AnimationExporter animationExporter = new AnimationExporter();
+
+                    foreach (var animationInstance in skeletonReference.SkeletonHierarchy.AnimationList)
+                    {
+                        animationExporter.SetTargetAnimation(animationInstance.Key);
+                        animationExporter.AddFragmentData(skeleton);
+                        animationExporter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) + "_" + animationInstance.Key + ".txt");
+                        animationExporter.ClearExportData();
+                    }
+                }
+            }
+            
+            animatedMeshList.WriteAssetToFile(_zoneName + "/animated_meshes.txt");
+        }
     }
 }

@@ -3,17 +3,17 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class ObjectListExporter : TextAssetExporter
+    public class AnimatedMeshListExporter : TextAssetExporter
     {
-        public ObjectListExporter(int modelCount)
+        public AnimatedMeshListExporter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Model List");
-            _export.AppendLine("# Total models: " + modelCount);        
+            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animated Mesh List");
+            _export.AppendLine("# Total animated meshes: ");        
         }
         
         public override void AddFragmentData(WldFragment data)
         {
-            if (!(data is Mesh))
+            if (!(data is SkeletonHierarchy))
             {
                 return;
             }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -22,7 +23,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
+            _export.Append("ml");
+            _export.Append(",");
+            _export.Append(FragmentNameCleaner.CleanName(mesh.MaterialList));
+            _export.AppendLine();
+
             foreach (var vertex in mesh.Vertices)
             {
                 _export.Append("v");

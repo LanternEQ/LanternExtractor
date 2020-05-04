@@ -49,7 +49,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (reference < 0)
             {
-                ObjectName = stringHash[-reference].Split('_')[0].ToLower();
+                ObjectName = stringHash[-reference].Replace("_ACTORDEF", "");
             }
 
             int flags = reader.ReadInt32();
