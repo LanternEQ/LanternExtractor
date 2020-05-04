@@ -204,14 +204,6 @@ namespace LanternExtractor.EQ.Sound
             {
                 if (entry.SoundType == SoundType.Music)
                 {
-                    musicExport.Append(entry.SoundIdDay);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
-                    musicExport.Append(entry.SoundIdNight);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
-                    musicExport.Append(entry.AsDistance);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
-                    musicExport.Append(entry.UnkRange64);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.PosX);
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.PosZ);
@@ -219,6 +211,14 @@ namespace LanternExtractor.EQ.Sound
                     musicExport.Append(entry.PosY);
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.Radius);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.SoundIdDay);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.SoundIdNight);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.AsDistance);
+                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(entry.UnkRange64);
                     musicExport.Append(LanternStrings.TextExportSeparator);
                     musicExport.Append(entry.FadeOutMs);
                     musicExport.AppendLine();
@@ -247,7 +247,7 @@ namespace LanternExtractor.EQ.Sound
             if (musicExport.Length != 0)
             {
                 string exportHeader = LanternStrings.ExportHeaderTitle + "Music Instances\n";
-                exportHeader += "# Format: SoundIdDay, SoundIdNight, DayLoopCount, NightLoopCount, PosX, PosY, PosZ, Radius, FadeOutMs\n";
+                exportHeader += "# Format: PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, DayLoopCount, NightLoopCount, FadeOutMs\n";
 
                 Directory.CreateDirectory(zoneName + "/");
                 File.WriteAllText(zoneName + "/" + zoneName + "_music.txt", exportHeader + musicExport);
