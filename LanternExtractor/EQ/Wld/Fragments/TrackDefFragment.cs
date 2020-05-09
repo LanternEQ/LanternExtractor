@@ -78,20 +78,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     string partName = Name;
                     double scale = 1.0f / shiftDenominator;
-                    double x = shiftX * scale;
-                    double y = shiftY * scale;
-                    double z = shiftZ * scale;
-                    frameTransform.Translation = new vec3((float)x, (float)y, (float)z);
+                    double x = shiftX / 256f;
+                    double y = shiftY / 256f;
+                    double z = shiftZ / 256f;
+                    
+                    frameTransform.Scale = shiftDenominator / 256f;
 
-                    if (Name.Contains("GOR") && i == 0)
-                    {
-                        
-                    }
+                    frameTransform.Translation = new vec3((float)x, (float)y, (float)z);
                 }
                 else
                 {
                     frameTransform.Translation = vec3.Zero;
                 }
+
                 
                 frameTransform.Rotation = new quat(rotX, rotY, rotZ, rotDenominator).Normalized;
                 

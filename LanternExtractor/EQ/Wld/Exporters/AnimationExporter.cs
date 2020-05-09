@@ -78,6 +78,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Rotation.w);
                     _export.Append(",");
                     
+                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[frame].Scale);
+                    _export.Append(",");
+                    
                     _export.Append(skeleton.Tree[i].Track.FrameMs);
                     _export.AppendLine();
                 }

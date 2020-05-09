@@ -232,6 +232,8 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public vec4 Rotation2;
         public vec3 Rotation3;
 
+        public float Scale;
+
         public float padding;
 
         

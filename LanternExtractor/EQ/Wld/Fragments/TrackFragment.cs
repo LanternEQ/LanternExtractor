@@ -18,7 +18,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public bool IsProcessed { get; set; }
         
-        // TODO: Determine what this does
         public int FrameMs { get; set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -30,8 +29,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
+
+            if (Name.Contains("TEMP"))
+            {
+                
+            }
             
             int reference = reader.ReadInt32();
+            
+            TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
+
+            if (TrackDefFragment == null)
+            {
+                logger.LogError("Bad track def reference'");
+            }
+
             
             // Either 4 or 5 - maybe something to look into
             // Bits are set 0, or 2. 0 has the extra field for delay.
@@ -47,13 +59,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             else
             {
                 FrameMs = 0;
-            }
-            
-            TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
-
-            if (TrackDefFragment == null)
-            {
-                logger.LogError("Bad track def reference'");
             }
             
             if (reader.BaseStream.Position != reader.BaseStream.Length)
