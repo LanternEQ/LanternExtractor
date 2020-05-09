@@ -76,7 +76,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The animated vertex fragment (0x37) reference
         /// </summary>
-        public MeshAnimatedVertices AnimatedVertices { get; private set; }
+        public MeshAnimatedVerticesReference AnimatedVerticesReference { get; private set; }
 
         /// <summary>
         /// Set to true if there are non solid polygons in the mesh
@@ -113,6 +113,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 // placeable object
             }
+            else
+            {
+                
+            }
 
             if (Name.ToLower().Contains("templife"))
             {
@@ -125,9 +129,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             int meshAnimation = reader.ReadInt32();
 
+            // Vertex animation only
             if (meshAnimation != 0)
             {
-                AnimatedVertices = fragments[meshAnimation - 2] as MeshAnimatedVertices;
+                AnimatedVerticesReference = fragments[meshAnimation - 1] as MeshAnimatedVerticesReference;
             }
 
             int unknown = reader.ReadInt32();
@@ -138,8 +143,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Center = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
 
             // 3 unknown dwords
-            reader.BaseStream.Position += (4 * 3);
+            int unknownDword1 = reader.ReadInt32();
+            int unknownDword2 = reader.ReadInt32();
+            int unknownDword3 = reader.ReadInt32();
 
+            // Seems to be related to lighting models? (torches, etc.)
+            if (unknownDword1 != 0 || unknownDword2 != 0 || unknownDword3 != 0)
+            {
+                
+            }
+            
             MaxDistance = reader.ReadSingle();
 
             MinPosition = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
@@ -167,6 +180,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             short vertexTextureCount = reader.ReadInt16();
 
             short size9 = reader.ReadInt16();
+
+            if (size9 != 0)
+            {
+                
+            }
 
             float scale = 1.0f / (1 << reader.ReadInt16());
             
@@ -285,6 +303,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     TextureUvCoordinates.Add(new vec2(0.0f, 0.0f));
                 }
             }
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)
@@ -302,9 +325,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x36: Render group count: " + MaterialGroups.Count);
             logger.LogInfo("0x36: Export separate collision: " + ExportSeparateCollision);
 
-            if (AnimatedVertices != null)
+            if (AnimatedVerticesReference != null)
             {
-                logger.LogInfo("0x36: Animated mesh vertices reference: " + AnimatedVertices.Index);
+                logger.LogInfo("0x36: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
             }
         }
 

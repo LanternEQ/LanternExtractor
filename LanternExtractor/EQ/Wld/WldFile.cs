@@ -271,7 +271,7 @@ namespace LanternExtractor.EQ.Wld
         {
             _fragmentBuilder = new Dictionary<FragmentType, Func<WldFragment>>
             {
-                {FragmentType.FirstFragment, () => new FirstFragment()},
+                {FragmentType.FirstFragment, () => new GlobalAmbientLightColor()},
 
                 // Materials
                 {FragmentType.Bitmap, () => new Bitmap()},
@@ -316,7 +316,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.Fragment16, () => new Fragment16()},
                 {FragmentType.Fragment17, () => new Fragment17()},
                 {FragmentType.Fragment18, () => new Fragment18()},
-                {FragmentType.Fragment2F, () => new Fragment2F()},
+                {FragmentType.Fragment2F, () => new MeshAnimatedVerticesReference()},
             };
         }
         

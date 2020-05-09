@@ -110,16 +110,16 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
             }
 
-            if (mesh.AnimatedVertices != null)
+            if (mesh.AnimatedVerticesReference != null)
             {
                 _export.Append("ad");
                 _export.Append(",");
-                _export.Append(mesh.AnimatedVertices.Delay);
+                _export.Append(mesh.AnimatedVerticesReference.MeshAnimatedVertices.Delay);
                 _export.AppendLine();
 
-                for (var i = 0; i < mesh.AnimatedVertices.Frames.Count; i++)
+                for (var i = 0; i < mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count; i++)
                 {
-                    List<vec3> frame = mesh.AnimatedVertices.Frames[i];
+                    List<vec3> frame = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[i];
                     foreach (vec3 position in frame)
                     {
                         _export.Append("av");

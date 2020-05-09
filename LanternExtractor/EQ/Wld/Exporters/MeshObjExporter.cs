@@ -189,9 +189,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             int frameCount = 1;
 
-            if (mesh.AnimatedVertices != null)
+            if (mesh.AnimatedVerticesReference != null)
             {
-                frameCount += mesh.AnimatedVertices.Frames.Count;
+                MeshAnimatedVertices animatedVertices = mesh.AnimatedVerticesReference.MeshAnimatedVertices;
+                
+                frameCount += mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count;
             }
 
             for (int i = 0; i < frameCount; ++i)
@@ -213,12 +215,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                     else
                     {
-                        if (mesh.AnimatedVertices == null)
+                        if (mesh.AnimatedVerticesReference == null)
                         {
                             continue;
                         }
 
-                        vertex = mesh.AnimatedVertices.Frames[i - 1][usedVertex];
+                        vertex = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
                     vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x)).ToString(_numberFormat) + " " +
