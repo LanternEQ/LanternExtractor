@@ -96,10 +96,10 @@
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\FirstFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\GlobalAmbientLightColor.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment2F.cs" />
+    <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />
     <Compile Include="EQ\Wld\Fragments\FragmentType.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
     <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
