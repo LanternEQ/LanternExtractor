@@ -91,7 +91,7 @@
     <Compile Include="EQ\Wld\Exporters\TextAssetExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\VertexColorsExporter.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
-    <Compile Include="EQ\Wld\Fragments\Bitmap.cs" />
+    <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
@@ -108,7 +108,7 @@
     <Compile Include="EQ\Wld\Fragments\Mesh.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVertices.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ModelReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\Actor.cs" />
     <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegionType.cs" />
     <Compile Include="EQ\Wld\Fragments\TrackFragment.cs" />

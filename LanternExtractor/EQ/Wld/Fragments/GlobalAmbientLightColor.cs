@@ -14,7 +14,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     public class GlobalAmbientLightColor : WldFragment
     {
         public Color Color { get; private set; }
-        
+
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -27,7 +27,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int colorValue = reader.ReadInt32();
             byte[] colorBytes = BitConverter.GetBytes(colorValue);
 
-            Color = new Color{R = colorBytes[2], G = colorBytes[1], B = colorBytes[0], A = colorBytes[3]};
+            Color = new Color {R = colorBytes[2], G = colorBytes[1], B = colorBytes[0], A = colorBytes[3]};
         }
     }
 }

@@ -53,7 +53,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     public class Material : WldFragment
     {
         /// <summary>
-        /// The TextureInfoReference (0x05) that this material uses
+        /// The BitmapInfoReference that this material uses
         /// </summary>
         public BitmapInfoReference BitmapInfoReference { get; private set; }
 
@@ -120,6 +120,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 BitmapInfoReference = fragments[reference6 - 1] as BitmapInfoReference;
             }
 
+            // Thanks to PixelBound for figuring this out
             MaterialType materialType = (MaterialType) (Parameters & ~0x80000000);
 
             switch (materialType)
@@ -199,7 +200,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 return bitmapNames;
             }
 
-            foreach (Bitmap bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
+            foreach (BitmapName bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
             {
                 string filename = bitmapName.Filename;
 

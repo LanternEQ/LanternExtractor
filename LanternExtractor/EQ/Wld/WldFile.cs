@@ -274,7 +274,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.FirstFragment, () => new GlobalAmbientLightColor()},
 
                 // Materials
-                {FragmentType.Bitmap, () => new Bitmap()},
+                {FragmentType.Bitmap, () => new BitmapName()},
                 {FragmentType.BitmapInfo, () => new BitmapInfo()},
                 {FragmentType.BitmapInfoReference, () => new BitmapInfoReference()},
                 {FragmentType.Material, () => new Material()},
@@ -291,7 +291,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.MeshReference, () => new MeshReference()},
 
                 // Animation
-                {FragmentType.ModelReference, () => new ModelReference()},
+                {FragmentType.ModelReference, () => new Actor()},
                 {FragmentType.SkeletonHierarchy, () => new SkeletonHierarchy()},
                 {FragmentType.HierSpriteFragment, () => new SkeletonHierarchyReference()},
                 {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
@@ -536,37 +536,36 @@ namespace LanternExtractor.EQ.Wld
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {
-                ModelReference modelReference = fragment as ModelReference;
+                Actor actor = fragment as Actor;
 
-                if (modelReference == null)
+                if (actor == null)
                 {
                     continue;
                 }
 
-                if (modelReference.SkeletonReferences.Count == 0)
+                if (actor.SkeletonReference == null)
                 {
                     continue;
                 }
 
-                foreach (var skeletonReference in modelReference.SkeletonReferences)
+
+                SkeletonHierarchy skeleton = actor.SkeletonReference.SkeletonHierarchy;
+                
+                SkeletonHierarchyExporter skeletonExporter = new SkeletonHierarchyExporter();
+                skeletonExporter.AddFragmentData(skeleton);
+                skeletonExporter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
+                
+                animatedMeshList.AddFragmentData(skeleton);
+
+                AnimationExporter animationExporter = new AnimationExporter();
+
+                foreach (var animationInstance in actor.SkeletonReference.SkeletonHierarchy.AnimationList)
                 {
-                    SkeletonHierarchy skeleton = skeletonReference.SkeletonHierarchy;
-                    
-                    SkeletonHierarchyExporter skeletonExporter = new SkeletonHierarchyExporter();
-                    skeletonExporter.AddFragmentData(skeleton);
-                    skeletonExporter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
-                    
-                    animatedMeshList.AddFragmentData(skeleton);
-
-                    AnimationExporter animationExporter = new AnimationExporter();
-
-                    foreach (var animationInstance in skeletonReference.SkeletonHierarchy.AnimationList)
-                    {
-                        animationExporter.SetTargetAnimation(animationInstance.Key);
-                        animationExporter.AddFragmentData(skeleton);
-                        animationExporter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) + "_" + animationInstance.Key + ".txt");
-                        animationExporter.ClearExportData();
-                    }
+                    animationExporter.SetTargetAnimation(animationInstance.Key);
+                    animationExporter.AddFragmentData(skeleton);
+                    animationExporter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
+                                                       "_" + animationInstance.Key + ".txt");
+                    animationExporter.ClearExportData();
                 }
             }
             

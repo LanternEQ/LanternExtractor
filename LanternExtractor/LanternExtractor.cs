@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "qeynos2";          
+            archiveName = "all";          
 #else
             if (args.Length != 1)
             {
@@ -176,9 +176,9 @@ namespace LanternExtractor
 
             if (IsModelsArchive(archiveName))
             {
-                /*WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
+                WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);*/
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);
             }
             else if (IsSkyArchive(archiveName))
             {
@@ -188,7 +188,7 @@ namespace LanternExtractor
             }
             else if (IsCharactersArchive(archiveName))
             {
-                /*WldFileCharacters wldFileToInject = null;
+                WldFileCharacters wldFileToInject = null;
                 
                 if (archiveName.StartsWith("global3_chr"))
                 {
@@ -208,7 +208,7 @@ namespace LanternExtractor
 
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);*/
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);
 
             }
             else if (IsObjectsArchive(archiveName))

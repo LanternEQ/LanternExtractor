@@ -70,7 +70,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Confirmed
             int fragment18Reference = reader.ReadInt32();
 
-            if (fragment18Reference != 0)
+            if (fragment18Reference > 0)
             {
                 _fragment18Reference = fragments[fragment18Reference - 1] as Fragment18;
             }

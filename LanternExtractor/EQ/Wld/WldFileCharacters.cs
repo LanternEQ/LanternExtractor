@@ -195,16 +195,16 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (WldFragment fragment in fragments)
             {
-                ModelReference modelReference = fragment as ModelReference;
+                Actor actor = fragment as Actor;
 
-                if (modelReference == null)
+                if (actor == null)
                 {
                     continue;
                 }
 
                 string actorName = fragment.Name.Replace("_ACTORDEF", "");
 
-                List<MeshReference> meshes = GetAllMeshesForModel(modelReference);
+                List<MeshReference> meshes = GetAllMeshesForModel(actor);
 
                 MeshReference mainMeshReference;
                 MaterialList materialList;
@@ -933,7 +933,7 @@ namespace LanternExtractor.EQ.Wld
             //File.WriteAllText("gor.mtl", textureList);
         }
 
-        List<MeshReference> GetAllMeshesForModel(ModelReference model)
+        List<MeshReference> GetAllMeshesForModel(Actor model)
         {
             List<MeshReference> meshes = new List<MeshReference>();
 
@@ -943,22 +943,26 @@ namespace LanternExtractor.EQ.Wld
             }
 
             // TODO: Set this up to work with all types of fragments
-            foreach (SkeletonHierarchyReference skeletonReference in model.SkeletonReferences)
+            var skeletonReference = model.SkeletonReference;
+
+            if (skeletonReference == null)
             {
-                // Should be meshes in here
-                foreach (MeshReference meshReference in skeletonReference.SkeletonHierarchy.Meshes)
-                {
-                    meshes.Add(meshReference);
-                }
+                return meshes;
+            }
+            
+            // Should be meshes in here
+            foreach (MeshReference meshReference in skeletonReference.SkeletonHierarchy.Meshes)
+            {
+                meshes.Add(meshReference);
+            }
 
-                var tree = skeletonReference.SkeletonHierarchy.Tree;
+            var tree = skeletonReference.SkeletonHierarchy.Tree;
 
-                foreach (var node in tree)
+            foreach (var node in tree)
+            {
+                if (node.MeshReference != null)
                 {
-                    if (node.MeshReference != null)
-                    {
-                        meshes.Add(node.MeshReference);
-                    }
+                    meshes.Add(node.MeshReference);
                 }
             }
 

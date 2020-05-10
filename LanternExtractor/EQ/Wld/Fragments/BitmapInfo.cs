@@ -6,7 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x04 - Texture Info
+    /// Bitmap Info (0x04)
+    /// Internal name: SPRITE
     /// This fragment contains a reference to a 0x03 fragment and information about animation
     /// </summary>
     public class BitmapInfo : WldFragment
@@ -17,12 +18,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public bool IsAnimated { get; private set; }
 
         /// <summary>
-        /// The bitmap names (0x03) referenced
+        /// The bitmap names referenced. 
         /// </summary>
-        public List<Bitmap> BitmapNames { get; private set; }
+        public List<BitmapName> BitmapNames { get; private set; }
 
         /// <summary>
-        /// The number of milliseconds before the next texture is swapped in (animation)
+        /// The number of milliseconds before the next texture is swapped.
         /// </summary>
         public int AnimationDelayMs { get; private set; }
 
@@ -32,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
-            BitmapNames = new List<Bitmap>();
+            BitmapNames = new List<BitmapName>();
 
             var reader = new BinaryReader(new MemoryStream(data));
 
@@ -42,21 +43,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             var bitAnalyzer = new BitAnalyzer(flags);
 
-            bool params3 = bitAnalyzer.IsBitSet(3);
+            IsAnimated = bitAnalyzer.IsBitSet(3);
 
-            int size1 = reader.ReadInt32();
+            int bitmapCount = reader.ReadInt32();
 
-            if (params3)
+            if (IsAnimated)
             {
-                IsAnimated = true;
                 AnimationDelayMs = reader.ReadInt32();
             }
 
-            for (int i = 0; i < size1; ++i)
+            for (int i = 0; i < bitmapCount; ++i)
             {
-                int bitmapIndex = reader.ReadInt32();
-
-                BitmapNames.Add(fragments[bitmapIndex - 1] as Bitmap);
+                int fragmentIndex = reader.ReadInt32() - 1;
+                BitmapNames.Add(fragments[fragmentIndex] as BitmapName);
+            }
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
             }
         }
 
@@ -80,8 +84,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     references += ", ";
                 }
 
-                Bitmap bitmap = BitmapNames[i];
-                references += (bitmap.Index + 1);
+                BitmapName bitmapName = BitmapNames[i];
+                references += (bitmapName.Index + 1);
             }
 
             logger.LogInfo("0x04: Reference(s): " + references);

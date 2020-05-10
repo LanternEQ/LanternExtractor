@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         public override void AddFragmentData(WldFragment data)
         {
-            ModelReference model = data as ModelReference;
+            Actor model = data as Actor;
             
             if (model == null)
             {

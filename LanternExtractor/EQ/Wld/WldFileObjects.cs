@@ -117,7 +117,7 @@ namespace LanternExtractor.EQ.Wld
 
                 foreach (WldFragment modelFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
                 {
-                    ModelReference model = modelFragment as ModelReference;
+                    Actor model = modelFragment as Actor;
 
                     if (model == null)
                     {
@@ -125,13 +125,13 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     // TODO: Can there ever be more than one?
-                    if (model.SkeletonReferences == null || model.SkeletonReferences.Count == 0)
+                    if (model.SkeletonReference == null)
                     {
                         continue;
                     }
 
                     // TODO: Handle more if they exist
-                    SkeletonHierarchy skeleton = model.SkeletonReferences[0].SkeletonHierarchy;
+                    SkeletonHierarchy skeleton = model.SkeletonReference.SkeletonHierarchy;
 
                     string skeletonName = FragmentNameCleaner.CleanName(skeleton);
 
@@ -172,19 +172,19 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {
-                ModelReference modelFragment = fragment as ModelReference;
+                Actor modelFragment = fragment as Actor;
 
                 if (modelFragment == null)
                 {
                     continue;
                 }
                 
-                if (modelFragment.SkeletonReferences == null || modelFragment.SkeletonReferences.Count == 0)
+                if (modelFragment.SkeletonReference == null)
                 {
                     continue;
                 }
 
-                SkeletonHierarchy skeleton = modelFragment.SkeletonReferences[0].SkeletonHierarchy;
+                SkeletonHierarchy skeleton = modelFragment.SkeletonReference.SkeletonHierarchy;
 
                 animation.AppendLine("# Sky Animation Test");
                 //animation.AppendLine("framecount," + skyModel.Frames);
