@@ -1,5 +1,4 @@
 ﻿using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -48,8 +47,22 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             base.ExportData();
+            ExportGlobalAmbientLightColor();
             ExportBspTree();
         }
+
+        private void ExportGlobalAmbientLightColor()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.GlobalAmbientLightColor))
+            {
+                _logger.LogWarning("Cannot export global ambient light color. No fragment found.");
+                return;
+            }
+            
+            GlobalAmbientLightColorExporter exporter = new GlobalAmbientLightColorExporter();
+
+            exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.GlobalAmbientLightColor][0] as GlobalAmbientLightColor);
+            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_ambient_light.txt");        }
 
         private void ExportBspTree()
         {
@@ -61,7 +74,6 @@ namespace LanternExtractor.EQ.Wld
             BspTreeExporter exporter = new BspTreeExporter();
 
             exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
-            
             exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_bsp_tree.txt");
         }
     }

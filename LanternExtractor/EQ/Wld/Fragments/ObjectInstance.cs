@@ -6,8 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x15 - Object Instance
-    /// Contains information about a single zone object instance
+    /// Object Instance (0x15)
+    /// Information about a single instance of an actor spawn.
     /// </summary>
     class ObjectInstance : WldFragment
     {
@@ -41,9 +41,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             var reader = new BinaryReader(new MemoryStream(data));
 
-            // No name reference
+            // Always 0 DW
             int unknown = reader.ReadInt32();
 
+            if (unknown != 0)
+            {
+                
+            }
+            
             // in main zone, points to 0x16, in object wld, it contains the object name
             int reference = reader.ReadInt32();
 
@@ -68,6 +73,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Fragment reference
+            // In main zone, it points to a 0x16 fragment
+            // In objects.wld, it is 0
             int unknown2 = reader.ReadInt32();
 
             if (unknown2 != 0)
@@ -75,7 +82,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
             }
             
+            // TODO: Are these safe coords in the main zone file? they come from server
             Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+
+            if (ObjectName.Contains("TEMP"))
+            {
+                
+            }
             
             // Rotation is strange. There is never any x rotation (roll)
             // The z rotation is negated

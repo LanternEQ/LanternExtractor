@@ -23,7 +23,9 @@ namespace LanternExtractor.Infrastructure
                 return null;
             }
 
-            string[] textLines = text.Split(new[] {Environment.NewLine}, StringSplitOptions.None);
+            string[] textLines = text.Split(new[] {Environment.NewLine, "\r\n", "\r", "\n"}, StringSplitOptions.None);
+            
+            
 
             return textLines.Where(line => !string.IsNullOrEmpty(line))
                 .Where(line => !line.StartsWith(commentChar.ToString())).ToList();

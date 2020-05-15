@@ -192,48 +192,6 @@ namespace LanternExtractor.EQ.Wld
                 {
                     _bspRegions.Add(newFragment as BspRegion);
                 }
-                
-                // Make UFOS
-                /*if (fragId == FragmentType.MeshReference)
-                {
-                    long cachedPos = reader.BaseStream.Position;
-                    long newPos = reader.BaseStream.Position = readPosition + 4;
-
-                    int value = reader.ReadInt32();
-
-                    if (value > 625)
-                    {
-                        // write something here
-                        writer.BaseStream.Position = readPosition + 4;
-
-                        int newValue = 621;
-
-                        var bytes = BitConverter.GetBytes(newValue);
-
-                        writer.Write(bytes[0]);
-                        writer.Write(bytes[1]);
-                        writer.Write(bytes[2]);
-                        writer.Write(bytes[3]);
-                    }
-
-                    reader.BaseStream.Position = cachedPos;
-                }*/
-                
-                if (fragId == FragmentType.SkeletonHierarchy)
-                {
-                    
-                        // write something here
-                        writer.BaseStream.Position = readPosition + 16;
-
-                        float newValue = 10f;
-
-                        var bytes = BitConverter.GetBytes(newValue);
-
-                        writer.Write(bytes[0]);
-                        writer.Write(bytes[1]);
-                        writer.Write(bytes[2]);
-                        writer.Write(bytes[3]);
-                }
 
                 _fragmentTypeDictionary[fragId].Add(newFragment);
             }
@@ -271,8 +229,6 @@ namespace LanternExtractor.EQ.Wld
         {
             _fragmentBuilder = new Dictionary<FragmentType, Func<WldFragment>>
             {
-                {FragmentType.FirstFragment, () => new GlobalAmbientLightColor()},
-
                 // Materials
                 {FragmentType.Bitmap, () => new BitmapName()},
                 {FragmentType.BitmapInfo, () => new BitmapInfo()},
@@ -302,6 +258,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.LightReference, () => new LightSourceReference()},
                 {FragmentType.LightInstance, () => new LightInstance()},
                 {FragmentType.AmbientLight, () => new AmbientLight()},
+                {FragmentType.GlobalAmbientLightColor, () => new GlobalAmbientLightColor()},
 
                 // Vertex colors
                 {FragmentType.VertexColor, () => new VertexColors()},

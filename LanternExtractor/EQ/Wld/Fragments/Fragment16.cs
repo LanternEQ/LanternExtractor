@@ -21,7 +21,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             // Should be 0.1
-            float unknown = reader.ReadSingle();
+            //float unknown = reader.ReadSingle();
+            int unknown = reader.ReadInt32();
+
+            // Int representation of 0.1
+            if (unknown != 1036831949)
+            {
+                
+            }
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

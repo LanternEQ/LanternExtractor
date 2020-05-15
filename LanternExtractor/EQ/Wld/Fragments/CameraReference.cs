@@ -29,6 +29,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // Usually 0
             int flags = reader.ReadInt32();
+
+            if (flags != 0)
+            {
+                
+            }
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

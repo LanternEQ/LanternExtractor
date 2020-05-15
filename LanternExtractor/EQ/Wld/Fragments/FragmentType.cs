@@ -2,7 +2,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     public enum FragmentType
     {
-        FirstFragment = 0x35,
         Bitmap = 0x03,
         BitmapInfo = 0x04,
         BitmapInfoReference = 0x05,
@@ -16,6 +15,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         BspRegion = 0x22,
         BspRegionType = 0x29,
         AmbientLight = 0x2A,
+        GlobalAmbientLightColor = 0x35,
         Mesh = 0x36,
         MeshReference = 0x2D,
         MeshVertexAnimation = 0x37,

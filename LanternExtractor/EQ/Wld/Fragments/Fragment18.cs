@@ -21,6 +21,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int fragment17Reference = reader.ReadInt32();
 
             _fragment17Reference = fragments[fragment17Reference - 1] as Fragment17;
+            
+            float params1 = reader.ReadSingle();
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
         
         public override void OutputInfo(ILogger logger)
