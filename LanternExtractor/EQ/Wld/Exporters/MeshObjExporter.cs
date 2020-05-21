@@ -133,7 +133,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
 
                     // This is the culprit.
-                    if (!mesh.Indices[currentPolygon].Solid && _objExportType == ObjExportType.Collision)
+                    if (!mesh.Indices[currentPolygon].IsSolid && _objExportType == ObjExportType.Collision)
                     {
                         activeArray = unusedVertices;
                         AddIfNotContained(activeArray, mesh.Indices[currentPolygon].Vertex1);

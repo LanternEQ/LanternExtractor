@@ -50,10 +50,10 @@ namespace LanternExtractor.EQ.Wld
 
                 if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
                 {
-                    MeshIntermediateExporter meshExporter = new MeshIntermediateExporter();
+                    MeshIntermediateExporter meshExporter = new MeshIntermediateExporter(_settings.ExportZoneMeshGroups);
                     meshExporter.AddFragmentData(fragment);
                     meshExporter.WriteAssetToFile(objectsExportFolder + meshName + ".txt");
-                }
+                }    
                 else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
                 {
                     MeshObjExporter meshExporter = new MeshObjExporter(ObjExportType.Textured,

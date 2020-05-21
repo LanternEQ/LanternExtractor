@@ -20,6 +20,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public List<SkeletonNode> Tree { get; set; }
 
         public Dictionary<string, int> AnimationList;
+        public Dictionary<string, int> AnimationDelayList;
 
         public Fragment18 _fragment18Reference;
         
@@ -34,6 +35,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             AnimationList = new Dictionary<string, int>();
+            AnimationDelayList = new Dictionary<string, int>();
             Tree = new List<SkeletonNode>();
             Meshes = new List<MeshReference>();
             Skeleton = new List<SkeletonPieceData>();
@@ -137,6 +139,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 if (frames > AnimationList[animName])
                 {
                     AnimationList[animName] = frames;
+                }
+
+                int delay = (fragments[trackReferenceIndex - 1] as TrackFragment).FrameMs;
+                if (delay != 0)
+                {
+                    AnimationDelayList[animName] = delay * AnimationList[animName];
                 }
 
                 // If it's a negative number, it's a string hash reference. 

@@ -117,12 +117,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 
             }
-
-            if (Name.ToLower().Contains("templife"))
-            {
-                
-            }
-
+            
             int textureList = reader.ReadInt32();
 
             MaterialList = fragments[textureList - 1] as MaterialList;
@@ -241,7 +236,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 Indices.Add(new Polygon()
                 {
-                    Solid = isSolid,
+                    IsSolid = isSolid,
                     Vertex1 = reader.ReadInt16(),
                     Vertex2 = reader.ReadInt16(),
                     Vertex3 = reader.ReadInt16(),

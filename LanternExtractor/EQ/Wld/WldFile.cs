@@ -408,7 +408,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
             {
-                MeshIntermediateExporter exporter = new MeshIntermediateExporter();
+                MeshIntermediateExporter exporter = new MeshIntermediateExporter(useGroups);
 
                 foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
                 {
@@ -431,9 +431,18 @@ namespace LanternExtractor.EQ.Wld
                 foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
                 {
                     mtlExporter.AddFragmentData(fragment);
+                    
+                    if (useGroups)
+                    {
+                        mtlExporter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ "_materials.txt");
+                        mtlExporter.ClearExportData();
+                    }
                 }
-            
-                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
+
+                if (!useGroups)
+                {
+                    mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
+                }
             }
             else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
             {
@@ -457,7 +466,7 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        private string GetExportFolderForWldType()
+        protected string GetExportFolderForWldType()
         {
             switch (_wldType)
             {

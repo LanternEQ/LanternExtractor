@@ -8,10 +8,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class MeshIntermediateExporter : TextAssetExporter
     {
+        private bool _useGroups;
         private int _currentBaseIndex;
 
-        public MeshIntermediateExporter()
+        public MeshIntermediateExporter(bool useGroups)
         {
+            _useGroups = useGroups;
             _export.AppendLine("# Lantern Test Intermediate Format");
         }
         
@@ -135,8 +137,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
             }
-            
-            _currentBaseIndex += mesh.Vertices.Count;
+
+            if (!_useGroups)
+            {
+                _currentBaseIndex += mesh.Vertices.Count;
+            }
         }
     }
 }
