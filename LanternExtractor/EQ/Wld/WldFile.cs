@@ -428,13 +428,13 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Models:
                 case WldType.ZoneObjects:
                 case WldType.Lights:
-                    return _zoneName + "/";
+                    return GetRootExportFolder();
                 case WldType.Objects:
-                    return _zoneName + "/Objects/";
+                    return GetRootExportFolder() + "Objects/";
                 case WldType.Sky:
-                    return "Sky/";
+                    return "sky/";
                 case WldType.Characters:
-                    return _zoneName + "/Characters/";
+                    return GetRootExportFolder() + "Characters/";
                 default:
                     return string.Empty;
             }
