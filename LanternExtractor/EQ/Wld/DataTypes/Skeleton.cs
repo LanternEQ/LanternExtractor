@@ -132,6 +132,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
 
         // The children indices in the tree
         public List<int> Children;
+        public bool IsHandled { get; set; }
     }
 
     public class Animation

@@ -2,9 +2,9 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class TextureListExporter : TextAssetExporter
+    public class TextureListWriter : TextAssetWriter
     {
-        public TextureListExporter()
+        public TextureListWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Texture List Information");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +

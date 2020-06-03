@@ -4,9 +4,9 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class SkeletonHierarchyExporter : TextAssetExporter
+    public class SkeletonHierarchyWriter : TextAssetWriter
     {
-        public SkeletonHierarchyExporter()
+        public SkeletonHierarchyWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
             _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh");

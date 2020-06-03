@@ -3,7 +3,7 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshIntermediateMaterialsExport : TextAssetExporter
+    public class MeshIntermediateMaterialsExport : TextAssetWriter
     {
         private Settings _settings;
         private string _modelName;

@@ -59,10 +59,10 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            GlobalAmbientLightColorExporter exporter = new GlobalAmbientLightColorExporter();
+            GlobalAmbientLightColorWriter writer = new GlobalAmbientLightColorWriter();
 
-            exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.GlobalAmbientLightColor][0] as GlobalAmbientLightColor);
-            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_ambient_light.txt");        }
+            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.GlobalAmbientLightColor][0] as GlobalAmbientLightColor);
+            writer.WriteAssetToFile(_zoneName + "/ambient_light.txt");        }
 
         private void ExportBspTree()
         {
@@ -71,10 +71,10 @@ namespace LanternExtractor.EQ.Wld
                 _logger.LogWarning("Cannot export BSP tree. No tree found.");
                 return;
             }
-            BspTreeExporter exporter = new BspTreeExporter();
+            BspTreeWriter writer = new BspTreeWriter();
 
-            exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
-            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_bsp_tree.txt");
+            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
+            writer.WriteAssetToFile(_zoneName + "/bsp_tree.txt");
         }
     }
 }

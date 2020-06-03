@@ -8,7 +8,7 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshObjExporter : TextAssetExporter
+    public class MeshObjWriter : TextAssetWriter
     {
         private Material _activeMaterial;
         private ObjExportType _objExportType;
@@ -21,7 +21,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
 
-        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, bool exportGroups, string zoneName, string forcedMeshList = "")
+        public MeshObjWriter(ObjExportType exportType, bool exportHiddenGeometry, bool exportGroups, string zoneName, string forcedMeshList = "")
         {
             _objExportType = exportType;
             _exportHiddenGeometry = exportHiddenGeometry;

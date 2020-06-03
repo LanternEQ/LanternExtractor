@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "neriaka";          
+            archiveName = "arena";          
 #else
             if (args.Length != 1)
             {
@@ -188,7 +188,7 @@ namespace LanternExtractor
             }
             else if (IsCharactersArchive(archiveName))
             {
-                /*WldFileCharacters wldFileToInject = null;
+                WldFileCharacters wldFileToInject = null;
                 
                 if (archiveName.StartsWith("global3_chr"))
                 {
@@ -208,7 +208,7 @@ namespace LanternExtractor
 
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);*/
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);
             }
             else if (IsObjectsArchive(archiveName))
             {

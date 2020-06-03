@@ -3,7 +3,7 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshListExporter : TextAssetExporter
+    public class MeshListWriter : TextAssetWriter
     {
         public override void AddFragmentData(WldFragment data)
         {

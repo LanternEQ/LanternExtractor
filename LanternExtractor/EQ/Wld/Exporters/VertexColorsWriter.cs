@@ -3,9 +3,9 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class VertexColorsExporter : TextAssetExporter
+    public class VertexColorsWriter : TextAssetWriter
     {
-        public VertexColorsExporter()
+        public VertexColorsWriter()
         {
             AddHeader();
         }

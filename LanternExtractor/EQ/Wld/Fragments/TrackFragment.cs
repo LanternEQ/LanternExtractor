@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -19,6 +21,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public bool IsProcessed { get; set; }
         
         public int FrameMs { get; set; }
+        
+        public string ModelName;
+        public string AnimationName;
+        public string PieceName;
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -29,10 +35,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-
-            if (Name.Contains("TEMP"))
+            
+            string cleanedName = FragmentNameCleaner.CleanName(this, false);
+            string nameBase = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            
+            if (!nameBase.Any(char.IsNumber))
             {
-                
+                AnimationName = "POS";
+                ModelName = nameBase;
+                PieceName = cleanedName == string.Empty ? "ROOT" : cleanedName;
+            }
+            else
+            {
+                AnimationName = nameBase;
+                ModelName = cleanedName.Substring(0, 3);
+                cleanedName = cleanedName.Remove(0, 3);
+                PieceName = cleanedName;
             }
             
             int reference = reader.ReadInt32();

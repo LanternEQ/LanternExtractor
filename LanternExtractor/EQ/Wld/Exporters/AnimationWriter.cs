@@ -2,11 +2,11 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class AnimationExporter : TextAssetExporter
+    public class AnimationWriter : TextAssetWriter
     {
         private string _targetAnimation;
 
-        public AnimationExporter()
+        public AnimationWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animation Test");
         }

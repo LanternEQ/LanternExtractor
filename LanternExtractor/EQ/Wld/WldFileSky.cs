@@ -32,7 +32,7 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            MeshListExporter meshListExporter = new MeshListExporter();
+            MeshListWriter meshListWriter = new MeshListWriter();
 
             foreach (var fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
@@ -43,12 +43,12 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
                 
-                meshListExporter.AddFragmentData(meshFragment);
+                meshListWriter.AddFragmentData(meshFragment);
             }
             
             string meshListPath = GetExportFolderForWldType() + "meshes.txt";
             
-            meshListExporter.WriteAssetToFile(meshListPath);
+            meshListWriter.WriteAssetToFile(meshListPath);
         }
 
         private void ExportSkySkeletonAndAnimation()
@@ -67,24 +67,24 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
                 
-                SkeletonHierarchyExporter skeletonExporter = new SkeletonHierarchyExporter();
-                skeletonExporter.AddFragmentData(skeleton);
+                SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
+                skeletonWriter.AddFragmentData(skeleton);
                
                 string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
                 Directory.CreateDirectory(skeletonsFolder);
-                skeletonExporter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
+                skeletonWriter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
                 
-                AnimationExporter animationExporter = new AnimationExporter();
+                AnimationWriter2 animationWriter = new AnimationWriter2();
                 
                 string animationsFolder = GetExportFolderForWldType() + "Animations/";
                 
                 foreach (var animationInstance in skeleton.AnimationList)
                 {
-                    animationExporter.SetTargetAnimation(animationInstance.Key);
-                    animationExporter.AddFragmentData(skeleton);
-                    animationExporter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
+                    animationWriter.SetTargetAnimation(animationInstance.Key);
+                    animationWriter.AddFragmentData(skeleton);
+                    animationWriter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
                                                        "_" + animationInstance.Key + ".txt");
-                    animationExporter.ClearExportData();
+                    animationWriter.ClearExportData();
                 }
             }
         }

@@ -303,6 +303,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 
             }
+
+            if (Vertices.Count != TextureUvCoordinates.Count)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

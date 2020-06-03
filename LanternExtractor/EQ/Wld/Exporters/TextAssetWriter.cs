@@ -5,7 +5,7 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public abstract class TextAssetExporter
+    public abstract class TextAssetWriter
     {
         protected StringBuilder _export = new StringBuilder();
         protected NumberFormatInfo _numberFormat = new NumberFormatInfo {NumberDecimalSeparator = "."};

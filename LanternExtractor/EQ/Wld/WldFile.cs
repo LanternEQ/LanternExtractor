@@ -16,6 +16,10 @@ namespace LanternExtractor.EQ.Wld
     /// </summary>
     public abstract class WldFile
     {
+        public string ZoneShortname => _zoneName;
+
+        public WldType WldType => _wldType;
+
         /// <summary>
         /// The link between fragment types and fragment classes
         /// </summary>
@@ -217,6 +221,16 @@ namespace LanternExtractor.EQ.Wld
             return true;
         }
 
+        public List<WldFragment> GetFragmentsOfType(FragmentType type)
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(type))
+            {
+                return null;
+            }
+
+            return _fragmentTypeDictionary[type];
+        }
+
         protected virtual void ProcessData()
         {
             
@@ -356,14 +370,14 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            MaterialListExporter export = new MaterialListExporter();
+            MaterialListWriter export = new MaterialListWriter();
 
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
                 export.AddFragmentData(listFragment);
             }
 
-            string exportFilename = _zoneName + "/" + _zoneName + "_materials";
+            string exportFilename = _zoneName + "/materials";
 
             if (_wldType == WldType.Zone)
             {
@@ -389,102 +403,46 @@ namespace LanternExtractor.EQ.Wld
         
         private void ExportMeshes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
-            {
-                _logger.LogWarning("Cannot export meshes. No meshes found.");
-                return;
-            }
-
-            string zoneExportFolder = _zoneName + "/";
-
-            switch (_wldType)
-            {
-                case WldType.Zone:
-                    zoneExportFolder += "Zone/";
-                    break;
-            }
-            
-            bool useGroups = _settings.ExportZoneMeshGroups;
-
-            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
-            {
-                MeshIntermediateExporter exporter = new MeshIntermediateExporter(useGroups);
-
-                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
-                {
-                    exporter.AddFragmentData(fragment);
-
-                    if (useGroups)
-                    {
-                        exporter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ ".txt");
-                        exporter.ClearExportData();
-                    }
-                }
-
-                if (!useGroups)
-                {
-                    exporter.WriteAssetToFile(zoneExportFolder + _zoneName + ".txt");
-                }
-
-                MeshIntermediateMaterialsExport mtlExporter = new MeshIntermediateMaterialsExport(_settings, _zoneName);
-
-                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
-                {
-                    mtlExporter.AddFragmentData(fragment);
-                    
-                    if (useGroups)
-                    {
-                        mtlExporter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ "_materials.txt");
-                        mtlExporter.ClearExportData();
-                    }
-                }
-
-                if (!useGroups)
-                {
-                    mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_materials.txt");
-                }
-            }
-            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
-            {
-                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, true, "sky", "sky");
-
-                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
-                {
-                    exporter.AddFragmentData(fragment);
-                }
-            
-                exporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.ObjFormatExtension);
-            
-                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
-
-                foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.MaterialList])
-                {
-                    mtlExporter.AddFragmentData(fragment);
-                }
-            
-                mtlExporter.WriteAssetToFile(zoneExportFolder + _zoneName + LanternStrings.FormatMtlExtension);
-            }
+            MeshExporter.ExportMeshes(this, _settings);
         }
 
-        protected string GetExportFolderForWldType()
+        protected void ExportMeshList()
+        {
+            int objectCount = _fragmentTypeDictionary[FragmentType.Mesh].Count;
+            ObjectListWriter objectWriter = new ObjectListWriter(objectCount);
+            
+            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            {
+                objectWriter.AddFragmentData(fragment);
+            }
+            
+            objectWriter.WriteAssetToFile(GetRootExportFolder() + "meshes.txt");
+        }
+
+        public string GetExportFolderForWldType()
         {
             switch (_wldType)
             {
                 case WldType.Zone:
                     return _zoneName + "/Zone/";
+                case WldType.Models:
                 case WldType.ZoneObjects:
                 case WldType.Lights:
-                    return _zoneName;
+                    return _zoneName + "/";
                 case WldType.Objects:
                     return _zoneName + "/Objects/";
                 case WldType.Sky:
                     return "Sky/";
                 case WldType.Characters:
                     return _zoneName + "/Characters/";
-                case WldType.Models:
                 default:
-                    return "?";
+                    return string.Empty;
             }
+        }
+
+        public string GetRootExportFolder()
+        {
+            return _zoneName + "/";
         }
 
         private void ExportAnimations()
@@ -498,7 +456,7 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            AnimatedMeshListExporter animatedMeshList = new AnimatedMeshListExporter();
+            AnimatedMeshListWriter animatedMeshList = new AnimatedMeshListWriter();
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {
@@ -517,25 +475,34 @@ namespace LanternExtractor.EQ.Wld
 
                 SkeletonHierarchy skeleton = actor.SkeletonReference.SkeletonHierarchy;
                 
-                SkeletonHierarchyExporter skeletonExporter = new SkeletonHierarchyExporter();
-                skeletonExporter.AddFragmentData(skeleton);
-                skeletonExporter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
+                SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
+                skeletonWriter.AddFragmentData(skeleton);
+                skeletonWriter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
                 
                 animatedMeshList.AddFragmentData(skeleton);
 
-                AnimationExporter animationExporter = new AnimationExporter();
+                AnimationWriter animationWriter = new AnimationWriter();
 
                 foreach (var animationInstance in actor.SkeletonReference.SkeletonHierarchy.AnimationList)
                 {
-                    animationExporter.SetTargetAnimation(animationInstance.Key);
-                    animationExporter.AddFragmentData(skeleton);
-                    animationExporter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
+                    animationWriter.SetTargetAnimation(animationInstance.Key);
+                    animationWriter.AddFragmentData(skeleton);
+                    animationWriter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
                                                        "_" + animationInstance.Key + ".txt");
-                    animationExporter.ClearExportData();
+                    animationWriter.ClearExportData();
                 }
             }
+
+            // TODO: Fix
+            if (_wldType == WldType.Objects)
+            {
+                animatedMeshList.WriteAssetToFile(_zoneName + "/animated_meshes.txt");
+            }
             
-            animatedMeshList.WriteAssetToFile(_zoneName + "/animated_meshes.txt");
+            if(_wldType == WldType.Characters)
+            {
+                animatedMeshList.WriteAssetToFile(_zoneName + "/characters.txt");
+            }
         }
     }
 }

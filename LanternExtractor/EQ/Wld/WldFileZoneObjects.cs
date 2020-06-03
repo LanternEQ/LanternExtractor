@@ -28,14 +28,14 @@ namespace LanternExtractor.EQ.Wld
 
             string zoneExportFolder = _zoneName + "/";
 
-            ObjectInstanceExporter exporter = new ObjectInstanceExporter();
+            ObjectInstanceWriter writer = new ObjectInstanceWriter();
 
             foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
             {
-                exporter.AddFragmentData(objectInstanceFragment);
+                writer.AddFragmentData(objectInstanceFragment);
             }
             
-            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_object_instances.txt");
+            writer.WriteAssetToFile(zoneExportFolder + "object_instances.txt");
         }
         
         private void ExportObjectVertexColors()
@@ -48,7 +48,7 @@ namespace LanternExtractor.EQ.Wld
 
             string zoneExportFolder = _zoneName + "/Objects/VertexColors/";
 
-            VertexColorsExporter exporter = new VertexColorsExporter();
+            VertexColorsWriter writer = new VertexColorsWriter();
 
             foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
             {
@@ -59,9 +59,9 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
                 
-                exporter.AddFragmentData(vertexColors);
-                exporter.WriteAssetToFile(zoneExportFolder + "vc_" + vertexColors.Index + ".txt");
-                exporter.ClearExportData();
+                writer.AddFragmentData(vertexColors);
+                writer.WriteAssetToFile(zoneExportFolder + "vc_" + vertexColors.Index + ".txt");
+                writer.ClearExportData();
             }
         }
     }

@@ -6,11 +6,11 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MaterialListExporter : TextAssetExporter
+    public class MaterialListWriter : TextAssetWriter
     {
         private List<string> _processedFragments = new List<string>();
         
-        public MaterialListExporter()
+        public MaterialListWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +

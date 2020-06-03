@@ -2,9 +2,9 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class GlobalAmbientLightColorExporter : TextAssetExporter
+    public class GlobalAmbientLightColorWriter : TextAssetWriter
     {
-        public GlobalAmbientLightColorExporter()
+        public GlobalAmbientLightColorWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Global Ambient Light Color");
             _export.AppendLine(LanternStrings.ExportHeaderFormat + "R, G, B");

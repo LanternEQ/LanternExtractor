@@ -254,7 +254,7 @@ namespace LanternExtractor.EQ.Sound
                 exportHeader.AppendLine("# Format: SoundType, PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, CooldownDay, CooldownNight, RandomDelay");
 
                 Directory.CreateDirectory(zoneName + "/");
-                File.WriteAllText(zoneName + "/" + zoneName + "_sounds.txt", exportHeader.ToString() + soundExport);
+                File.WriteAllText(zoneName + "/sounds.txt", exportHeader.ToString() + soundExport);
             }
 
             if (musicExport.Length != 0)
@@ -264,7 +264,7 @@ namespace LanternExtractor.EQ.Sound
                 exportHeader.AppendLine("# Format: PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, DayLoopCount, NightLoopCount, FadeOutMs");
 
                 Directory.CreateDirectory(zoneName + "/");
-                File.WriteAllText(zoneName + "/" + zoneName + "_music.txt", exportHeader.ToString() + musicExport);
+                File.WriteAllText(zoneName + "/music.txt", exportHeader.ToString() + musicExport);
             }
         }
 
