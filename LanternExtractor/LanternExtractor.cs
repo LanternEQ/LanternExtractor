@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "arena";          
+            archiveName = "arena";  
 #else
             if (args.Length != 1)
             {

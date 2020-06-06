@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -353,16 +351,17 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected virtual void ExportData()
         {
+            ExportActors();
             ExportMaterialList();
             ExportMeshes();
-            ExportAnimations();
+            ExportSkeletonAndAnimations();
         }
 
         /// <summary>
         /// Exports the list of all textures
         /// This is not the same as the material definition files associated with each model
         /// </summary>
-        protected void ExportMaterialList()
+        private void ExportMaterialList()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
@@ -416,7 +415,7 @@ namespace LanternExtractor.EQ.Wld
                 objectWriter.AddFragmentData(fragment);
             }
             
-            objectWriter.WriteAssetToFile(GetRootExportFolder() + "meshes.txt");
+            objectWriter.WriteAssetToFile(GetRootExportFolder() + "meshes_" + _wldType.ToString().ToLower() + ".txt");
         }
 
         public string GetExportFolderForWldType()
@@ -440,68 +439,68 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        public string GetRootExportFolder()
+        private string GetRootExportFolder()
         {
             return _zoneName + "/";
         }
 
-        private void ExportAnimations()
+        private void ExportActors()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
+            {
+                return;
+            }
+            
+            ActorWriter actorWriterStatic = new ActorWriter(false);
+            ActorWriter actorWriterAnimated = new ActorWriter(true);
+
+            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            {
+                actorWriterStatic.AddFragmentData(actorFragment);
+                actorWriterAnimated.AddFragmentData(actorFragment);
+            }
+            
+            string exportPath = GetRootExportFolder();
+            exportPath += "actors_" + _wldType.ToString().ToLower();
+            
+            actorWriterStatic.WriteAssetToFile(exportPath + "_static.txt");
+            actorWriterAnimated.WriteAssetToFile(exportPath + "_animated.txt");
+        }
+        
+        protected void ExportSkeletonAndAnimations()
         {
             string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
             string animationsFolder = GetExportFolderForWldType() + "Animations/";
-
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
+            
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
             {
                 _logger.LogWarning("Cannot export animations. No model references.");
                 return;
             }
+
+            SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
+            AnimationWriter animationWriter = new AnimationWriter(_wldType == WldType.Characters);
             
-            AnimatedMeshListWriter animatedMeshList = new AnimatedMeshListWriter();
-            
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
             {
-                Actor actor = fragment as Actor;
+                SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
 
-                if (actor == null)
+                if (skeleton == null)
                 {
                     continue;
                 }
-
-                if (actor.SkeletonReference == null)
-                {
-                    continue;
-                }
-
-
-                SkeletonHierarchy skeleton = actor.SkeletonReference.SkeletonHierarchy;
                 
-                SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
                 skeletonWriter.AddFragmentData(skeleton);
-                skeletonWriter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
-                
-                animatedMeshList.AddFragmentData(skeleton);
+                skeletonWriter.WriteAssetToFile(skeletonsFolder + skeleton.ModelBase + ".txt");
+                skeletonWriter.ClearExportData();
 
-                AnimationWriter animationWriter = new AnimationWriter();
-
-                foreach (var animationInstance in actor.SkeletonReference.SkeletonHierarchy.AnimationList)
+                foreach (var animation in skeleton.Animations)
                 {
-                    animationWriter.SetTargetAnimation(animationInstance.Key);
+                    animationWriter.SetTargetAnimation(animation.Key);
                     animationWriter.AddFragmentData(skeleton);
-                    animationWriter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
-                                                       "_" + animationInstance.Key + ".txt");
+                    animationWriter.WriteAssetToFile(animationsFolder + skeleton.ModelBase + "_" + animation.Key + ".txt");
                     animationWriter.ClearExportData();
                 }
-            }
-
-            // TODO: Fix
-            if (_wldType == WldType.Objects)
-            {
-                animatedMeshList.WriteAssetToFile(_zoneName + "/animated_meshes.txt");
-            }
-            
-            if(_wldType == WldType.Characters)
-            {
-                animatedMeshList.WriteAssetToFile(_zoneName + "/characters.txt");
             }
         }
     }

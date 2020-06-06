@@ -21,7 +21,6 @@ namespace LanternExtractor.EQ.Wld
         {
 
             base.ExportData();
-            ExportSkySkeletonAndAnimation();
             ExportSkyMeshList();
         }
 
@@ -49,44 +48,6 @@ namespace LanternExtractor.EQ.Wld
             string meshListPath = GetExportFolderForWldType() + "meshes.txt";
             
             meshListWriter.WriteAssetToFile(meshListPath);
-        }
-
-        private void ExportSkySkeletonAndAnimation()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
-            {
-                return;
-            }
-
-            foreach (var fragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
-            {
-                SkeletonHierarchy skeleton = fragment as SkeletonHierarchy;
-
-                if (skeleton == null)
-                {
-                    continue;
-                }
-                
-                SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
-                skeletonWriter.AddFragmentData(skeleton);
-               
-                string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
-                Directory.CreateDirectory(skeletonsFolder);
-                skeletonWriter.WriteAssetToFile(skeletonsFolder + FragmentNameCleaner.CleanName(skeleton)+ ".txt");
-                
-                AnimationWriter2 animationWriter = new AnimationWriter2();
-                
-                string animationsFolder = GetExportFolderForWldType() + "Animations/";
-                
-                foreach (var animationInstance in skeleton.AnimationList)
-                {
-                    animationWriter.SetTargetAnimation(animationInstance.Key);
-                    animationWriter.AddFragmentData(skeleton);
-                    animationWriter.WriteAssetToFile(animationsFolder + FragmentNameCleaner.CleanName(skeleton) +
-                                                       "_" + animationInstance.Key + ".txt");
-                    animationWriter.ClearExportData();
-                }
-            }
         }
     }
 }

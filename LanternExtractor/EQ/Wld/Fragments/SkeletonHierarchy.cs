@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -19,9 +21,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public List<SkeletonNode> Tree { get; set; }
 
-        public Dictionary<string, int> AnimationList;
-        public Dictionary<string, int> AnimationDelayList;
-
         public Fragment18 _fragment18Reference;
 
         public string ModelBase;
@@ -31,7 +30,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         // Mapping of bone names
         private Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary2 { get; set; }
 
-        public Dictionary<string, Animation2> _animations = new Dictionary<string, Animation2>();
+        public Dictionary<string, Animation2> Animations = new Dictionary<string, Animation2>();
         
         public Dictionary<int, string> _boneNameMapping = new Dictionary<int, string>();
         
@@ -42,9 +41,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            AnimationList = new Dictionary<string, int>();
-            AnimationDelayList = new Dictionary<string, int>();
+            
             Tree = new List<SkeletonNode>();
             Meshes = new List<MeshReference>();
             Skeleton = new List<SkeletonPieceData>();
@@ -58,7 +55,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Name is (OBJECT)_HS_DEF
             Name = stringHash[-reader.ReadInt32()];
 
-            ModelBase = FragmentNameCleaner.CleanName(this, false);
+            ModelBase = FragmentNameCleaner.CleanName(this, true);
 
             // Always 2 when used in main zone, and object files.
             // This means, it has a bounding radius
@@ -120,7 +117,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // Always 0 for object bones
                 // Confirmed
                 int boneFlags = reader.ReadInt32();
-                pieceNew.Flags = boneFlags;
 
                 if (boneFlags != 0)
                 {
@@ -130,13 +126,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // Reference to a bone track
                 // Confirmed - is never a bad reference
                 int trackReferenceIndex = reader.ReadInt32();
-                pieceNew.Track = fragments[trackReferenceIndex - 1] as TrackFragment;
+
+                TrackFragment track = fragments[trackReferenceIndex - 1] as TrackFragment;
+                AddTrackData(track, true);
+                pieceNew.Track = track;
                 
                 piece.Name = pieceNew.Track.PieceName;
                 pieceNew.Name = pieceNew.Track.PieceName;
                 _boneNameMapping[i] = pieceNew.Track.PieceName;
 
-                //pieceNew.Track.IsProcessed = true;
+                pieceNew.Track.IsProcessed = true;
                 
                 piece.AnimationTracks = new Dictionary<string, TrackFragment>();
 
@@ -145,30 +144,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     logger.LogError("Unable to link track reference!");
                 }
 
-                /*string animName = "POS";
-                piece.AnimationTracks[animName] = fragments[trackReferenceIndex - 1] as TrackFragment;
-                int frames = (fragments[trackReferenceIndex - 1] as TrackFragment).TrackDefFragment.Frames2.Count;
-                if (!AnimationList.ContainsKey(animName))
-                {
-                    AnimationList[animName] = 1;
-                }*/
-
-                /*if (frames > AnimationList[animName])
-                {
-                    AnimationList[animName] = frames;
-                }*/
-
-                /*int delay = (fragments[trackReferenceIndex - 1] as TrackFragment).FrameMs;
-                if (delay != 0)
-                {
-                    AnimationDelayList[animName] = delay * AnimationList[animName];
-                }*/
-
-                // If it's a negative number, it's a string hash reference. 
-                // The UFO has two but they are just related to the beam:
-                // BEAMP2_PCD, BEAMP1_PCD
-                // If it's a positive number, it's a mesh reference reference
-                // Confirmed
                 int meshReferenceIndex = reader.ReadInt32();
                 
                 if (meshReferenceIndex < 0)
@@ -200,8 +175,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     children.Add(childIndex);
                     pieceNew.Children.Add(childIndex);
                 }
-                
-                pieceNew.Tracks = new Dictionary<string, TrackFragment>();
                 
                 Tree.Add(pieceNew);
                 
@@ -265,28 +238,38 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x10: Skeleton pieces: " + Skeleton.Count);
         }
 
-        public void AddNewTrack(TrackFragment newTrack)
+        public void AddTrackData(TrackFragment track, bool isDefault = false)
         {
-            string animationName = newTrack.Name.Substring(0, 3);
-            string boneName = newTrack.Name.Substring(3);
-            boneName = boneName.Substring(0, boneName.Length - 6) + "_DAG";
+            string animationName = string.Empty;
+            string modelName = string.Empty;
+            string pieceName = string.Empty;
+            
+            string cleanedName = FragmentNameCleaner.CleanName(track, true);
 
-            if (!SkeletonPieceDictionary.ContainsKey(boneName))
-                return;
-
-            SkeletonPieceData piece = SkeletonPieceDictionary[boneName];
-
-            piece.AnimationTracks[animationName] = newTrack;
-        }
-
-        public void AddTrackData(TrackFragment track)
-        {
-            if (!_animations.ContainsKey(track.AnimationName))
+            if (isDefault)
             {
-                _animations[track.AnimationName] = new Animation2();
+                animationName = "pos";
+                modelName = ModelBase;
+                cleanedName = cleanedName.Replace(ModelBase, String.Empty);
+                pieceName = cleanedName == string.Empty ? "root" : cleanedName;
+            }
+            else
+            {
+                animationName = cleanedName.Substring(0, 3);
+                cleanedName = cleanedName.Remove(0, 3);
+                modelName = cleanedName.Substring(0, 3);
+                cleanedName = cleanedName.Remove(0, 3);
+                pieceName = cleanedName;
+            }
+
+            track.SetTrackData(modelName, animationName, pieceName);
+            
+            if (!Animations.ContainsKey(track.AnimationName))
+            {
+                Animations[track.AnimationName] = new Animation2();
             }
             
-            _animations[track.AnimationName].AddTrack(track);
+            Animations[track.AnimationName].AddTrack(track);
         }
         
         private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName, string runningIndex,
@@ -337,6 +320,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 FrameCount = track.TrackDefFragment.Frames2.Count;
             }
+
+            int totalTime = track.TrackDefFragment.Frames2.Count * track.FrameMs;
+
+            if (totalTime > AnimationTimeMs)
+            {
+                AnimationTimeMs = totalTime;
+            }
         }
+
+        public int AnimationTimeMs { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
@@ -5,10 +6,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
     public class AnimationWriter : TextAssetWriter
     {
         private string _targetAnimation;
-
-        public AnimationWriter()
+        private bool _isCharacterAnimation;
+        public AnimationWriter(bool isCharacterAnimation)
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animation Test");
+            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animation");
+            _isCharacterAnimation = isCharacterAnimation;
         }
 
         public void SetTargetAnimation(string animationName)
@@ -30,32 +32,40 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            if (!skeleton.AnimationList.ContainsKey(_targetAnimation))
+            if (!skeleton.Animations.ContainsKey(_targetAnimation))
             {
                 return;
             }
 
-            int frameCount = skeleton.AnimationList[_targetAnimation];
-
+            Animation2 anim = skeleton.Animations[_targetAnimation];
+            
             _export.AppendLine("# Animation Test: " + _targetAnimation);
-            _export.AppendLine("framecount," + frameCount);
-            if (skeleton.AnimationDelayList.ContainsKey(_targetAnimation))
-            {
-                _export.AppendLine("time," + skeleton.AnimationDelayList[_targetAnimation]);
-            }
-            else
-            {
-                _export.AppendLine("time,0");
-            }
+            _export.AppendLine("framecount," + anim.FrameCount);
+            _export.AppendLine("totalTimeMs," + anim.AnimationTimeMs);
 
             for (int i = 0; i < skeleton.Tree.Count; ++i)
             {
-                for (int j = 0; j < frameCount; ++j)
+                string boneName = skeleton._boneNameMapping[i];
+
+                if (boneName == "")
                 {
-                    if (j >= skeleton.Tree[i].Track.TrackDefFragment.Frames2.Count)
+                    continue;
+                }
+                
+                if (!anim.Tracks.ContainsKey(boneName))
+                {
+                    continue;
+                }
+                
+                for (int j = 0; j < anim.FrameCount; ++j)
+                {
+
+                    if (j >= anim.Tracks[boneName].TrackDefFragment.Frames2.Count)
                     {
                         break;
                     }
+
+                    BoneTransform boneTransform = anim.Tracks[boneName].TrackDefFragment.Frames2[j];
                     
                     _export.Append(skeleton.Tree[i].FullPath);
                     _export.Append(",");
@@ -63,31 +73,39 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(j);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Translation.x);
+                    _export.Append(boneTransform.Translation.x);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Translation.z);
+                    _export.Append(boneTransform.Translation.z);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Translation.y);
+                    _export.Append(boneTransform.Translation.y);
                     _export.Append(",");
 
-                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Rotation.x);
+                    _export.Append(-boneTransform.Rotation.x);
                     _export.Append(",");
 
-                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Rotation.z);
+                    _export.Append(-boneTransform.Rotation.z);
                     _export.Append(",");
 
-                    _export.Append(-skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Rotation.y);
+                    _export.Append(-boneTransform.Rotation.y);
                     _export.Append(",");
 
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Rotation.w);
+                    _export.Append(boneTransform.Rotation.w);
                     _export.Append(",");
                     
-                    _export.Append(skeleton.Tree[i].Track.TrackDefFragment.Frames2[j].Scale);
+                    _export.Append(boneTransform.Scale);
                     _export.Append(",");
+
+                    if (_isCharacterAnimation)
+                    {
+                        _export.Append(anim.AnimationTimeMs / anim.FrameCount);
+                    }
+                    else
+                    {
+                        _export.Append(skeleton.Tree[i].Track.FrameMs);
+                    }
                     
-                    _export.Append(skeleton.Tree[i].Track.FrameMs);
                     _export.AppendLine();
                 }
             }

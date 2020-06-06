@@ -49,6 +49,11 @@ namespace LanternExtractor.EQ.Wld
             base.ExportData();
             ExportGlobalAmbientLightColor();
             ExportBspTree();
+
+            if (_settings.ExportZoneMeshGroups)
+            {
+                ExportMeshList();
+            }
         }
 
         private void ExportGlobalAmbientLightColor()

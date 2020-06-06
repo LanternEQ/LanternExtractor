@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -56,7 +55,8 @@ namespace LanternExtractor.EQ.Wld
             base.ExportData();
 
             FindAllAnimationsNew();
-            ExportAllAnimations2();
+            ExportSkeletonAndAnimations();
+            ExportMeshList();
         }
 
         private void FindAllAnimationsNew()
@@ -97,6 +97,8 @@ namespace LanternExtractor.EQ.Wld
                         continue;
                     }
 
+                    track.ParseTrackData();
+
                     string modelName = track.ModelName;
                     string alternateModel = GetAnimationModelLink(modelName);
 
@@ -106,37 +108,6 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     skeleton.AddTrackData(track);
-                }
-            }
-        }
-
-        private void ExportAllAnimations2()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
-            {
-                return;
-            }
-
-            string path = GetExportFolderForWldType() + "Animations/";
-            Directory.CreateDirectory(path);
-            
-            AnimationWriter2 animationWriter = new AnimationWriter2();
-
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
-            {
-                SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
-
-                if (skeleton == null)
-                {
-                    continue;
-                }
-
-                foreach (var animation in skeleton._animations)
-                {
-                    animationWriter.SetTargetAnimation(animation.Key);
-                    animationWriter.AddFragmentData(skeleton);
-                    animationWriter.WriteAssetToFile(path + skeleton.ModelBase + "_" + animation.Key + ".txt");
-                    animationWriter.ClearExportData();
                 }
             }
         }

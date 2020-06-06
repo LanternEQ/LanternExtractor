@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -35,25 +36,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-            
-            string cleanedName = FragmentNameCleaner.CleanName(this, false);
-            string nameBase = cleanedName.Substring(0, 3);
-            cleanedName = cleanedName.Remove(0, 3);
-            
-            if (!nameBase.Any(char.IsNumber))
-            {
-                AnimationName = "POS";
-                ModelName = nameBase;
-                PieceName = cleanedName == string.Empty ? "ROOT" : cleanedName;
-            }
-            else
-            {
-                AnimationName = nameBase;
-                ModelName = cleanedName.Substring(0, 3);
-                cleanedName = cleanedName.Remove(0, 3);
-                PieceName = cleanedName;
-            }
-            
+
             int reference = reader.ReadInt32();
             
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
@@ -95,6 +78,31 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 logger.LogInfo("-----");
                 logger.LogInfo("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
             }
+        }
+
+        public void SetTrackData(string modelName, string animationName, string pieceName)
+        {
+            ModelName = modelName;
+            AnimationName = animationName;
+            PieceName = pieceName;
+        }
+
+        /// <summary>
+        /// This is only ever called when we are finding additional animations.
+        /// All animations that are not the default skeleton animations:
+        /// 1. Start with a 3 letter animation abbreviation (e.g. C05)
+        /// 2. Continue with a 3 letter model name
+        /// 3. Continue with the skeleton piece name
+        /// 4. End with _TRACK
+        /// </summary>
+        public void ParseTrackData()
+        {
+            string cleanedName = FragmentNameCleaner.CleanName(this, true);
+            AnimationName = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            ModelName = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            PieceName = cleanedName;
         }
     }
 }

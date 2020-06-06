@@ -16,7 +16,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
             
-            string exportFolder = wldFile.GetExportFolderForWldType();
+            string exportFolder = wldFile.GetExportFolderForWldType() + "Meshes/";
             
             TextAssetWriter meshWriter = null;
             TextAssetWriter collisionMeshWriter = null;
@@ -109,74 +109,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 materialListWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_materials.txt");
             }
-
-            /*
-            bool useGroups = _settings.ExportZoneMeshGroups;
-
-            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
-            {
-                MeshIntermediateAssetWriter assetWriter = new MeshIntermediateAssetWriter(useGroups, false);
-                MeshIntermediateAssetWriter collisionAssetWriter = new MeshIntermediateAssetWriter(useGroups, true);
-
-                foreach (WldFragment fragment in meshFragments)
-                {
-                    assetWriter.AddFragmentData(fragment);
-                    collisionAssetWriter.AddFragmentData(fragment);
-
-                    if (useGroups)
-                    {
-                        assetWriter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ ".txt");
-                        assetWriter.ClearExportData();
-                        
-                        collisionAssetWriter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ "_collision.txt");
-                        collisionAssetWriter.ClearExportData();
-                    }
-                }
-
-                if (!useGroups)
-                {
-                    assetWriter.WriteAssetToFile(zoneExportFolder + wldFile.ZoneShortname + ".txt");
-                    collisionAssetWriter.WriteAssetToFile(zoneExportFolder + wldFile.ZoneShortname + "_collision.txt");
-                }
-
-                MeshIntermediateMaterialsExport mtlExporter = new MeshIntermediateMaterialsExport(_settings, wldFile.ZoneShortname);
-
-                foreach (WldFragment fragment in materialListFragments)
-                {
-                    mtlExporter.AddFragmentData(fragment);
-                    
-                    if (useGroups)
-                    {
-                        mtlExporter.WriteAssetToFile(zoneExportFolder + FragmentNameCleaner.CleanName(fragment)+ "_materials.txt");
-                        mtlExporter.ClearExportData();
-                    }
-                }
-
-                if (!useGroups)
-                {
-                    mtlExporter.WriteAssetToFile(zoneExportFolder + wldFile.ZoneShortname + "_materials.txt");
-                }
-            }
-            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
-            {
-                MeshObjWriter writer = new MeshObjWriter(ObjExportType.Textured, false, true, "sky", "sky");
-
-                foreach (WldFragment fragment in meshFragments)
-                {
-                    writer.AddFragmentData(fragment);
-                }
-            
-                writer.WriteAssetToFile(zoneExportFolder + wldFile.ZoneShortname + LanternStrings.ObjFormatExtension);
-            
-                MeshObjMtlWriter mtlWriter = new MeshObjMtlWriter(_settings, wldFile.ZoneShortname);
-
-                foreach (WldFragment fragment in materialListFragments)
-                {
-                    mtlWriter.AddFragmentData(fragment);
-                }
-            
-                mtlWriter.WriteAssetToFile(zoneExportFolder + wldFile.ZoneShortname + LanternStrings.FormatMtlExtension);
-            }*/
         }
     }
 }

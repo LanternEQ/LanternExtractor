@@ -54,7 +54,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (reference < 0)
             {
-                ObjectName = stringHash[-reference].Replace("_ACTORDEF", "");
+                ObjectName = stringHash[-reference].Replace("_ACTORDEF", "").ToLower();
             }
             else
             {
