@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -231,7 +232,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     meshRef.Mesh.IsHandled = true;
                 }
             }
-            
+
             BuildSkeletonTreeData(0, Tree, string.Empty, string.Empty, new Dictionary<int, string>());
             
             // Confirmed end for objects
@@ -312,6 +313,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public void AddAdditionalMesh(Mesh mesh)
         {
             AdditionalMeshes.Add(mesh);
+            
+            // Sort additional mesh list (head ids can be out of order)
+            AdditionalMeshes = AdditionalMeshes.OrderBy(x => x.Name).ToList();
         }
     }
 
