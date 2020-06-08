@@ -439,7 +439,7 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        private string GetRootExportFolder()
+        protected string GetRootExportFolder()
         {
             return _zoneName + "/";
         }
@@ -496,9 +496,13 @@ namespace LanternExtractor.EQ.Wld
 
                 foreach (var animation in skeleton.Animations)
                 {
+                    var modelBase = string.IsNullOrEmpty(animation.Value.AnimModelBase)
+                        ? skeleton.ModelBase
+                        : animation.Value.AnimModelBase;
                     animationWriter.SetTargetAnimation(animation.Key);
                     animationWriter.AddFragmentData(skeleton);
-                    animationWriter.WriteAssetToFile(animationsFolder + skeleton.ModelBase + "_" + animation.Key + ".txt");
+                    string fileName = modelBase + "_" + animation.Key + ".txt";
+                    animationWriter.WriteAssetToFile(animationsFolder + fileName);
                     animationWriter.ClearExportData();
                 }
             }

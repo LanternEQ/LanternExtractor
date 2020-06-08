@@ -15,6 +15,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh Mesh { get; private set; }
 
+        public bool IsHandled;
+
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -33,11 +35,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 logger.LogError("Null mesh reference");
                 return;
-            }
-            
-            if (Mesh.Name.ToLower().Contains("templife"))
-            {
-                
             }
 
             int something = reader.ReadInt32();

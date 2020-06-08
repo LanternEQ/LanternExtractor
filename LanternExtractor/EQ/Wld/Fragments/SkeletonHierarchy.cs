@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -35,6 +34,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public Dictionary<int, string> _boneNameMapping = new Dictionary<int, string>();
         
         public float BoundingRadius;
+
+        public List<Mesh> AdditionalMeshes = new List<Mesh>();
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -214,11 +215,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
 
-                    if (meshRef != null)
+                    if (meshRef == null)
                     {
-                        // If this is not the first mesh, it's a secondary mesh and we need to determine the attach point
-                         Meshes.Add(meshRef);
+                        continue;
                     }
+                    
+                    // If this is not the first mesh, it's a secondary mesh and we need to determine the attach point
+                    Meshes.Add(meshRef);
+                    
+                    if (FragmentNameCleaner.CleanName(meshRef.Mesh) != ModelBase)
+                    {
+                        AdditionalMeshes.Add(meshRef.Mesh);
+                    }
+                    
+                    meshRef.Mesh.IsHandled = true;
                 }
             }
             
@@ -298,12 +308,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 BuildSkeletonTreeData(childNode, treeNodes, runningName, runningIndex, paths);
             }
         }
+
+        public void AddAdditionalMesh(Mesh mesh)
+        {
+            AdditionalMeshes.Add(mesh);
+        }
     }
 
     public class Animation2
     {
+        public string AnimModelBase;
         public Dictionary<string, TrackFragment> Tracks;
         public int FrameCount;
+        public int AnimationTimeMs { get; set; }
 
         public Animation2()
         {
@@ -316,6 +333,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Tracks[track.PieceName] = track;
 
+            if (string.IsNullOrEmpty(AnimModelBase) &&
+                !string.IsNullOrEmpty(track.ModelName))
+            {
+                AnimModelBase = track.ModelName;
+            }
+             
             if (track.TrackDefFragment.Frames2.Count > FrameCount)
             {
                 FrameCount = track.TrackDefFragment.Frames2.Count;
@@ -328,7 +351,5 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 AnimationTimeMs = totalTime;
             }
         }
-
-        public int AnimationTimeMs { get; set; }
     }
 }

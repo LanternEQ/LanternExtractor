@@ -84,7 +84,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public bool ExportSeparateCollision { get; private set; }
 
-        public bool Handled = false;
+        public bool IsHandled = false;
 
         public int StartTextureIndex = 0;
 

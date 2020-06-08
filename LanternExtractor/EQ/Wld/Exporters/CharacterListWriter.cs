@@ -1,3 +1,4 @@
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 
@@ -20,7 +21,30 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
             
-            _export.AppendLine(FragmentNameCleaner.CleanName(model));
+            _export.Append(FragmentNameCleaner.CleanName(model));
+
+            if (model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Count == 0)
+            {
+                _export.AppendLine();
+                return;
+            }
+
+            _export.Append(",");
+
+            string additionalModels = string.Empty;
+
+            foreach (var additionalModel in model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes)
+            {
+                additionalModels += FragmentNameCleaner.CleanName(additionalModel);
+
+                if (additionalModel != model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Last())
+                {
+                    additionalModels += ";";
+                }
+            }
+
+            _export.Append(additionalModels);
+            _export.AppendLine();
         }
     }
 }

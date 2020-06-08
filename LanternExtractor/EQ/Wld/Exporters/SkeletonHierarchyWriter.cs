@@ -6,14 +6,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class SkeletonHierarchyWriter : TextAssetWriter
     {
-        public SkeletonHierarchyWriter()
+        public override void AddFragmentData(WldFragment data)
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
             _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh");
-        }
-        
-        public override void AddFragmentData(WldFragment data)
-        {
+            
             SkeletonHierarchy skeleton = data as SkeletonHierarchy;
 
             if (skeleton == null)

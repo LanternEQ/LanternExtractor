@@ -76,6 +76,7 @@
     <Compile Include="EQ\Wld\Exporters\AnimatedMeshListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterAnimationListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\GlobalAmbientLightColorWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
