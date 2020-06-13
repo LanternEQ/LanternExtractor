@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             _export.Append(FragmentNameCleaner.CleanName(model));
 
-            if (model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Count == 0)
+            if (model.SkeletonReference == null || model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Count == 0)
             {
                 _export.AppendLine();
                 return;

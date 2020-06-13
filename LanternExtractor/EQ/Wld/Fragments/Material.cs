@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -237,6 +238,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetExportFilename();
+        }
+
+        public string GetFullMaterialName()
+        {
+            return MaterialList.GetMaterialPrefix(ShaderType) +
+                    FragmentNameCleaner.CleanName(this);        
         }
     }
 }

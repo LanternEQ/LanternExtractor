@@ -402,11 +402,16 @@ namespace LanternExtractor.EQ.Wld
         
         private void ExportMeshes()
         {
-            MeshExporter.ExportMeshes(this, _settings);
+            MeshExporter.ExportMeshes(this, _settings, _logger);
         }
 
         protected void ExportMeshList()
         {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
+            {
+                return;
+            }
+            
             int objectCount = _fragmentTypeDictionary[FragmentType.Mesh].Count;
             ObjectListWriter objectWriter = new ObjectListWriter(objectCount);
             
@@ -433,7 +438,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return "sky/";
                 case WldType.Characters:
-                    return GetRootExportFolder() + "Characters/";
+                    return _settings.ExportAllCharacterToSingleFolder ? "all/Characters/" : GetRootExportFolder() + "Characters/";
                 default:
                     return string.Empty;
             }
@@ -441,7 +446,7 @@ namespace LanternExtractor.EQ.Wld
 
         protected string GetRootExportFolder()
         {
-            return _zoneName + "/";
+            return _settings.ExportAllCharacterToSingleFolder ? "all/" : _zoneName + "/";
         }
 
         private void ExportActors()

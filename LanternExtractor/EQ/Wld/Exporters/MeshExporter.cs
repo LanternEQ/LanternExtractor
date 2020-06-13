@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
+using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
     public static class MeshExporter
     {
-        public static void ExportMeshes(WldFile wldFile, Settings _settings)
+        public static void ExportMeshes(WldFile wldFile, Settings _settings, ILogger logger)
         {
             List<WldFragment> meshFragments = wldFile.GetFragmentsOfType(FragmentType.Mesh);
             List<WldFragment> materialListFragments = wldFile.GetFragmentsOfType(FragmentType.MaterialList);
@@ -26,7 +27,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 meshWriter = new MeshIntermediateAssetWriter(_settings.ExportZoneMeshGroups, false);
                 collisionMeshWriter = new MeshIntermediateAssetWriter(_settings.ExportZoneMeshGroups, true);
-                materialListWriter = new MeshIntermediateMaterialsExport(_settings, wldFile.ZoneShortname);
+                materialListWriter = new MeshIntermediateMaterialsExport(_settings, wldFile.ZoneShortname, logger);
             }
 
             bool exportCollisionMesh = false;

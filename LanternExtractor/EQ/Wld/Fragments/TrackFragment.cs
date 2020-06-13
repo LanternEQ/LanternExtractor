@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -98,6 +96,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public void ParseTrackData()
         {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
+
+            if (cleanedName.Length < 6)
+            {
+                ModelName = cleanedName;
+                return;
+            }
+            
             AnimationName = cleanedName.Substring(0, 3);
             cleanedName = cleanedName.Remove(0, 3);
             ModelName = cleanedName.Substring(0, 3);

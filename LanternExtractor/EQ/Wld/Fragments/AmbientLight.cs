@@ -44,11 +44,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (LightReference.LightSource.IsColoredLight)
             {
-                logger.LogError("Ambient light value (true): " + LightReference.LightSource.Color);
+                //logger.LogError("Ambient light value (true): " + LightReference.LightSource.Color);
             }
             else
             {
-                logger.LogError("Ambient light value (false): " + LightReference.LightSource.SomeValue);
+                //logger.LogError("Ambient light value (false): " + LightReference.LightSource.SomeValue);
             }
             
             

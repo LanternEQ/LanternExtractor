@@ -23,7 +23,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             while (reader.BaseStream.Position < reader.BaseStream.Length)
             {
                 int value = reader.ReadInt32();
-                logger.LogError($"<{reader.BaseStream.Position - 4}>: {value}");
             }
 
             reader.BaseStream.Position = cachedPosition;

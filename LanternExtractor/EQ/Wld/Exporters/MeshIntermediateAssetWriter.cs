@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;

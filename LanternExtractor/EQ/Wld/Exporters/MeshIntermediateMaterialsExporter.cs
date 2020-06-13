@@ -1,5 +1,6 @@
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
+using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -7,11 +8,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         private Settings _settings;
         private string _modelName;
+        private ILogger _logger;
 
-        public MeshIntermediateMaterialsExport(Settings settings, string modelName)
+        public MeshIntermediateMaterialsExport(Settings settings, string modelName, ILogger logger)
         {
             _settings = settings;
             _modelName = modelName;
+            _logger = logger;
         }
 
         public override void AddFragmentData(WldFragment data)
@@ -32,12 +35,23 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                string materialName = MaterialList.GetMaterialPrefix(material.ShaderType) +
-                                      FragmentNameCleaner.CleanName(material);
+                string materialName = material.GetFullMaterialName();
 
                 _export.Append(i);
                 _export.Append(",");
                 _export.Append(materialName);
+
+                var skinVariants = list.GetMaterialVariants(material, _logger);
+
+                if (skinVariants.Count != 0)
+                {
+                    foreach (var variant in skinVariants)
+                    {
+                        _export.Append(";");
+                        _export.Append(variant);
+                    }
+                }
+                
                 _export.Append(",");
                 _export.Append(material.BitmapInfoReference.BitmapInfo.BitmapNames.Count);
 

@@ -125,6 +125,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     
                 }
 
+                if (Name.Contains("EYE"))
+                {
+                    
+                }
+
                 // Reference to a bone track
                 // Confirmed - is never a bad reference
                 int trackReferenceIndex = reader.ReadInt32();
@@ -223,11 +228,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     
                     // If this is not the first mesh, it's a secondary mesh and we need to determine the attach point
                     Meshes.Add(meshRef);
-                    
-                    if (FragmentNameCleaner.CleanName(meshRef.Mesh) != ModelBase)
+
+                    if (meshRef.Mesh == null)
                     {
-                        AdditionalMeshes.Add(meshRef.Mesh);
+                        logger.LogError("Null reference to mesh!");
+                        continue;
                     }
+                    
+                    //if (FragmentNameCleaner.CleanName(meshRef.Mesh) != ModelBase)
+                    //{
+                        AdditionalMeshes.Add(meshRef.Mesh);
+                    //}
                     
                     meshRef.Mesh.IsHandled = true;
                 }
@@ -266,6 +277,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else
             {
+                if (cleanedName.Length == 3)
+                {
+                    return;
+                }
                 animationName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
                 modelName = cleanedName.Substring(0, 3);
@@ -281,6 +296,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             Animations[track.AnimationName].AddTrack(track);
+            track.IsProcessed = true;
+            track.TrackDefFragment.IsAssigned = true;
         }
         
         private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName, string runningIndex,

@@ -55,10 +55,97 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             FindAdditionalAnimationsAndMeshes();
+            BuildSlotMapping();
+            FindMaterialVariants();
             base.ExportData();
             ExportMeshList();
             ExportAnimationList();
             ExportCharacterList();
+        }
+
+        private void BuildSlotMapping()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
+            {
+                return;
+            }
+
+            foreach (var meshListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            {
+                MaterialList materialList = meshListFragment as MaterialList;
+
+                if (materialList == null)
+                {
+                    continue;
+                }
+                
+                materialList.BuildSlotMapping(_logger);
+            }
+        }
+
+        private void FindMaterialVariants()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
+            {
+                return;
+            }
+            
+            foreach (var materialListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            {
+                MaterialList materialList = materialListFragment as MaterialList;
+
+                string materialListModelName = FragmentNameCleaner.CleanName(materialList);
+                
+                if (materialList == null)
+                {
+                    continue;
+                }
+
+                foreach (var materialFragment in _fragmentTypeDictionary[FragmentType.Material])
+                {
+                    Material material = materialFragment as Material;
+
+                    if (material == null)
+                    {
+                        continue;
+                    }
+                    
+                    if (material.Name == "BEAHE0102_MDF")
+                    {
+                        
+                    }
+                    
+                    if (material.IsHandled)
+                    {
+                        continue;
+                    }
+
+                    string materialName = FragmentNameCleaner.CleanName(material);
+
+                    if (materialName.StartsWith(materialListModelName))
+                    {
+                        materialList.AddVariant(material, _logger);
+                    }
+                }
+            }
+
+            // Check for debugging
+            foreach (var materialFragment in _fragmentTypeDictionary[FragmentType.Material])
+            {
+                Material material = materialFragment as Material;
+
+                if (material == null)
+                {
+                    continue;
+                }
+
+                if (material.IsHandled)
+                {
+                    continue;
+                }
+                
+                _logger.LogError("Material not assigned: " + material.Name);
+            }
         }
 
         private void ExportCharacterList()
@@ -69,7 +156,7 @@ namespace LanternExtractor.EQ.Wld
             }
             
             CharacterListWriter characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
-
+            
             foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {
                 characterListWriter.AddFragmentData(actorFragment);
@@ -84,15 +171,24 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
-            CharacterAnimationListWriter animationListWriter = new CharacterAnimationListWriter();
+
+            TextAssetWriter animationWriter = null;
+
+            if (!_settings.ExportAllCharacterToSingleFolder)
+            {
+                animationWriter = new CharacterAnimationListWriter();
+            }
+            else
+            {
+                animationWriter = new GlobalAnimationListWriter();
+            }
 
             foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
             {
-                animationListWriter.AddFragmentData(skeletonFragment);
+                animationWriter.AddFragmentData(skeletonFragment);
             }
             
-            animationListWriter.WriteAssetToFile(GetRootExportFolder() + "character_animations.txt");
+            animationWriter.WriteAssetToFile(GetRootExportFolder() + "character_animations.txt");
         }
 
         private void FindAdditionalAnimationsAndMeshes()
@@ -133,6 +229,11 @@ namespace LanternExtractor.EQ.Wld
                         continue;
                     }
 
+                    if (track.Name == "C05ALLPE_TRACK")
+                    {
+                        
+                    }
+
                     track.ParseTrackData();
 
                     string modelName = track.ModelName;
@@ -165,11 +266,24 @@ namespace LanternExtractor.EQ.Wld
                     {
                         skeleton.AddAdditionalMesh(mesh);
                     }
-                    else
-                    {
-                        _logger.LogError("Unable to assign additional mesh: " + cleanedName);
-                    }
                 }
+            }
+            
+            foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
+            {
+                TrackFragment track = trackFragment as TrackFragment;
+
+                if (track == null)
+                {
+                    continue;
+                }
+
+                if (track.IsProcessed)
+                {
+                    continue;
+                }
+                
+                _logger.LogError("Track not assigned: " + track.Name);
             }
         }
     }
