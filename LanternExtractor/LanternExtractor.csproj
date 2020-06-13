@@ -79,6 +79,7 @@
     <Compile Include="EQ\Wld\Exporters\CharacterAnimationListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\GlobalAmbientLightColorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\GlobalAnimationListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MaterialListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />

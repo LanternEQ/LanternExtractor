@@ -55,6 +55,11 @@ namespace LanternExtractor
         public ModelExportFormat ModelExportFormat { get; private set; }
 
         /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public bool ExportAllCharacterToSingleFolder { get; private set; }
+        
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -124,6 +129,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
                 ModelExportFormat = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+            }
+            
+            if (parsedSettings.ContainsKey("ExportAllCharacterToSingleFolder"))
+            {
+                ExportAllCharacterToSingleFolder = Convert.ToBoolean(parsedSettings["ExportAllCharacterToSingleFolder"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

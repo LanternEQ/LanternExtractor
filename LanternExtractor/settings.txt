@@ -1,7 +1,7 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-EverQuestDirectory = C:/EQC/Client
+EverQuestDirectory = C:/EQC/ClientBackup
 
 # Extract the contents of the S3D archive as is?
 # If true, this will export all contents as they exist in the archives to their original formats.
@@ -22,6 +22,8 @@ ExportHiddenGeometry = false
 # 0 = Intermediate, 1 = OBJ, 2 = FBX
 ModelExportFormat = 0
 
+ExportAllCharacterToSingleFolder = true
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
-LoggerVerbosity = 0
+LoggerVerbosity = 2
