@@ -78,8 +78,8 @@
     <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterAnimationListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\GlobalAmbientLightColorWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\GlobalAnimationListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AmbientLightColorWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MaterialListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />
@@ -102,7 +102,7 @@
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\GlobalAmbientLightColor.cs" />
+    <Compile Include="EQ\Wld\Fragments\AmbientLightColor.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />

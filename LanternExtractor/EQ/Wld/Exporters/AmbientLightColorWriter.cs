@@ -2,17 +2,17 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class GlobalAmbientLightColorWriter : TextAssetWriter
+    public class AmbientLightColorWriter : TextAssetWriter
     {
-        public GlobalAmbientLightColorWriter()
+        public AmbientLightColorWriter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Global Ambient Light Color");
+            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Ambient Light Color");
             _export.AppendLine(LanternStrings.ExportHeaderFormat + "R, G, B");
         }
         
         public override void AddFragmentData(WldFragment data)
         {
-            GlobalAmbientLightColor ambientLight = data as GlobalAmbientLightColor;
+            AmbientLightColor ambientLight = data as AmbientLightColor;
 
             if (ambientLight == null)
             {

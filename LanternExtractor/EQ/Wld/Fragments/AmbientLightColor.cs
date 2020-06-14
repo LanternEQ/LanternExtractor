@@ -11,7 +11,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Contains the color value which is added to boost the darkness in some zone.
     /// This fragment contains no name reference and is only found in the zone WLD (e.g. akanon.wld)
     /// </summary>
-    public class GlobalAmbientLightColor : WldFragment
+    public class AmbientLightColor : WldFragment
     {
         public Color Color { get; private set; }
 

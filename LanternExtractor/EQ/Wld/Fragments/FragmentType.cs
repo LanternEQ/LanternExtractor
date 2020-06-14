@@ -15,7 +15,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         BspRegion = 0x22,
         BspRegionType = 0x29,
         AmbientLight = 0x2A,
-        GlobalAmbientLightColor = 0x35,
+        AmbientLightColor = 0x35,
         Mesh = 0x36,
         MeshReference = 0x2D,
         MeshVertexAnimation = 0x37,

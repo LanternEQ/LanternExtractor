@@ -270,7 +270,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.LightReference, () => new LightSourceReference()},
                 {FragmentType.LightInstance, () => new LightInstance()},
                 {FragmentType.AmbientLight, () => new AmbientLight()},
-                {FragmentType.GlobalAmbientLightColor, () => new GlobalAmbientLightColor()},
+                {FragmentType.AmbientLightColor, () => new AmbientLightColor()},
 
                 // Vertex colors
                 {FragmentType.VertexColor, () => new VertexColors()},
