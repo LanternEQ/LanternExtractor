@@ -25,11 +25,6 @@ namespace LanternExtractor.EQ.Pfs
         private readonly string _rawExportPath;
 
         /// <summary>
-        /// The OS path to which the files will be extracted if we are processing the files
-        /// </summary>
-        private readonly string _exportPath;
-
-        /// <summary>
         /// The name of the PFS file we have loaded
         /// </summary>
         private readonly string _fileName;
@@ -67,16 +62,6 @@ namespace LanternExtractor.EQ.Pfs
             if (string.IsNullOrEmpty(_rawExportPath))
             {
                 logger.LogError("Invalid PFS path");
-                return;
-            }
-
-            if (filePath.EndsWith("_obj.s3d") || filePath.EndsWith("_chr.s3d") || filePath.EndsWith("_amr.s3d"))
-            {
-                _exportPath = _rawExportPath.Substring(0, _rawExportPath.Length - 4);
-            }
-            else
-            {
-                _exportPath = _rawExportPath;
             }
         }
 
@@ -271,7 +256,6 @@ namespace LanternExtractor.EQ.Pfs
             {
                 var i1 = i;
                 Thread thread = new Thread(() => WriteFile(i1, rawExport, subfolderName));
-                //WriteFile(i, rawExport, subfolderName);
             }
         }
 
@@ -321,30 +305,18 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index">The index of the file to write</param>
         /// <param name="rawExport">Dictates which folder the output goes into</param>
         /// <param name="subfolderName">An optional folder name to put the files into</param>
-        private void WriteFile(int index, bool rawExport, string subfolderName = "")
+        private void WriteFile(int index, bool rawExport, string folderName = "")
         {
             if (index < 0 || _files.Count <= index || _files[index].Bytes == null)
             {
                 return;
             }
 
-            string directoryPath = rawExport ? _rawExportPath : _exportPath;
-
-            if (string.IsNullOrEmpty(directoryPath))
-            {
-                return;
-            }
-
-            if (!string.IsNullOrEmpty(subfolderName))
-            {
-                directoryPath += "/" + subfolderName;
-            }
-
-            Directory.CreateDirectory(directoryPath);
+            Directory.CreateDirectory(folderName);
 
             var binaryWriter =
                 new BinaryWriter(
-                    File.OpenWrite(directoryPath + "/" + _files[index].Name));
+                    File.OpenWrite(folderName + "/" + _files[index].Name));
             binaryWriter.Write(_files[index].Bytes);
             binaryWriter.Close();
         }
@@ -395,20 +367,8 @@ namespace LanternExtractor.EQ.Pfs
             }
 
             string pngName = _files[index].Name.Substring(0, _files[index].Name.Length - 3) + "png";
-            string exportPath = Path.GetFileNameWithoutExtension(_exportPath) + "/";
-
-            if (!string.IsNullOrEmpty(folderName))
-            {
-                exportPath += folderName;
-            }
-
-            if (!exportPath.EndsWith("/"))
-            {
-                exportPath += "/";
-            }
-
             var byteStream = new MemoryStream(_files[index].Bytes);
-            ImageWriter.WriteImage(byteStream, exportPath, pngName, isMasked, !IsWldArchive, _logger);
+            ImageWriter.WriteImage(byteStream, folderName, pngName, isMasked, !IsWldArchive, _logger);
         }
 
         /// <summary>

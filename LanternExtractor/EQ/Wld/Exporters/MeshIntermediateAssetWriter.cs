@@ -256,15 +256,5 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _currentBaseIndex += mesh.Vertices.Count - unusedVertices;
             }
         }
-
-        private void AddIfDoesNotContain(List<int> list, int newValue)
-        {
-            if (list.Contains(newValue))
-            {
-                return;
-            }
-            
-            list.Add(newValue);
-        }
     }
 }

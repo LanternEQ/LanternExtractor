@@ -369,15 +369,25 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            MaterialListWriter export = new MaterialListWriter();
+            TextAssetWriter export = null;
+            string exportFilename = string.Empty;
+
+            if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+            {
+                export = new MaterialListGlobalWriter();
+                exportFilename = "all/materials";
+            }
+            else
+            {
+                export = new MaterialListWriter();
+                exportFilename = _zoneName + "/materials";
+            }
 
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
                 export.AddFragmentData(listFragment);
             }
-
-            string exportFilename = _zoneName + "/materials";
-
+            
             if (_wldType == WldType.Zone)
             {
                 exportFilename += "_zone";
@@ -413,14 +423,27 @@ namespace LanternExtractor.EQ.Wld
             }
             
             int objectCount = _fragmentTypeDictionary[FragmentType.Mesh].Count;
-            ObjectListWriter objectWriter = new ObjectListWriter(objectCount);
+
+            TextAssetWriter objectWriter = null;
+            string exportPath = string.Empty;
+
+            if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+            {
+                objectWriter = new ObjectListGlobalWriter(objectCount);
+                exportPath = "all/meshes_characters.txt";
+            }
+            else
+            {
+                objectWriter = new ObjectListWriter(objectCount);
+                exportPath = GetRootExportFolder() + "meshes_" + _wldType.ToString().ToLower() + ".txt";
+            }
             
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
                 objectWriter.AddFragmentData(fragment);
             }
             
-            objectWriter.WriteAssetToFile(GetRootExportFolder() + "meshes_" + _wldType.ToString().ToLower() + ".txt");
+            objectWriter.WriteAssetToFile(exportPath);
         }
 
         public string GetExportFolderForWldType()
@@ -438,7 +461,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return "sky/";
                 case WldType.Characters:
-                    return _settings.ExportAllCharacterToSingleFolder ? "all/Characters/" : GetRootExportFolder() + "Characters/";
+                    return GetRootExportFolder() + "Characters/";
                 default:
                     return string.Empty;
             }
@@ -446,7 +469,7 @@ namespace LanternExtractor.EQ.Wld
 
         protected string GetRootExportFolder()
         {
-            return _settings.ExportAllCharacterToSingleFolder ? "all/" : _zoneName + "/";
+            return _wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder ? "all/" : _zoneName + "/";
         }
 
         private void ExportActors()

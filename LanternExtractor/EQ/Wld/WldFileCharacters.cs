@@ -154,15 +154,31 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
-            CharacterListWriter characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
+
+            TextAssetWriter characterListWriter = null;
+
+            if (_settings.ExportAllCharacterToSingleFolder)
+            {
+                characterListWriter = new CharacterListGlobalWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
+            }
+            else
+            {
+                characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
+            }
             
             foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
             {
                 characterListWriter.AddFragmentData(actorFragment);
             }
-            
-            characterListWriter.WriteAssetToFile(GetRootExportFolder() + "characters.txt");
+
+            if (_settings.ExportAllCharacterToSingleFolder)
+            {
+                characterListWriter.WriteAssetToFile("all/characters.txt");
+            }
+            else
+            {
+                characterListWriter.WriteAssetToFile(GetRootExportFolder() + "characters.txt");
+            }
         }
 
         private void ExportAnimationList()
@@ -180,7 +196,7 @@ namespace LanternExtractor.EQ.Wld
             }
             else
             {
-                animationWriter = new GlobalAnimationListWriter();
+                animationWriter = new CharacterAnimationGlobalListWriter();
             }
 
             foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
@@ -227,11 +243,6 @@ namespace LanternExtractor.EQ.Wld
                     if (track.IsProcessed)
                     {
                         continue;
-                    }
-
-                    if (track.Name == "C05ALLPE_TRACK")
-                    {
-                        
                     }
 
                     track.ParseTrackData();

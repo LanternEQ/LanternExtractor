@@ -4,11 +4,11 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class GlobalAnimationListWriter : TextAssetWriter
+    public class CharacterAnimationGlobalListWriter : TextAssetWriter
     {
-        private List<string> animations = new List<string>();
+        private List<string> _animations = new List<string>();
         
-        public GlobalAnimationListWriter()
+        public CharacterAnimationGlobalListWriter()
         {
             if (!File.Exists("all/character_animations.txt"))
             {
@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (var line in text)
             {
-                animations.Add(line);
+                _animations.Add(line);
             }
         }
         
@@ -32,6 +32,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
+            if (skeleton.Name.StartsWith("OGM") || skeleton.Name.StartsWith("TRM"))
+            {
+                
+            }
+
             foreach (var animation in skeleton.Animations)
             {
                 var modelBase = string.IsNullOrEmpty(animation.Value.AnimModelBase)
@@ -39,20 +44,20 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     : animation.Value.AnimModelBase;
                 string filename = modelBase + "_" + animation.Key;
 
-                if (animations.Contains(filename))
+                if (_animations.Contains(filename))
                 {
-                    return;
+                    continue;
                 }
                 
-                animations.Add(filename);
+                _animations.Add(filename);
             }
         }
 
         public override void WriteAssetToFile(string fileName)
         {
-            animations.Sort();
+            _animations.Sort();
             
-            foreach (var animation in animations)
+            foreach (var animation in _animations)
             {
                 _export.AppendLine(animation);
             }

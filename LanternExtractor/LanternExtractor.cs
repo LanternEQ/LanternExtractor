@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "arena";  
+            archiveName = "global";  
 #else
             if (args.Length != 1)
             {
@@ -146,23 +146,23 @@ namespace LanternExtractor
                 s3dArchive.WriteAllFiles(true);
                 return;
             }
-
-            // For non WLD files, we can just extract their contents
-            // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
-            if (!s3dArchive.IsWldArchive)
-            {
-                s3dArchive.WriteAllFiles(null);
-                return;
-            }
-
+            
             string archiveName = Path.GetFileNameWithoutExtension(path);
 
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
-
+            
             string shortName = archiveName.Split('_')[0];
+            
+            // For non WLD files, we can just extract their contents
+            // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
+            if (!s3dArchive.IsWldArchive)
+            {
+                s3dArchive.WriteAllFiles(null, shortName + "/");
+                return;
+            }
 
             string wldFileName = archiveName + LanternStrings.WldFormatExtension;
             
@@ -178,13 +178,13 @@ namespace LanternExtractor
             {
                 WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Models/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Models/Textures/", true);
             }
             else if (IsSkyArchive(archiveName))
             {
                 WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "sky/Textures/", true);
             }
             else if (IsCharactersArchive(archiveName))
             {
@@ -208,13 +208,18 @@ namespace LanternExtractor
 
                 WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Characters/Textures", true);
+
+                string exportPath = _settings.ExportAllCharacterToSingleFolder
+                    ? "all/Characters/Textures/"
+                    : shortName + "/Characters/Textures/";
+                
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), exportPath, true);
             }
             else if (IsObjectsArchive(archiveName))
             {
                 WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Objects/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Objects/Textures/", true);
             }
             else
             {
@@ -222,7 +227,7 @@ namespace LanternExtractor
 
                 WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "Zone/Textures", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Zone/Textures/", true);
                 
                 PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 

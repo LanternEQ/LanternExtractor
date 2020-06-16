@@ -77,13 +77,16 @@
     <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterAnimationListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterListGlobalWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\CharacterListWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\GlobalAnimationListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\AmbientLightColorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterAnimationGlobalListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MaterialListGlobalWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MaterialListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectListGlobalWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextureListWriter.cs" />

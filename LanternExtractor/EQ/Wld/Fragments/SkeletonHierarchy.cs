@@ -296,7 +296,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             Animations[track.AnimationName].AddTrack(track);
-            track.IsProcessed = true;
+            //track.IsProcessed = true;
             track.TrackDefFragment.IsAssigned = true;
         }
         
