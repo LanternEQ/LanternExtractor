@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
@@ -55,7 +56,47 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     break;
                 }
             }
+            
+            // Exporting materials
+            foreach (WldFragment fragment in materialListFragments)
+            {
+                materialListWriter.AddFragmentData(fragment);
+                    
+                var filePath = exportFolder + FragmentNameCleaner.CleanName(fragment)+ "_materials.txt";
 
+                if (exportEachPass)
+                {
+                    if (_settings.ExportAllCharacterToSingleFolder && wldFile.WldType == WldType.Characters)
+                    {
+                        if (File.Exists(filePath))
+                        {
+                            var file = File.ReadAllText(filePath);
+                            int oldFileSize = file.Length;
+                            int newFileSize = materialListWriter.GetExportByteCount();
+                            
+                            if (newFileSize <= oldFileSize)
+                            {
+                                materialListWriter.ClearExportData();
+                                continue;
+                            }
+                            
+                        }
+                    }
+
+                    // TODO: Clean this up
+                    (fragment as MaterialList).HasBeenExported = true;
+                    materialListWriter.WriteAssetToFile(filePath);
+                    materialListWriter.ClearExportData();
+                }
+            }
+
+            if (!exportEachPass)
+            {
+                var filePath = exportFolder + wldFile.ZoneShortname + "_materials.txt";
+                materialListWriter.WriteAssetToFile(filePath);
+            }
+
+            // Exporting meshes
             foreach (WldFragment fragment in meshFragments)
             {
                 meshWriter.AddFragmentData(fragment);
@@ -74,6 +115,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 if (exportEachPass)
                 {
+                    // TODO: Fix this mess
+                    if (wldFile.WldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+                    {
+                        if (!((Mesh) fragment).MaterialList.HasBeenExported)
+                        {
+                            continue;
+                        }
+                    }
+                    
                     meshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment)+ ".txt");
                     meshWriter.ClearExportData();
 
@@ -93,22 +143,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     collisionMeshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_collision.txt");
                 }
-            }
-            
-            foreach (WldFragment fragment in materialListFragments)
-            {
-                materialListWriter.AddFragmentData(fragment);
-                    
-                if (exportEachPass)
-                {
-                    materialListWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment)+ "_materials.txt");
-                    materialListWriter.ClearExportData();
-                }
-            }
-
-            if (!exportEachPass)
-            {
-                materialListWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_materials.txt");
             }
         }
     }

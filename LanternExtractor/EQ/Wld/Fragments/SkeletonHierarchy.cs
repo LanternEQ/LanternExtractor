@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     {
         public List<SkeletonPieceData> Skeleton { get; private set; }
 
-        public List<MeshReference> Meshes { get; private set; }
+        public List<Mesh> Meshes { get; private set; }
         
         public List<SkeletonNode> Tree { get; set; }
 
@@ -36,7 +36,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public float BoundingRadius;
 
-        public List<Mesh> AdditionalMeshes = new List<Mesh>();
+        public List<Mesh> HelmMeshes = new List<Mesh>();
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -45,7 +45,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
             
             Tree = new List<SkeletonNode>();
-            Meshes = new List<MeshReference>();
+            Meshes = new List<Mesh>();
             Skeleton = new List<SkeletonPieceData>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
             SkeletonPieceDictionary2 = new Dictionary<string, SkeletonPieceData>();
@@ -225,9 +225,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     {
                         continue;
                     }
-                    
-                    // If this is not the first mesh, it's a secondary mesh and we need to determine the attach point
-                    Meshes.Add(meshRef);
 
                     if (meshRef.Mesh == null)
                     {
@@ -235,12 +232,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         continue;
                     }
                     
-                    //if (FragmentNameCleaner.CleanName(meshRef.Mesh) != ModelBase)
-                    //{
-                        AdditionalMeshes.Add(meshRef.Mesh);
-                    //}
-                    
+                    Meshes.Add(meshRef.Mesh);
                     meshRef.Mesh.IsHandled = true;
+                }
+                
+                List<int> things = new List<int>();
+                
+                for (int i = 0; i < size2; ++i)
+                {
+                    things.Add(reader.ReadInt32());
+                }
+
+                if (Name.Contains("FAF"))
+                {
+                    
                 }
             }
 
@@ -329,10 +334,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddAdditionalMesh(Mesh mesh)
         {
-            AdditionalMeshes.Add(mesh);
+            HelmMeshes.Add(mesh);
             
             // Sort additional mesh list (head ids can be out of order)
-            AdditionalMeshes = AdditionalMeshes.OrderBy(x => x.Name).ToList();
+            //HelmMeshes = HelmMeshes.OrderBy(x => x.Name).ToList();
         }
     }
 

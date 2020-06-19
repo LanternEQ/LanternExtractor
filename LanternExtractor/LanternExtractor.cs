@@ -85,7 +85,7 @@ namespace LanternExtractor
             if (archiveName == "all")
             {
                 validFiles = Directory.GetFiles(_settings.EverQuestDirectory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => s.EndsWith(".s3d") || s.EndsWith(".pfs")).ToList();
+                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip")).ToList();
             }
             else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
             {

@@ -25,6 +25,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public List<Material> AdditionalMaterials { get; set; }
         
+        public bool HasBeenExported { get; set; }
+        
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)

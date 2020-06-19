@@ -39,27 +39,65 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             characterModel.Append(FragmentNameCleaner.CleanName(model));
 
-            if (model.SkeletonReference == null || model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Count == 0)
+            if (model.SkeletonReference == null)
             {
-                characterModel.AppendLine();
+                _characters.Add(characterModel.ToString());
                 return;
             }
-
+            
             characterModel.Append(",");
+            
+            List<string> mainMeshes = new List<string>();
 
-            string additionalModels = string.Empty;
-
-            foreach (var additionalModel in model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes)
+            foreach (var mesh in model.SkeletonReference.SkeletonHierarchy.Meshes)
             {
-                additionalModels += FragmentNameCleaner.CleanName(additionalModel);
-
-                if (additionalModel != model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Last())
-                {
-                    additionalModels += ";";
-                }
+                mainMeshes.Add(FragmentNameCleaner.CleanName(mesh));
             }
 
-            characterModel.Append(additionalModels);
+            mainMeshes.Sort();
+            string mainMeshesString = string.Empty;
+            
+            foreach (var mesh in mainMeshes)
+            {
+                mainMeshesString += mesh;
+                
+                if (mesh != mainMeshes.Last())
+                {
+                    mainMeshesString += ";";
+                }
+            }
+            
+            characterModel.Append(mainMeshesString);
+
+            if (model.SkeletonReference.SkeletonHierarchy.HelmMeshes.Count == 0)
+            {
+                _characters.Add(characterModel.ToString());
+                return;
+            }
+            
+            characterModel.Append(",");
+
+            List<string> additionalModels = new List<string>();
+
+            foreach (var additionalModel in model.SkeletonReference.SkeletonHierarchy.HelmMeshes)
+            {
+                additionalModels.Add(FragmentNameCleaner.CleanName(additionalModel));
+            }
+
+            additionalModels.Sort();
+            string additionalModelsString = string.Empty;
+            
+            foreach (var additionalModel in additionalModels)
+            {
+                additionalModelsString += additionalModel;
+                
+                if (additionalModel != additionalModels.Last())
+                {
+                    additionalModelsString += ";";
+                }
+            }
+            
+            characterModel.Append(additionalModelsString);
             
             if (!_characters.Contains(characterModel.ToString()))
             {

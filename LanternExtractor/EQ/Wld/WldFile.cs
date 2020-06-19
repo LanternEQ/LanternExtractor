@@ -517,6 +517,18 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
+
+                // TODO: Put this elsewhere
+                if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+                {
+                    if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
+                    {
+                        if (!skeleton.Meshes[0].MaterialList.HasBeenExported)
+                        {
+                            continue;
+                        }
+                    }
+                }
                 
                 skeletonWriter.AddFragmentData(skeleton);
                 skeletonWriter.WriteAssetToFile(skeletonsFolder + skeleton.ModelBase + ".txt");

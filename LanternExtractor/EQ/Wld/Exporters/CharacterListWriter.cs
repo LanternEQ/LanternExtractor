@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             _export.Append(FragmentNameCleaner.CleanName(model));
 
-            if (model.SkeletonReference == null || model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Count == 0)
+            if (model.SkeletonReference == null || model.SkeletonReference.SkeletonHierarchy.HelmMeshes.Count == 0)
             {
                 _export.AppendLine();
                 return;
@@ -33,11 +33,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             string additionalModels = string.Empty;
 
-            foreach (var additionalModel in model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes)
+            foreach (var additionalModel in model.SkeletonReference.SkeletonHierarchy.HelmMeshes)
             {
                 additionalModels += FragmentNameCleaner.CleanName(additionalModel);
 
-                if (additionalModel != model.SkeletonReference.SkeletonHierarchy.AdditionalMeshes.Last())
+                if (additionalModel != model.SkeletonReference.SkeletonHierarchy.HelmMeshes.Last())
                 {
                     additionalModels += ";";
                 }

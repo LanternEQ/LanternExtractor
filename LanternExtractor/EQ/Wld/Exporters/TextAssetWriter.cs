@@ -30,5 +30,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             _export.Clear();
         }
+
+        public int GetExportByteCount()
+        {
+            return _export.ToString().Length;
+        }
     }
 }
