@@ -120,6 +120,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     {
                         if (!((Mesh) fragment).MaterialList.HasBeenExported)
                         {
+                            meshWriter.ClearExportData();
+                            collisionMeshWriter.ClearExportData();
                             continue;
                         }
                     }
