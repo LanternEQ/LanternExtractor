@@ -282,10 +282,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else
             {
-                if (cleanedName.Length == 3)
+                if (cleanedName.Length <= 3)
                 {
                     return;
                 }
+                
                 animationName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
                 modelName = cleanedName.Substring(0, 3);
