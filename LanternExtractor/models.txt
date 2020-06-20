@@ -10,7 +10,7 @@ id,name,male_model,female_model,male_anim,female_anim
 9,Troll,TRM,TRF,OGF,OGF
 10,Ogre,OGM,OGF,OGF,
 11,Halfling,HOM,HOF,DWM,DWF
-12,Gnome,GNM,GNF,DWN,DWF
+12,Gnome,GNM,GNF,DWM,DWF
 13,Aviak,AVI,,,
 14,Were Wolf,WER,,,
 15,Brownie,BRM,BRF,ELM,ELF
@@ -80,7 +80,7 @@ id,name,male_model,female_model,male_anim,female_anim
 80,Reanimated Hand,REA,,,
 81,Rivervale Citizen,RIM,RIF,DWM,DWF
 82,Scarecrow,SCA,,,
-83,Skunk,SKU,,,
+83,Skunk,SKU,,RAT,
 84,Snake Elemental,,,,
 85,Spectre,SPE,,,
 86,Sphinx,SPH,,DRK,
