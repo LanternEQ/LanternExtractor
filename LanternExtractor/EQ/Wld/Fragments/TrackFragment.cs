@@ -108,6 +108,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             ModelName = cleanedName.Substring(0, 3);
             cleanedName = cleanedName.Remove(0, 3);
             PieceName = cleanedName;
+
+            IsProcessed = true;
         }
     }
 }

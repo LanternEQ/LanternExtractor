@@ -240,11 +240,6 @@ namespace LanternExtractor.EQ.Wld
                         continue;
                     }
 
-                    if (track.IsProcessed)
-                    {
-                        continue;
-                    }
-
                     track.ParseTrackData();
 
                     string modelName = track.ModelName;
