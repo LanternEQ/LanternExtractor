@@ -56,7 +56,7 @@ id,name,male_model,female_model,male_anim,female_anim
 56,Pixie,,PIF,,FAF
 57,Dracnid,DRM,DRF,,
 58,Solusek Ro,SOL,,,
-59,Bloodgills,BGG,,,
+59,Bloodgills,BGG,,KGO,
 60,Skeleton,SKE,,,
 61,Shark,SHA,,,
 62,Tunare,TUN,,,
@@ -163,7 +163,7 @@ id,name,male_model,female_model,male_anim,female_anim
 163,Raptor,RAP,,,
 164,Sarnak Golem,SGO,,,
 165,Water Dragon,SED,,,
-166,Iksar Hand,IKH,,,
+166,Iksar Hand,IKH,,REA,
 167,Succulent,SUC,,,
 168,Flying Monkey,FMO,,,
 169,Brontotherium,BTM,,RHI,
