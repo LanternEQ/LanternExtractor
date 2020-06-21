@@ -240,7 +240,12 @@ namespace LanternExtractor.EQ.Wld
                         continue;
                     }
 
-                    track.ParseTrackData();
+                    if (track.IsPoseAnimation)
+                    {
+                        continue;
+                    }
+
+                    track.ParseTrackData(_logger);
 
                     string modelName = track.ModelName;
                     string alternateModel = GetAnimationModelLink(modelBase);
@@ -283,8 +288,8 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-
-                if (track.IsProcessed)
+                
+                if (track.IsPoseAnimation || track.IsProcessed)
                 {
                     continue;
                 }

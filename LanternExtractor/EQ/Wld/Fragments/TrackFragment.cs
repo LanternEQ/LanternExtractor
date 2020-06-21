@@ -17,6 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public TrackDefFragment TrackDefFragment { get; set; }
         
+        public bool IsPoseAnimation { get; set; }
         public bool IsProcessed { get; set; }
         
         public int FrameMs { get; set; }
@@ -93,13 +94,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// 3. Continue with the skeleton piece name
         /// 4. End with _TRACK
         /// </summary>
-        public void ParseTrackData()
+        /// <param name="logger"></param>
+        public void ParseTrackData(ILogger logger)
         {
+            //logger.LogError("Parsing track: " + Name);
+            
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 
             if (cleanedName.Length < 6)
             {
                 ModelName = cleanedName;
+                logger.LogError("Early exit, model name: " + ModelName);
                 return;
             }
             
@@ -109,7 +114,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             cleanedName = cleanedName.Remove(0, 3);
             PieceName = cleanedName;
 
-            IsProcessed = true;
+            //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
         }
     }
 }

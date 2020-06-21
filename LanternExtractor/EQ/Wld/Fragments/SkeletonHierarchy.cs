@@ -142,7 +142,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 pieceNew.Name = pieceNew.Track.PieceName;
                 _boneNameMapping[i] = pieceNew.Track.PieceName;
 
-                pieceNew.Track.IsProcessed = true;
+                pieceNew.Track.IsPoseAnimation = true;
                 
                 piece.AnimationTracks = new Dictionary<string, TrackFragment>();
 
@@ -302,8 +302,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             Animations[track.AnimationName].AddTrack(track);
-            //track.IsProcessed = true;
             track.TrackDefFragment.IsAssigned = true;
+            track.IsProcessed = true;
         }
         
         private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName, string runningIndex,
