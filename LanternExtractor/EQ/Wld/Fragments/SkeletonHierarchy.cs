@@ -27,10 +27,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         private Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary { get; set; }
         
-        // Mapping of bone names
-        private Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary2 { get; set; }
-
-        public Dictionary<string, Animation2> Animations = new Dictionary<string, Animation2>();
+        public Dictionary<string, Animation> Animations = new Dictionary<string, Animation>();
         
         public Dictionary<int, string> _boneNameMapping = new Dictionary<int, string>();
         
@@ -48,7 +45,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Meshes = new List<Mesh>();
             Skeleton = new List<SkeletonPieceData>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
-            SkeletonPieceDictionary2 = new Dictionary<string, SkeletonPieceData>();
 
             _boneNameMapping[0] = "ROOT";
             
@@ -204,8 +200,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     {
                         continue;
                     }
-
-                    SkeletonPieceDictionary2[partName] = piece;
                 }
             }
 
@@ -298,7 +292,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             if (!Animations.ContainsKey(track.AnimationName))
             {
-                Animations[track.AnimationName] = new Animation2();
+                Animations[track.AnimationName] = new Animation();
             }
             
             Animations[track.AnimationName].AddTrack(track);
@@ -337,46 +331,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             HelmMeshes.Add(mesh);
             
-            // Sort additional mesh list (head ids can be out of order)
+            // TODO: Can we sort?
             //HelmMeshes = HelmMeshes.OrderBy(x => x.Name).ToList();
-        }
-    }
-
-    public class Animation2
-    {
-        public string AnimModelBase;
-        public Dictionary<string, TrackFragment> Tracks;
-        public int FrameCount;
-        public int AnimationTimeMs { get; set; }
-
-        public Animation2()
-        {
-            Tracks = new Dictionary<string, TrackFragment>();
-        }
-
-        public void AddTrack(TrackFragment track)
-        {
-            string trackName = track.Name;
-
-            Tracks[track.PieceName] = track;
-
-            if (string.IsNullOrEmpty(AnimModelBase) &&
-                !string.IsNullOrEmpty(track.ModelName))
-            {
-                AnimModelBase = track.ModelName;
-            }
-             
-            if (track.TrackDefFragment.Frames2.Count > FrameCount)
-            {
-                FrameCount = track.TrackDefFragment.Frames2.Count;
-            }
-
-            int totalTime = track.TrackDefFragment.Frames2.Count * track.FrameMs;
-
-            if (totalTime > AnimationTimeMs)
-            {
-                AnimationTimeMs = totalTime;
-            }
         }
     }
 }
