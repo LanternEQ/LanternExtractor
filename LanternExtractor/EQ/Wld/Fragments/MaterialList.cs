@@ -76,9 +76,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 string character = string.Empty;
                 string skinId = string.Empty;
                 string partName = string.Empty;
-                ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName, logger);
                 
-                Slots[partName] = new Dictionary<int, string>();
+                ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName, logger);
+
+                string key = character + "_" + partName;
+                
+                Slots[key] = new Dictionary<int, string>();
             }
             
             AdditionalMaterials = new List<Material>();
@@ -164,13 +167,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
             string partName = string.Empty;
             ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName, logger);
 
-            if (!Slots.ContainsKey(partName))
+            string key = character + "_" + partName;
+
+            if (!Slots.ContainsKey(key))
             {
-                Slots[partName] = new Dictionary<int, string>();
+                Slots[key] = new Dictionary<int, string>();
             }
 
             int skinIdNumber = Convert.ToInt32(skinId);
-            Slots[partName][skinIdNumber] = material.GetFullMaterialName();
+            Slots[key][skinIdNumber] = material.GetFullMaterialName();
             material.IsHandled = true;
 
             if (skinIdNumber > VariantCount)
@@ -195,13 +200,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
             string partName = string.Empty;
             ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName, logger);
 
-            if (!Slots.ContainsKey(partName))
+            string key = character + "_" + partName;
+
+            if (!Slots.ContainsKey(key))
             {
                 // throw error;
                 return additionalSkins;
             }
 
-            var variants = Slots[partName];
+            var variants = Slots[key];
             for (int i = 0; i < VariantCount; ++i)
             {
                 if (!variants.ContainsKey(i + 1))
