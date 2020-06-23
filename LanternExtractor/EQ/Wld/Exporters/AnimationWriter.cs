@@ -37,7 +37,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            Animation2 anim = skeleton.Animations[_targetAnimation];
+            Animation anim = skeleton.Animations[_targetAnimation];
             
             _export.AppendLine("# Animation Test: " + _targetAnimation);
             _export.AppendLine("framecount," + anim.FrameCount);
