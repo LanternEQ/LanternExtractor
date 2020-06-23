@@ -54,6 +54,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 
                 if (!anim.Tracks.ContainsKey(boneName))
                 {
+                    var bt = skeleton.Animations["pos"].Tracks[boneName].TrackDefFragment.Frames2[0];
+                    CreateTrackString(skeleton.Tree[i].FullPath, 0, bt, anim.AnimationTimeMs);
                     continue;
                 }
                 
@@ -66,49 +68,58 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
 
                     BoneTransform boneTransform = anim.Tracks[boneName].TrackDefFragment.Frames2[j];
+
+                    int delay = 0;
                     
-                    _export.Append(skeleton.Tree[i].FullPath);
-                    _export.Append(",");
-
-                    _export.Append(j);
-                    _export.Append(",");
-
-                    _export.Append(boneTransform.Translation.x);
-                    _export.Append(",");
-
-                    _export.Append(boneTransform.Translation.z);
-                    _export.Append(",");
-
-                    _export.Append(boneTransform.Translation.y);
-                    _export.Append(",");
-
-                    _export.Append(-boneTransform.Rotation.x);
-                    _export.Append(",");
-
-                    _export.Append(-boneTransform.Rotation.z);
-                    _export.Append(",");
-
-                    _export.Append(-boneTransform.Rotation.y);
-                    _export.Append(",");
-
-                    _export.Append(boneTransform.Rotation.w);
-                    _export.Append(",");
-                    
-                    _export.Append(boneTransform.Scale);
-                    _export.Append(",");
-
                     if (_isCharacterAnimation)
                     {
-                        _export.Append(anim.AnimationTimeMs / anim.FrameCount);
+                        delay = anim.AnimationTimeMs / anim.FrameCount;
                     }
                     else
                     {
-                        _export.Append(skeleton.Tree[i].Track.FrameMs);
+                        delay = skeleton.Tree[i].Track.FrameMs;
                     }
-                    
-                    _export.AppendLine();
+
+                    CreateTrackString(skeleton.Tree[i].FullPath, j, boneTransform, delay);
                 }
             }
+        }
+        
+        private void CreateTrackString(string fullPath, int frame, BoneTransform boneTransform, int delay)
+        {
+            _export.Append(fullPath);
+            _export.Append(",");
+
+            _export.Append(frame);
+            _export.Append(",");
+
+            _export.Append(boneTransform.Translation.x);
+            _export.Append(",");
+
+            _export.Append(boneTransform.Translation.z);
+            _export.Append(",");
+
+            _export.Append(boneTransform.Translation.y);
+            _export.Append(",");
+
+            _export.Append(-boneTransform.Rotation.x);
+            _export.Append(",");
+
+            _export.Append(-boneTransform.Rotation.z);
+            _export.Append(",");
+
+            _export.Append(-boneTransform.Rotation.y);
+            _export.Append(",");
+
+            _export.Append(boneTransform.Rotation.w);
+            _export.Append(",");
+                    
+            _export.Append(boneTransform.Scale);
+            _export.Append(",");
+            
+            _export.Append(delay.ToString());
+
+            _export.AppendLine();
         }
     }
 }
