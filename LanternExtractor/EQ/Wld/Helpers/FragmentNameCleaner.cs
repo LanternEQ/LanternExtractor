@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 case FragmentType.Mesh:
                     cleanedName = fragment.Name.Replace("_DMSPRITEDEF", "");                    
                     break;
-                case FragmentType.ModelReference:
+                case FragmentType.Actor:
                     cleanedName = fragment.Name.Replace("_ACTORDEF", "");
                     break;
                 case FragmentType.SkeletonHierarchy:

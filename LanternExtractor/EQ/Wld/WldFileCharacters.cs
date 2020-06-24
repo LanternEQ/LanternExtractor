@@ -150,7 +150,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportCharacterList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
             {
                 return;
             }
@@ -159,14 +159,14 @@ namespace LanternExtractor.EQ.Wld
 
             if (_settings.ExportAllCharacterToSingleFolder)
             {
-                characterListWriter = new CharacterListGlobalWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
+                characterListWriter = new CharacterListGlobalWriter(_fragmentTypeDictionary[FragmentType.Actor].Count);
             }
             else
             {
-                characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.ModelReference].Count);
+                characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.Actor].Count);
             }
             
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
             {
                 characterListWriter.AddFragmentData(actorFragment);
             }

@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         Mesh = 0x36,
         MeshReference = 0x2D,
         MeshVertexAnimation = 0x37,
-        ModelReference = 0x14,
+        Actor = 0x14,
         VertexColor = 0x32,
         VertexColorReference = 0x33,
         Camera = 0x08,

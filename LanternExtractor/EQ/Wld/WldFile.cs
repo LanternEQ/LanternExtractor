@@ -259,7 +259,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.MeshReference, () => new MeshReference()},
 
                 // Animation
-                {FragmentType.ModelReference, () => new Actor()},
+                {FragmentType.Actor, () => new Actor()},
                 {FragmentType.SkeletonHierarchy, () => new SkeletonHierarchy()},
                 {FragmentType.HierSpriteFragment, () => new SkeletonHierarchyReference()},
                 {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
@@ -474,7 +474,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportActors()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ModelReference))
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
             {
                 return;
             }
@@ -482,7 +482,7 @@ namespace LanternExtractor.EQ.Wld
             ActorWriter actorWriterStatic = new ActorWriter(false);
             ActorWriter actorWriterAnimated = new ActorWriter(true);
 
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.ModelReference])
+            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
             {
                 actorWriterStatic.AddFragmentData(actorFragment);
                 actorWriterAnimated.AddFragmentData(actorFragment);
