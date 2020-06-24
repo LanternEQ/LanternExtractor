@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -112,6 +111,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // An index into the string has to get this bone's name
                 int boneNameIndex = reader.ReadInt32();
 
+                string boneName = string.Empty;
+
+                if (stringHash.ContainsKey(-boneNameIndex))
+                {
+                    boneName = stringHash[-boneNameIndex];
+
+                    if (boneName.Length != 0)
+                    {
+                        boneName = boneName.Substring(3);
+                        boneName = boneName.Replace("_DAG", string.Empty);
+                        boneName = boneName.ToLower();
+
+                        if (boneName == string.Empty)
+                        {
+                            boneName = "root";
+                        }
+                    }
+                }
+                
                 // Always 0 for object bones
                 // Confirmed
                 int boneFlags = reader.ReadInt32();
@@ -121,22 +139,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     
                 }
 
-                if (Name.Contains("EYE"))
-                {
-                    
-                }
-
                 // Reference to a bone track
                 // Confirmed - is never a bad reference
                 int trackReferenceIndex = reader.ReadInt32();
 
                 TrackFragment track = fragments[trackReferenceIndex - 1] as TrackFragment;
-                AddTrackData(track, true);
+                AddPoseTrack(track, boneName);
                 pieceNew.Track = track;
                 
-                piece.Name = pieceNew.Track.PieceName;
-                pieceNew.Name = pieceNew.Track.PieceName;
-                _boneNameMapping[i] = pieceNew.Track.PieceName;
+                piece.Name = boneName;
+                pieceNew.Name = boneName;
+                _boneNameMapping[i] = boneName;
 
                 pieceNew.Track.IsPoseAnimation = true;
                 
@@ -190,15 +203,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     if (!SkeletonPieceDictionary.ContainsKey(piece.Name))
                     {
                         SkeletonPieceDictionary.Add(piece.Name, piece);
-                    }
-
-                    string partName = piece.Name.Replace("_DAG", string.Empty);
-                    // remove the modelname
-                   // partName = partName.Substring(3, partName.Length - 3);
-
-                    if (partName == string.Empty)
-                    {
-                        continue;
                     }
                 }
             }
@@ -259,8 +263,26 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("0x10: Skeleton pieces: " + Skeleton.Count);
         }
 
+        private void AddPoseTrack(TrackFragment track, string pieceName)
+        {
+            if (!Animations.ContainsKey("pos"))
+            {
+                Animations["pos"] = new Animation();
+            }
+            
+            Animations["pos"].AddTrack(track, pieceName);
+            track.TrackDefFragment.IsAssigned = true;
+            track.IsProcessed = true;
+            track.IsPoseAnimation = true;
+        }
+
         public void AddTrackData(TrackFragment track, bool isDefault = false)
         {
+            if (track.Name.ToLower().Contains("hufbi"))
+            {
+                
+            }
+            
             string animationName = string.Empty;
             string modelName = string.Empty;
             string pieceName = string.Empty;
@@ -295,7 +317,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Animations[track.AnimationName] = new Animation();
             }
             
-            Animations[track.AnimationName].AddTrack(track);
+            Animations[track.AnimationName].AddTrack(track, track.PieceName);
             track.TrackDefFragment.IsAssigned = true;
             track.IsProcessed = true;
         }

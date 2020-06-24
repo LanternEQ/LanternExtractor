@@ -15,11 +15,11 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             Tracks = new Dictionary<string, TrackFragment>();
         }
 
-        public void AddTrack(TrackFragment track)
+        public void AddTrack(TrackFragment track, string pieceName)
         {
             string trackName = track.Name;
 
-            Tracks[track.PieceName] = track;
+            Tracks[pieceName] = track;
 
             if (string.IsNullOrEmpty(AnimModelBase) &&
                 !string.IsNullOrEmpty(track.ModelName))
