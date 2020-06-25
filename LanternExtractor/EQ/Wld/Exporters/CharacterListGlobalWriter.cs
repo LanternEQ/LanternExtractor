@@ -41,7 +41,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (model.SkeletonReference == null)
             {
-                _characters.Add(characterModel.ToString());
+                AddCharacterIfNotDuplicate(characterModel.ToString());
                 return;
             }
             
@@ -71,7 +71,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (model.SkeletonReference.SkeletonHierarchy.HelmMeshes.Count == 0)
             {
-                _characters.Add(characterModel.ToString());
+                AddCharacterIfNotDuplicate(characterModel.ToString());
                 return;
             }
             
@@ -99,12 +99,30 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             characterModel.Append(additionalModelsString);
             
-            if (!_characters.Contains(characterModel.ToString()))
-            {
-                _characters.Add(characterModel.ToString());
-            }
+            AddCharacterIfNotDuplicate(characterModel.ToString());
         }
-        
+
+        private void AddCharacterIfNotDuplicate(string character)
+        {
+            string characterBase = character.Split(',')[0];
+
+            for (int i = 0; i < _characters.Count; ++i)
+            {
+                if (_characters[i].StartsWith(characterBase + ","))
+                {
+                    if (_characters[i].Length >= character.Length)
+                    {
+                        return;
+                    }
+                    
+                    _characters.RemoveAt(i);
+                    break;
+                }
+            }
+            
+            _characters.Add(character);
+        }
+
         public override void WriteAssetToFile(string fileName)
         {
             _characters.Sort();
