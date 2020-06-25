@@ -97,12 +97,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
 
-                _materials.Add(newMaterial.ToString());
-            }
-            
-            if (list.Slots != null)
-            {
-                    
+                if (!_materials.Contains(newMaterial.ToString()))
+                {
+                    _materials.Add(newMaterial.ToString());
+                }
             }
         }
         
