@@ -15,7 +15,7 @@ id,name,male_model,female_model,male_anim,female_anim
 14,Were Wolf,WER,,,
 15,Brownie,BRM,BRF,ELM,ELF
 16,Centaur,CEN,,,
-17,Golem,GOL,,GIA,
+17,Golem,GOL,GOM,GIA,GIA
 18,Giant,GIA,,,
 19,Trakanon,TRK,,,
 20,Doppleganger,VST,,,
@@ -27,7 +27,7 @@ id,name,male_model,female_model,male_anim,female_anim
 26,Old Froglok,FRO,,,
 27,Old Froglok Ghoul,FRG,,,
 28,Fungusman,FUN,,,
-29,Gargoyle,GAR,,,
+29,Gargoyle,GAR,GAM,,GAR
 31,Gelatinous Cube,CUB,,,
 32,Ghost,GEM,GEF,,
 33,Ghoul,GHU,,GOB,

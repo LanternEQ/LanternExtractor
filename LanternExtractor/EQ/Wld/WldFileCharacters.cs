@@ -41,6 +41,7 @@ namespace LanternExtractor.EQ.Wld
                 }
                 
                 AnimationModelLink[line[2].ToLower()] = line[4].ToLower();
+                AnimationModelLink[line[3].ToLower()] = line[5].ToLower();
             }        
         }
         
@@ -249,7 +250,7 @@ namespace LanternExtractor.EQ.Wld
 
                     string modelName = track.ModelName;
                     string alternateModel = GetAnimationModelLink(modelBase);
-                    
+
                     if (modelName != modelBase && alternateModel != modelName)
                     {
                         continue;
