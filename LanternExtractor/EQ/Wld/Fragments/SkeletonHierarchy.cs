@@ -119,7 +119,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     if (boneName.Length != 0)
                     {
-                        boneName = boneName.Substring(3);
+                        boneName = boneName.Substring(Math.Min(ModelBase.Length, 3));
                         boneName = boneName.Replace("_DAG", string.Empty);
                         boneName = boneName.ToLower();
 
