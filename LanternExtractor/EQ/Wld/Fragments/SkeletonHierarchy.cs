@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -99,7 +100,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 BoundingRadius = reader.ReadSingle();
             }
-
+            
             // Read in each bone
             for (int i = 0; i < boneCount; ++i)
             {
@@ -351,10 +352,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddAdditionalMesh(Mesh mesh)
         {
-            HelmMeshes.Add(mesh);
+            if (HelmMeshes.Any(x => x.Name == mesh.Name))
+            {
+                return;
+            }
             
-            // TODO: Can we sort?
-            //HelmMeshes = HelmMeshes.OrderBy(x => x.Name).ToList();
+            HelmMeshes.Add(mesh);
         }
     }
 }
