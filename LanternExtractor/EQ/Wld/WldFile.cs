@@ -341,6 +341,19 @@ namespace LanternExtractor.EQ.Wld
                     
                     maskedTextures.AddRange(material.GetAllBitmapNames(true));
                 }
+
+                if (materialList.AdditionalMaterials != null)
+                {
+                    foreach (var material in materialList.AdditionalMaterials)
+                    {
+                        if (material.ShaderType != ShaderType.TransparentMasked)
+                        {
+                            continue;
+                        }
+
+                        maskedTextures.AddRange(material.GetAllBitmapNames(true));
+                    }
+                }
             }
           
             return maskedTextures;
