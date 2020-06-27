@@ -86,6 +86,7 @@ id,name,male_model,female_model,male_anim,female_anim
 86,Sphinx,SPH,,DRK,
 87,Armadillo,ARM,,RAT,
 88,Clockwork Gnome,CLM,CLF,DWM,DWF
+88,Clockwork King,CL,,DWM,
 89,Drake,DRK,,,
 90,Halas Citizen,HLM,HLF,ELM,ELF
 91,Alligator,ALL,,,

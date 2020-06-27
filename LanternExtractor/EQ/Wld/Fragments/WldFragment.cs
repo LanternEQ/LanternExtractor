@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The name of the fragment - not always used
         /// </summary>
-        public string Name { get; protected set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Initializes the WLD fragment and handles it based on the type

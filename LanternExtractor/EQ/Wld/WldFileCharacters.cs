@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.Exporters;
@@ -58,10 +59,93 @@ namespace LanternExtractor.EQ.Wld
             FindAdditionalAnimationsAndMeshes();
             BuildSlotMapping();
             FindMaterialVariants();
+
+            if (_settings.ExportAllCharacterToSingleFolder)
+            {
+                PostProcessGlobal();
+            }
+            
             base.ExportData();
             ExportMeshList();
             ExportAnimationList();
             ExportCharacterList();
+        }
+
+        private void PostProcessGlobal()
+        {
+            FixShipNames();
+        }
+
+        private void FixShipNames()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
+            {
+                return;
+            }
+
+            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
+            {
+                Actor actor = actorFragment as Actor;
+
+                if (actor == null)
+                {
+                    continue;
+                }
+
+                if (actor.Name.StartsWith("PRE"))
+                {
+                    if (actor.SkeletonReference == null)
+                    {
+                        continue;
+                    }
+
+                    switch (actor.SkeletonReference.SkeletonHierarchy.Name)
+                    {
+                        // Icebreaker in Iceclad
+                        case "OGS_HS_DEF":
+                        {
+                            actor.Name = actor.Name.Replace("PRE", "OGS");
+                            break;
+                        }
+                        // Sea King, Golden Maiden, StormBreaker, SirensBane
+                        case "PRE_HS_DEF":
+                        {
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException();
+                            break;
+                    }
+                }
+
+
+                if (actor.Name.StartsWith("SHIP"))
+                {
+                    if (actor.SkeletonReference == null)
+                    {
+                        continue;
+                    }
+
+                    switch (actor.SkeletonReference.SkeletonHierarchy.Name)
+                    {
+                        // Icebreaker in Iceclad
+                        case "GNS_HS_DEF":
+                        {
+                            actor.Name = actor.Name.Replace("SHIP", "GNS");
+                            break;
+                        }
+                        // Maidens Voyage in Firiona Vie
+                        case "ELS_HS_DEF":
+                        {
+                            actor.Name = actor.Name.Replace("SHIP", "ELS");
+                            break;
+                        }
+                        default:
+                            throw new NotImplementedException();
+                            break;
+                    }
+                }
+            }
         }
 
         private void BuildSlotMapping()
@@ -110,12 +194,7 @@ namespace LanternExtractor.EQ.Wld
                     {
                         continue;
                     }
-                    
-                    if (material.Name == "BEAHE0102_MDF")
-                    {
-                        
-                    }
-                    
+
                     if (material.IsHandled)
                     {
                         continue;
