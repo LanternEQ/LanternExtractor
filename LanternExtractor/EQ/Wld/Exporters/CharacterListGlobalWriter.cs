@@ -46,7 +46,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
             
             characterModel.Append(",");
-            
+
             List<string> mainMeshes = new List<string>();
 
             foreach (var mesh in model.SkeletonReference.SkeletonHierarchy.Meshes)
@@ -54,7 +54,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 mainMeshes.Add(FragmentNameCleaner.CleanName(mesh));
             }
 
-            mainMeshes.Sort();
             string mainMeshesString = string.Empty;
             
             foreach (var mesh in mainMeshes)
