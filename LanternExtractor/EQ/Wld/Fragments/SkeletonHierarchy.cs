@@ -230,11 +230,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         logger.LogError("Null reference to mesh!");
                         continue;
                     }
-                    
-                    Meshes.Add(meshRef.Mesh);
-                    meshRef.Mesh.IsHandled = true;
+
+                    if (Meshes.All(x => x.Name != meshRef.Mesh.Name))
+                    {
+                        Meshes.Add(meshRef.Mesh);
+                        meshRef.Mesh.IsHandled = true;
+                    }
                 }
                 
+                Meshes = Meshes.OrderBy(x => x.Name).ToList();
+
                 List<int> things = new List<int>();
                 
                 for (int i = 0; i < size2; ++i)
@@ -279,7 +284,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddTrackData(TrackFragment track, bool isDefault = false)
         {
-            if (track.Name.ToLower().Contains("hufbi"))
+            if (track.Name.Contains("DRM"))
             {
                 
             }
@@ -309,6 +314,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 modelName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
                 pieceName = cleanedName;
+
+                if (pieceName == string.Empty)
+                {
+                    pieceName = "root";
+                }
             }
 
             track.SetTrackData(modelName, animationName, pieceName);
@@ -352,6 +362,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddAdditionalMesh(Mesh mesh)
         {
+            if (Meshes.Any(x => x.Name == mesh.Name))
+            {
+                return;
+            }
+            
             if (HelmMeshes.Any(x => x.Name == mesh.Name))
             {
                 return;
