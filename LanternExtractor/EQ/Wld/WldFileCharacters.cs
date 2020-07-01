@@ -12,43 +12,40 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileCharacters : WldFile
     {
-        public Dictionary<string, string> AnimationModelLink;
+        public Dictionary<string, string> AnimationSources = new Dictionary<string, string>();
         
         public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
-            ParseModelAnimationLink();
+            ParseAnimationSources();
         }
 
-        private void ParseModelAnimationLink()
+        private void ParseAnimationSources()
         {
-            string filename = "models.txt";
+            string filename = "animationsources.txt";
             if (!File.Exists(filename))
             {
-                _logger.LogError("WldFileCharacters: No models.txt file found.");
+                _logger.LogError("WldFileCharacters: No animationsources.txt file found.");
                 return;
             }
-
-            AnimationModelLink = new Dictionary<string, string>();
-
+            
             string fileText = File.ReadAllText(filename);
             List<List<string>> parsedText = TextParser.ParseTextByDelimitedLines(fileText, ',', '#');
 
             foreach (var line in parsedText)
             {
-                if (line.Count < 5)
+                if (line.Count != 2)
                 {
                     continue;
                 }
                 
-                AnimationModelLink[line[2].ToLower()] = line[4].ToLower();
-                AnimationModelLink[line[3].ToLower()] = line[5].ToLower();
+                AnimationSources[line[0].ToLower()] = line[1].ToLower();
             }        
         }
         
         private string GetAnimationModelLink(string modelName)
         {
-            return !AnimationModelLink.ContainsKey(modelName) ? modelName : AnimationModelLink[modelName];
+            return !AnimationSources.ContainsKey(modelName) ? modelName : AnimationSources[modelName];
         }
 
         /// <summary>
