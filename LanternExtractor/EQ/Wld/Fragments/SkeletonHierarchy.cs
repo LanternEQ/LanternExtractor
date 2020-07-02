@@ -284,11 +284,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddTrackData(TrackFragment track, bool isDefault = false)
         {
-            if (track.Name.Contains("DRM"))
-            {
-                
-            }
-            
             string animationName = string.Empty;
             string modelName = string.Empty;
             string pieceName = string.Empty;
@@ -322,6 +317,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             track.SetTrackData(modelName, animationName, pieceName);
+
+            // Prevent adding alternate animation if the original model's already exists
+            if (Animations.ContainsKey(track.AnimationName) &&
+                Animations[track.AnimationName].AnimModelBase != modelName)
+            {
+                return;
+            }
             
             if (!Animations.ContainsKey(track.AnimationName))
             {
