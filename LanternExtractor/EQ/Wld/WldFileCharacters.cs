@@ -306,7 +306,8 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 string modelBase = skeleton.ModelBase;
-                
+                string alternateModel = GetAnimationModelLink(modelBase);
+
                 // TODO: Alternate model bases
                 foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
                 {
@@ -323,11 +324,13 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     track.ParseTrackData(_logger);
+                    
+                    string trackModelBase = track.ModelName;
 
-                    string modelName = track.ModelName;
-                    string alternateModel = GetAnimationModelLink(modelBase);
 
-                    if (modelName != modelBase && alternateModel != modelName)
+
+
+                    if (trackModelBase != modelBase && alternateModel != trackModelBase)
                     {
                         continue;
                     }
@@ -350,7 +353,26 @@ namespace LanternExtractor.EQ.Wld
                     }
 
                     string cleanedName = FragmentNameCleaner.CleanName(mesh);
-                    if (cleanedName.StartsWith(modelBase))
+
+                    string basename = cleanedName;
+
+                    bool endsWithNumber = char.IsDigit(cleanedName[cleanedName.Length - 1]);
+                    
+                    if (endsWithNumber)
+                    {
+                        int id = Convert.ToInt32(cleanedName.Substring(cleanedName.Length - 2));
+                        cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
+
+                        if (cleanedName.Length != 3)
+                        {
+                            string modelType = cleanedName.Substring(cleanedName.Length - 3);
+                            cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
+                        }
+
+                        basename = cleanedName;
+                    }
+                    
+                    if (basename == modelBase)
                     {
                         skeleton.AddAdditionalMesh(mesh);
                     }
