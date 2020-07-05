@@ -203,7 +203,7 @@ FMO,DRK
 BTM,RHI
 
 # 170 - Snow Dervish (Guess)
-SDE,DER
+SDE,DML
 
 # 173 - Totem (guess)
 TOT,SCA
