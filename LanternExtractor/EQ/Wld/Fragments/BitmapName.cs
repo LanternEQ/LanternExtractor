@@ -15,7 +15,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The filename of the referenced bitmap
         /// </summary>
-        public string Filename { get; private set; }
+        public string Filename { get; set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,

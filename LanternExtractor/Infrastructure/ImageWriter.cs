@@ -20,6 +20,7 @@ namespace LanternExtractor.Infrastructure
         /// <param name="fileName">The output file name</param>
         /// <param name="type">The type of shader (affects the output process)</param>
         /// <param name="logger">Logger for debug output</param>
+        /// <param name="isMasked"></param>
         public static void WriteImage(Stream bytes, string filePath, string fileName, bool isMasked, bool rotate,
             ILogger logger)
         {
@@ -49,14 +50,34 @@ namespace LanternExtractor.Infrastructure
             }
 
             Bitmap cloneBitmap;
+            
+            
+            if (fileName == "sndua0006.png")
+            {
+                isMasked = true;
+                //paletteIndex = 255;
+            }
 
             if (isMasked)
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height),
                     PixelFormat.Format8bppIndexed);
-                
+
+                int paletteIndex = 0;
                 var palette = cloneBitmap.Palette;
-                Color transparencyColor = palette.Entries[0];
+                
+                if (fileName == "clhe0004.png")
+                {
+                    paletteIndex = 255;
+                }
+
+                if (fileName == "kahe0001.png")
+                {
+                    paletteIndex = 255;
+                }
+
+                Color transparencyColor = palette.Entries[paletteIndex];
+                
                 bool isUnique = false;
 
                 // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
@@ -80,7 +101,7 @@ namespace LanternExtractor.Infrastructure
                     }
                 }
 
-                palette.Entries[0] = transparencyColor;
+                palette.Entries[paletteIndex] = transparencyColor;
                 cloneBitmap.Palette = palette;
                 cloneBitmap.MakeTransparent(transparencyColor);
             }

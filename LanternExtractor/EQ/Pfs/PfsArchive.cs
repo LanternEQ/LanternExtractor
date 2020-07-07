@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using Ionic.Zlib;
 using LanternExtractor.EQ.Wld;
@@ -45,6 +46,8 @@ namespace LanternExtractor.EQ.Pfs
         private readonly ILogger _logger;
 
         public bool IsWldArchive { get; set; }
+
+        public Dictionary<string, string> FilenameChanges;
 
         /// <summary>
         /// Constructor that initializes the file path and logger
@@ -266,7 +269,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="textureTypes">The types (shader) of all textures</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
         /// <param name="onlyTextures">Are we exporting only textures?</param>
-        public void WriteAllFiles(List<string> maskedTextures, string folderName = "",
+        public void WriteAllFiles(List<string> maskedTextures, string folderName,
             bool onlyTextures = false)
         {
             for (int i = 0; i < _files.Count; ++i)
@@ -305,7 +308,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index">The index of the file to write</param>
         /// <param name="rawExport">Dictates which folder the output goes into</param>
         /// <param name="subfolderName">An optional folder name to put the files into</param>
-        private void WriteFile(int index, bool rawExport, string folderName = "")
+        private void WriteFile(int index, bool rawExport, string folderName)
         {
             if (index < 0 || _files.Count <= index || _files[index].Bytes == null)
             {
@@ -327,7 +330,7 @@ namespace LanternExtractor.EQ.Pfs
         /// <param name="index"></param>
         /// <param name="fileName">The name of the file to be written</param>
         /// <param name="folderName">An optional folder name to put the files into</param>
-        public void WriteFile(int index, string fileName, bool rawExport, string folderName = "")
+        public void WriteFile(int index, string fileName, bool rawExport, string folderName)
         {
             for (var i = 0; i < _files.Count; i++)
             {
@@ -366,7 +369,17 @@ namespace LanternExtractor.EQ.Pfs
                 return;
             }
 
-            string pngName = _files[index].Name.Substring(0, _files[index].Name.Length - 3) + "png";
+            string bitmapName = _files[index].Name.Substring(0, _files[index].Name.Length - 4);
+
+            if (FilenameChanges != null)
+            {
+                if (FilenameChanges.ContainsKey(bitmapName))
+                {
+                    bitmapName = FilenameChanges[bitmapName];
+                }
+            }
+
+            string pngName = bitmapName + ".png";
             var byteStream = new MemoryStream(_files[index].Bytes);
             ImageWriter.WriteImage(byteStream, folderName, pngName, isMasked, !IsWldArchive, _logger);
         }

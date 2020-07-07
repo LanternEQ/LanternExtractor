@@ -32,6 +32,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 if (string.IsNullOrEmpty(material.GetFirstBitmapExportFilename()))
                 {
+                    _export.Append(i);
+                    _export.Append(",");
+                    _export.Append("invisible");
+                    _export.AppendLine();
                     continue;
                 }
 

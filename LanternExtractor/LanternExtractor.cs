@@ -30,7 +30,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
             
 #if DEBUG
-            archiveName = "global";  
+            archiveName = "oot";
 #else
             if (args.Length != 1)
             {
@@ -212,7 +212,8 @@ namespace LanternExtractor
                 string exportPath = _settings.ExportAllCharacterToSingleFolder
                     ? "all/Characters/Textures/"
                     : shortName + "/Characters/Textures/";
-                
+
+                s3dArchive.FilenameChanges = wldFile.FilenameChanges;
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), exportPath, true);
             }
             else if (IsObjectsArchive(archiveName))

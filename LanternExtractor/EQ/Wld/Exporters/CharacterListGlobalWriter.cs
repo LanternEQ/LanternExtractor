@@ -41,6 +41,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (model.SkeletonReference == null)
             {
+                if (model.MeshReference != null)
+                {
+                    characterModel.Append(",");
+                    characterModel.Append(FragmentNameCleaner.CleanName(model.MeshReference.Mesh));
+                }
+                
                 AddCharacterIfNotDuplicate(characterModel.ToString());
                 return;
             }

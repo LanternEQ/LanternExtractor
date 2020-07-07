@@ -61,7 +61,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The shader type that this material uses when rendering
         /// </summary>
-        public ShaderType ShaderType { get; private set; }
+        public ShaderType ShaderType { get; set; }
 
         public string SlotKey { get; set; }
 
@@ -98,7 +98,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // String reference
             Name = stringHash[-reader.ReadInt32()];
-
+            
             // Flags?
             int flags = reader.ReadInt32();
 
@@ -244,6 +244,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             return MaterialList.GetMaterialPrefix(ShaderType) +
                     FragmentNameCleaner.CleanName(this);        
+        }
+
+        public void SetBitmapName(int index, string newName)
+        {
+            if (BitmapInfoReference == null)
+            {
+                return;
+            }
+
+            BitmapInfoReference.BitmapInfo.BitmapNames[index].Filename = newName + ".bmp";
         }
     }
 }
