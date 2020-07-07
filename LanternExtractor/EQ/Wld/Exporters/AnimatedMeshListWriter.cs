@@ -3,9 +3,9 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class AnimatedMeshListExporter : TextAssetExporter
+    public class AnimatedMeshListWriter : TextAssetWriter
     {
-        public AnimatedMeshListExporter()
+        public AnimatedMeshListWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animated Mesh List");
             _export.AppendLine("# Total animated meshes: ");        

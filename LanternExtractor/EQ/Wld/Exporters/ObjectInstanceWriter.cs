@@ -3,9 +3,9 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class ObjectInstanceExporter : TextAssetExporter
+    public class ObjectInstanceWriter : TextAssetWriter
     {
-        public ObjectInstanceExporter()
+        public ObjectInstanceWriter()
         {
             
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");

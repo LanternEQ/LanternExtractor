@@ -35,17 +35,17 @@ namespace LanternExtractor.EQ.Wld
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
             {
                 string meshName = FragmentNameCleaner.CleanName(fragment);
-                MeshObjExporter exporter = new MeshObjExporter(ObjExportType.Textured, false, false, meshName);
-                exporter.AddFragmentData(fragment);
-                exporter.WriteAssetToFile(objectsExportFolder + "/" + meshName + ".obj");
+                MeshObjWriter writer = new MeshObjWriter(ObjExportType.Textured, false, false, meshName);
+                writer.AddFragmentData(fragment);
+                writer.WriteAssetToFile(objectsExportFolder + "/" + meshName + ".obj");
             }
             
             foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
                 string listName = FragmentNameCleaner.CleanName(listFragment);
-                MeshObjMtlExporter mtlExporter = new MeshObjMtlExporter(_settings, _zoneName);
-                mtlExporter.AddFragmentData(listFragment);
-                mtlExporter.WriteAssetToFile(objectsExportFolder + "/" + listName + LanternStrings.FormatMtlExtension);
+                MeshObjMtlWriter mtlWriter = new MeshObjMtlWriter(_settings, _zoneName);
+                mtlWriter.AddFragmentData(listFragment);
+                mtlWriter.WriteAssetToFile(objectsExportFolder + "/" + listName + LanternStrings.FormatMtlExtension);
             }
         }
     }

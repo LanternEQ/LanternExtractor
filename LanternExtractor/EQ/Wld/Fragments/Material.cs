@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.RegularExpressions;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -53,7 +54,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     public class Material : WldFragment
     {
         /// <summary>
-        /// The TextureInfoReference (0x05) that this material uses
+        /// The BitmapInfoReference that this material uses
         /// </summary>
         public BitmapInfoReference BitmapInfoReference { get; private set; }
 
@@ -120,6 +121,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 BitmapInfoReference = fragments[reference6 - 1] as BitmapInfoReference;
             }
 
+            // Thanks to PixelBound for figuring this out
             MaterialType materialType = (MaterialType) (Parameters & ~0x80000000);
 
             switch (materialType)
@@ -199,7 +201,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 return bitmapNames;
             }
 
-            foreach (Bitmap bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
+            foreach (BitmapName bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
             {
                 string filename = bitmapName.Filename;
 
@@ -214,37 +216,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return bitmapNames;
         }
 
-        public bool GetIsSlotReference()
-        {
-            var materialName = Name.Split('_')[0];
-
-            return Regex.Match(materialName, @"\d{4}$").Success;
-        }
-
-        public CharacterMaterialType GetMaterialType()
-        {
-            string nameWithoutEnding = Name.Split('_')[0];
-
-            // Check first to see if this ends with 4 numbers - if not, it's not a skin
-            if (!Regex.Match(nameWithoutEnding, @"\d{4}$").Success)
-            {
-                return CharacterMaterialType.NormalTexture;
-            }
-
-            // Ensure that this starts with 5 characters
-            char[] array = nameWithoutEnding.ToCharArray();
-
-            for (int i = 0; i < 5; ++i)
-            {
-                if (!char.IsLetter(array[i]))
-                {
-                    return CharacterMaterialType.GlobalSkin;
-                }
-            }
-
-            return CharacterMaterialType.CharacterSkin;
-        }
-
         public string GetFirstBitmapNameWithoutExtension()
         {
             if (BitmapInfoReference == null || BitmapInfoReference.BitmapInfo == null ||
@@ -255,45 +226,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetFilenameWithoutExtension();
-        }
-
-        public string GetSpecificMaterialSkinWithoutExtension(int specificSkin)
-        {
-            string charName;
-            int skinId;
-            string partName;
-
-            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
-
-
-            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
-            {
-                return string.Empty;
-            }
-
-            string skinIdText = skinId >= 10 ? skinId.ToString() : "0" + specificSkin;
-
-            var final = charName + partName.Substring(0, 2) + skinIdText + partName.Substring(2, 2);
-
-            return final;
-        }
-
-        public string GetMaterialSkinWithoutExtension()
-        {
-            string charName;
-            int skinId;
-            string partName;
-
-            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
-
-            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
-            {
-                return string.Empty;
-            }
-
-            var final = charName + partName.Substring(0, 2) + "{ID}" + partName.Substring(2, 2);
-
-            return final;
         }
 
         public string GetFirstBitmapExportFilename()
@@ -308,27 +240,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetExportFilename();
         }
 
-        public void SetHandled(bool b)
+        public string GetFullMaterialName()
         {
-            IsHandled = b;
-        }
-
-        public object GetMaterialNameNew(int skinId2)
-        {
-            string charName;
-            int skinId;
-            string partName;
-
-            string fileName = GetFirstBitmapNameWithoutExtension() + "_mdf";
-
-            if (!WldMaterialPalette.ExplodeName(fileName.ToUpper(), out charName, out skinId, out partName))
-            {
-                return string.Empty;
-            }
-
-            var final = charName + partName.Substring(0, 2) + "{ID}" + partName.Substring(2, 2);
-
-            return final;
+            return MaterialList.GetMaterialPrefix(ShaderType) +
+                    FragmentNameCleaner.CleanName(this);        
         }
     }
 }

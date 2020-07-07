@@ -4,16 +4,13 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class SkeletonHierarchyExporter : TextAssetExporter
+    public class SkeletonHierarchyWriter : TextAssetWriter
     {
-        public SkeletonHierarchyExporter()
+        public override void AddFragmentData(WldFragment data)
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
             _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh");
-        }
-        
-        public override void AddFragmentData(WldFragment data)
-        {
+            
             SkeletonHierarchy skeleton = data as SkeletonHierarchy;
 
             if (skeleton == null)
@@ -39,7 +36,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export.Append(",");
                 _export.Append(childrenList);
 
-                if (node.MeshReference != null)
+                if (node.MeshReference?.Mesh != null)
                 {
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));

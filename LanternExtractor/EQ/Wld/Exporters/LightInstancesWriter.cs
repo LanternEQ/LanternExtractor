@@ -2,9 +2,9 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class LightInstancesExporter : TextAssetExporter
+    public class LightInstancesWriter : TextAssetWriter
     {
-        public LightInstancesExporter()
+        public LightInstancesWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Light Instances");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +

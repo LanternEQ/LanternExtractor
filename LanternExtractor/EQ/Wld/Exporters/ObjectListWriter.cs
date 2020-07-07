@@ -3,9 +3,9 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class ObjectListExporter : TextAssetExporter
+    public class ObjectListWriter : TextAssetWriter
     {
-        public ObjectListExporter(int modelCount)
+        public ObjectListWriter(int modelCount)
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Model List");
             _export.AppendLine("# Total models: " + modelCount);        

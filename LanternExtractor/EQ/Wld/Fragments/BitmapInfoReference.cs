@@ -5,13 +5,14 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x05 - TextureInfoReference
-    /// This fragment contains a reference to a TextureInfo (0x04) fragment
+    /// BitmapInfoReference (0x05)
+    /// Internal name: ?
+    /// Contains a reference to a BitmapInfo fragment
     /// </summary>
     public class BitmapInfoReference : WldFragment
     {
         /// <summary>
-        /// The reference to the texture info (0x04)
+        /// The reference to the BitmapInfo
         /// </summary>
         public BitmapInfo BitmapInfo { get; private set; }
 
@@ -25,9 +26,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Name = stringHash[-reader.ReadInt32()];
 
-            int reference = reader.ReadInt32();
+            int fragmentReference = reader.ReadInt32() - 1;
 
-            BitmapInfo = fragments[reference - 1] as BitmapInfo;
+            BitmapInfo = fragments[fragmentReference] as BitmapInfo;
+
+            // Either 0 or 80 - unknown
+            int flags = reader.ReadInt32();
         }
 
         public override void OutputInfo(ILogger logger)

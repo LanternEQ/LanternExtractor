@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -16,10 +17,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public TrackDefFragment TrackDefFragment { get; set; }
         
+        public bool IsPoseAnimation { get; set; }
         public bool IsProcessed { get; set; }
         
-        // TODO: Determine what this does
-        public int SleepMs { get; set; }
+        public int FrameMs { get; set; }
+        
+        public string ModelName;
+        public string AnimationName;
+        public string PieceName;
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -30,23 +35,37 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-            
+
             int reference = reader.ReadInt32();
             
+            TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
+
+            if (TrackDefFragment == null)
+            {
+                logger.LogError("Bad track def reference'");
+            }
+
+            
+            // Either 4 or 5 - maybe something to look into
+            // Bits are set 0, or 2. 0 has the extra field for delay.
+            // 2 doesn't have any additional fields.
             int flags = reader.ReadInt32();
 
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
 
             if (bitAnalyzer.IsBitSet(0))
             {
-                SleepMs = reader.ReadInt32();
+                FrameMs = reader.ReadInt32();
             }
             else
             {
-                SleepMs = 0;
+                FrameMs = 0;
             }
             
-            TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)
@@ -58,6 +77,44 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 logger.LogInfo("-----");
                 logger.LogInfo("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
             }
+        }
+
+        public void SetTrackData(string modelName, string animationName, string pieceName)
+        {
+            ModelName = modelName;
+            AnimationName = animationName;
+            PieceName = pieceName;
+        }
+
+        /// <summary>
+        /// This is only ever called when we are finding additional animations.
+        /// All animations that are not the default skeleton animations:
+        /// 1. Start with a 3 letter animation abbreviation (e.g. C05)
+        /// 2. Continue with a 3 letter model name
+        /// 3. Continue with the skeleton piece name
+        /// 4. End with _TRACK
+        /// </summary>
+        /// <param name="logger"></param>
+        public void ParseTrackData(ILogger logger)
+        {
+            //logger.LogError("Parsing track: " + Name);
+            
+            string cleanedName = FragmentNameCleaner.CleanName(this, true);
+
+            if (cleanedName.Length < 6)
+            {
+                ModelName = cleanedName;
+                logger.LogError("Early exit, model name: " + ModelName);
+                return;
+            }
+            
+            AnimationName = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            ModelName = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            PieceName = cleanedName;
+
+            //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -48,7 +47,27 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             base.ExportData();
+            ExportAmbientLightColor();
             ExportBspTree();
+
+            if (_settings.ExportZoneMeshGroups)
+            {
+                ExportMeshList();
+            }
+        }
+
+        private void ExportAmbientLightColor()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.AmbientLightColor))
+            {
+                _logger.LogWarning("Cannot export ambient light color. No fragment found.");
+                return;
+            }
+            
+            AmbientLightColorWriter writer = new AmbientLightColorWriter();
+
+            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.AmbientLightColor][0] as AmbientLightColor);
+            writer.WriteAssetToFile(_zoneName + "/ambient_light.txt");        
         }
 
         private void ExportBspTree()
@@ -58,11 +77,10 @@ namespace LanternExtractor.EQ.Wld
                 _logger.LogWarning("Cannot export BSP tree. No tree found.");
                 return;
             }
-            BspTreeExporter exporter = new BspTreeExporter();
+            BspTreeWriter writer = new BspTreeWriter();
 
-            exporter.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
-            
-            exporter.WriteAssetToFile(_zoneName + "/" + _zoneName + "_bsp_tree.txt");
+            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
+            writer.WriteAssetToFile(_zoneName + "/bsp_tree.txt");
         }
     }
 }

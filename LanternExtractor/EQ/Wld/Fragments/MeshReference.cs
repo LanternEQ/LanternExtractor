@@ -15,6 +15,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh Mesh { get; private set; }
 
+        public bool IsHandled;
+
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -28,6 +30,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int reference = reader.ReadInt32();
 
             Mesh = fragments[reference - 1] as Mesh;
+
+            if (Mesh == null)
+            {
+                logger.LogError("Null mesh reference");
+                return;
+            }
+
+            int something = reader.ReadInt32();
+
+            if (something != 0)
+            {
+                
+            }
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

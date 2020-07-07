@@ -6,11 +6,11 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MaterialListExporter : TextAssetExporter
+    public class MaterialListWriter : TextAssetWriter
     {
         private List<string> _processedFragments = new List<string>();
         
-        public MaterialListExporter()
+        public MaterialListWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Information");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +
@@ -26,7 +26,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            foreach (Material material in list.Materials)
+            List<Material> allMaterials = new List<Material>();
+            
+            allMaterials.AddRange(list.Materials);
+            if (list.AdditionalMaterials != null)
+            {
+                allMaterials.AddRange(list.AdditionalMaterials);
+            }
+
+            foreach (Material material in allMaterials)
             {
                 if (material.ShaderType == ShaderType.Invisible)
                 {
@@ -75,8 +83,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         }
                     }
                 }
-                
+
                 _export.AppendLine();
+            }
+            
+            if (list.Slots != null)
+            {
+                    
             }
         }
     }

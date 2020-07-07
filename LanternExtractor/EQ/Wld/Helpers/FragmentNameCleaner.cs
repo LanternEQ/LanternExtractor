@@ -4,27 +4,41 @@ namespace LanternExtractor.EQ.Wld.Helpers
 {
     public static class FragmentNameCleaner
     {
-        public static string CleanName(WldFragment fragment)
+        public static string CleanName(WldFragment fragment, bool toLower = true)
         {
+            string cleanedName = string.Empty;
+            
             switch(fragment.Type)
             {
                 case FragmentType.MaterialList:
-                    return fragment.Name.Replace("_MP", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_MP", "");
+                    break;
                 case FragmentType.Material:
-                    return fragment.Name.Replace("_MDF", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_MDF", "");
+                    break;
                 case FragmentType.Mesh:
-                    return fragment.Name.Replace("_DMSPRITEDEF", "").ToLower();
-                case FragmentType.ModelReference:
-                    return fragment.Name.Replace("_ACTORDEF", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_DMSPRITEDEF", "");                    
+                    break;
+                case FragmentType.Actor:
+                    cleanedName = fragment.Name.Replace("_ACTORDEF", "");
+                    break;
                 case FragmentType.SkeletonHierarchy:
-                    return fragment.Name.Replace("_HS_DEF", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_HS_DEF", "");
+                    break;
                 case FragmentType.TrackDefFragment:
-                    return fragment.Name.Replace("_TRACKDEF", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_TRACKDEF", "");
+                    break;
                 case FragmentType.TrackFragment:
-                    return fragment.Name.Replace("_TRACK", "").ToLower();
+                    cleanedName = fragment.Name.Replace("_TRACK", "");
+                    break;
             }
 
-            return "";
+            if(toLower)
+            {
+                cleanedName = cleanedName.ToLower();
+            }
+            
+            return cleanedName;
         }
     }
 }

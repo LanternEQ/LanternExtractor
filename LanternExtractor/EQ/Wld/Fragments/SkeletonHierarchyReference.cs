@@ -19,14 +19,34 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             var reader = new BinaryReader(new MemoryStream(data));
-
+            
+            // Reference is usually 0
+            // Confirmed
             Name = stringHash[-reader.ReadInt32()];
 
             int reference = reader.ReadInt32();
 
             SkeletonHierarchy = fragments[reference - 1] as SkeletonHierarchy;
 
-            //Console.WriteLine("0x11: " + Name);
+            if (SkeletonHierarchy == null)
+            {
+                logger.LogError("Bad skeleton hierarchy reference");
+            }
+
+            int params1 = reader.ReadInt32();
+
+            // Params are 0
+            // Confirmed
+            if (params1 != 0)
+            {
+                
+            }
+            
+            // Confirmed end
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
         }
 
         public override void OutputInfo(ILogger logger)

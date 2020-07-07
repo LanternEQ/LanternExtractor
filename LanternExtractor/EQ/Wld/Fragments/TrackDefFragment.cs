@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -33,22 +35,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int flags = reader.ReadInt32();
-            
-            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
 
-            if (bitAnalyzer.IsBitSet(3))
+            // Flags are always 8 when dealing with object animations
+            if (flags != 8)
             {
                 
             }
 
-            int size1 = reader.ReadInt32();
+            BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
+
+            bool hasData2Values = bitAnalyzer.IsBitSet(3);
+            
+            int frameCount = reader.ReadInt32();
 
             Frames = new List<BonePosition>();
             Frames2 = new List<BoneTransform>();
 
             float l = 0.0f;
             
-            for (int i = 0; i < size1; ++i)
+            for (int i = 0; i < frameCount; ++i)
             {
                 // Windcatcher
                 Int16 rotDenominator = reader.ReadInt16();
@@ -75,20 +80,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     string partName = Name;
                     double scale = 1.0f / shiftDenominator;
-                    double x = shiftX * scale;
-                    double y = shiftY * scale;
-                    double z = shiftZ * scale;
-                    frameTransform.Translation = new vec3((float)x, (float)y, (float)z);
+                    double x = shiftX / 256f;
+                    double y = shiftY / 256f;
+                    double z = shiftZ / 256f;
+                    
+                    frameTransform.Scale = shiftDenominator / 256f;
 
-                    if (Name.Contains("GOR") && i == 0)
-                    {
-                        
-                    }
+                    frameTransform.Translation = new vec3((float)x, (float)y, (float)z);
                 }
                 else
                 {
                     frameTransform.Translation = vec3.Zero;
                 }
+
                 
                 frameTransform.Rotation = new quat(rotX, rotY, rotZ, rotDenominator).Normalized;
                 
@@ -98,7 +102,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     //logger.LogError($"{i}: NORM {frameTransform.Rotation.Normalized}");
                 }
                 
+                
+                
                 Frames2.Add(frameTransform);
+            }
+
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
             }
         }
         private float RadianToDegree(float angle)

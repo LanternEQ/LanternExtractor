@@ -41,14 +41,14 @@ namespace LanternExtractor.EQ.Wld
 
             string zoneExportFolder = _zoneName + "/";
             
-            LightInstancesExporter exporter = new LightInstancesExporter();
+            LightInstancesWriter writer = new LightInstancesWriter();
 
             foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.LightInstance])
             {
-                exporter.AddFragmentData(fragment);
+                writer.AddFragmentData(fragment);
             }
             
-            exporter.WriteAssetToFile(zoneExportFolder + _zoneName + "_lights.txt");
+            writer.WriteAssetToFile(zoneExportFolder + "lights.txt");
         }
     }
 }

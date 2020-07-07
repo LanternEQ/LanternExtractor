@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>LanternExtractor</RootNamespace>
     <AssemblyName>LanternExtractor</AssemblyName>
-    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
@@ -63,6 +63,7 @@
     <Compile Include="EQ\Sound\EmissionType.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
+    <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
     <Compile Include="EQ\Wld\DataTypes\BonePosition.cs" />
     <Compile Include="EQ\Wld\DataTypes\BspNode.cs" />
     <Compile Include="EQ\Wld\DataTypes\Color.cs" />
@@ -73,33 +74,42 @@
     <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
     <Compile Include="EQ\Wld\DataTypes\Skeleton.cs" />
     <Compile Include="EQ\Wld\DataTypes\SkeletonPiece.cs" />
-    <Compile Include="EQ\Wld\Exporters\AnimatedMeshListExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\AnimationExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\BspTreeExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\CharacterListExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\LightInstancesExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MaterialListExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\TextureListExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AnimatedMeshListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterAnimationListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterListGlobalWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AmbientLightColorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\CharacterAnimationGlobalListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MaterialListGlobalWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MaterialListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectListGlobalWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\TextureListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshFbxExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshIntermediateExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshIntermediateAssetWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshIntermediateMaterialsExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshObjMtlExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ObjectInstanceExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshObjExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ObjectListExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\TextAssetExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\VertexColorsExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjMtlWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectInstanceWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectListWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\TextAssetWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\VertexColorsWriter.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
-    <Compile Include="EQ\Wld\Fragments\Bitmap.cs" />
+    <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\FirstFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\AmbientLightColor.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment2F.cs" />
+    <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />
     <Compile Include="EQ\Wld\Fragments\FragmentType.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
     <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
@@ -108,7 +118,7 @@
     <Compile Include="EQ\Wld\Fragments\Mesh.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVertices.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ModelReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\Actor.cs" />
     <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegionType.cs" />
     <Compile Include="EQ\Wld\Fragments\TrackFragment.cs" />
@@ -156,7 +166,7 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="models.txt">
+    <Content Include="animationsources.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="musictracks.txt">

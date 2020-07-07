@@ -3,9 +3,9 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class BspTreeExporter : TextAssetExporter
+    public class BspTreeWriter : TextAssetWriter
     {
-        public BspTreeExporter()
+        public BspTreeWriter()
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
             _export.AppendLine(LanternStrings.ExportHeaderFormat +

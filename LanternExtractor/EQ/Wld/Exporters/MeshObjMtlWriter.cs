@@ -2,12 +2,12 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshObjMtlExporter : TextAssetExporter
+    public class MeshObjMtlWriter : TextAssetWriter
     {
         private Settings _settings;
         private string _modelName;
         
-        public MeshObjMtlExporter(Settings settings, string modelName)
+        public MeshObjMtlWriter(Settings settings, string modelName)
         {
             _settings = settings;
             _modelName = modelName;

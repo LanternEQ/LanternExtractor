@@ -8,7 +8,7 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshObjExporter : TextAssetExporter
+    public class MeshObjWriter : TextAssetWriter
     {
         private Material _activeMaterial;
         private ObjExportType _objExportType;
@@ -21,7 +21,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
 
-        public MeshObjExporter(ObjExportType exportType, bool exportHiddenGeometry, bool exportGroups, string zoneName, string forcedMeshList = "")
+        public MeshObjWriter(ObjExportType exportType, bool exportHiddenGeometry, bool exportGroups, string zoneName, string forcedMeshList = "")
         {
             _objExportType = exportType;
             _exportHiddenGeometry = exportHiddenGeometry;
@@ -133,7 +133,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
 
                     // This is the culprit.
-                    if (!mesh.Indices[currentPolygon].Solid && _objExportType == ObjExportType.Collision)
+                    if (!mesh.Indices[currentPolygon].IsSolid && _objExportType == ObjExportType.Collision)
                     {
                         activeArray = unusedVertices;
                         AddIfNotContained(activeArray, mesh.Indices[currentPolygon].Vertex1);
@@ -189,9 +189,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             int frameCount = 1;
 
-            if (mesh.AnimatedVertices != null)
+            if (mesh.AnimatedVerticesReference != null)
             {
-                frameCount += mesh.AnimatedVertices.Frames.Count;
+                MeshAnimatedVertices animatedVertices = mesh.AnimatedVerticesReference.MeshAnimatedVertices;
+                
+                frameCount += mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count;
             }
 
             for (int i = 0; i < frameCount; ++i)
@@ -213,12 +215,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                     else
                     {
-                        if (mesh.AnimatedVertices == null)
+                        if (mesh.AnimatedVerticesReference == null)
                         {
                             continue;
                         }
 
-                        vertex = mesh.AnimatedVertices.Frames[i - 1][usedVertex];
+                        vertex = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
                     vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x)).ToString(_numberFormat) + " " +
