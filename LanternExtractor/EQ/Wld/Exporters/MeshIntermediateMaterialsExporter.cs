@@ -34,7 +34,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     _export.Append(i);
                     _export.Append(",");
-                    _export.Append("invisible");
+                    _export.Append("d_fallback,;1");
                     _export.AppendLine();
                     continue;
                 }
