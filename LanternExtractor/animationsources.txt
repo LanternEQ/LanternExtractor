@@ -90,7 +90,7 @@ PIF,FAF
 BGG,KGO
 
 # 60 - Skeleton
-#SKE,ZOM
+SKE,ELM
 
 # 63 - Tiger
 TIG,LIM
