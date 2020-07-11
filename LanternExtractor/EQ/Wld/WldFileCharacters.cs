@@ -496,7 +496,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
                 
-                _logger.LogError("Material not assigned: " + material.Name);
+                _logger.LogWarning("WldFileCharacters: Material not assigned: " + material.Name);
             }
         }
 
@@ -581,7 +581,12 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 string modelBase = skeleton.ModelBase;
-                string alternateModel = GetAnimationModelLink(modelBase);
+                string alternateModel = string.Empty;//GetAnimationModelLink(modelBase);
+
+                if (modelBase == "ske")
+                {
+                    
+                }
 
                 // TODO: Alternate model bases
                 foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
@@ -598,13 +603,21 @@ namespace LanternExtractor.EQ.Wld
                         continue;
                     }
 
-                    track.ParseTrackData(_logger);
+                    if (!track.IsNameParsed)
+                    {
+                        track.ParseTrackData(_logger);
+                    }
                     
                     string trackModelBase = track.ModelName;
 
                     if (trackModelBase != modelBase && alternateModel != trackModelBase)
                     {
                         continue;
+                    }
+
+                    if (trackModelBase == "hom")
+                    {
+                        
                     }
 
                     skeleton.AddTrackData(track);
@@ -664,8 +677,8 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
-                _logger.LogError("Track not assigned: " + track.Name);
+
+                _logger.LogWarning("WldFileCharacters: Track not assigned: " + track.Name);
             }
         }
     }

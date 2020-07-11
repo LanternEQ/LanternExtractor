@@ -28,7 +28,7 @@
         /// <summary>
         /// The name of the file
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Initializes the constructor data

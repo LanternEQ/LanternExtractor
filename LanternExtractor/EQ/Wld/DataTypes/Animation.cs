@@ -18,7 +18,14 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public void AddTrack(TrackFragment track, string pieceName)
         {
             string trackName = track.Name;
-
+            
+            // Prevent overwriting tracks
+            // Drachnid edge case
+            if (Tracks.ContainsKey(pieceName))
+            {
+                return;
+            }
+            
             Tracks[pieceName] = track;
 
             if (string.IsNullOrEmpty(AnimModelBase) &&

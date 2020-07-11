@@ -14,9 +14,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The mesh reference
         /// </summary>
         public Mesh Mesh { get; private set; }
-
-        public bool IsHandled;
-
+        
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -27,13 +25,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Name = stringHash[-reader.ReadInt32()];
 
-            int reference = reader.ReadInt32();
+            int reference = reader.ReadInt32() - 1;
 
-            Mesh = fragments[reference - 1] as Mesh;
+            Mesh = fragments[reference] as Mesh;
 
             if (Mesh == null)
             {
-                logger.LogError("Null mesh reference");
+                logger.LogError("MeshReference: Null mesh reference for index: " + reference);
                 return;
             }
 

@@ -52,6 +52,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Frames2 = new List<BoneTransform>();
 
             float l = 0.0f;
+
+            if (Name.Contains("DRM") && Name.Contains("PE"))
+            {
+                
+            }
             
             for (int i = 0; i < frameCount; ++i)
             {
@@ -83,7 +88,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     double x = shiftX / 256f;
                     double y = shiftY / 256f;
                     double z = shiftZ / 256f;
-                    
+
                     frameTransform.Scale = shiftDenominator / 256f;
 
                     frameTransform.Translation = new vec3((float)x, (float)y, (float)z);
@@ -95,15 +100,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 
                 frameTransform.Rotation = new quat(rotX, rotY, rotZ, rotDenominator).Normalized;
-                
-                if (index == 3559)
-                {
-                    //logger.LogError($"{i}: NOT NORM {frameTransform.Rotation}");
-                    //logger.LogError($"{i}: NORM {frameTransform.Rotation.Normalized}");
-                }
-                
-                
-                
+
                 Frames2.Add(frameTransform);
             }
 

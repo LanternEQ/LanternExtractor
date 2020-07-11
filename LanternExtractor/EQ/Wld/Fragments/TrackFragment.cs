@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -26,6 +27,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public string AnimationName;
         public string PieceName;
 
+        public bool IsNameParsed;
+
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -44,7 +47,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 logger.LogError("Bad track def reference'");
             }
-
             
             // Either 4 or 5 - maybe something to look into
             // Bits are set 0, or 2. 0 has the extra field for delay.
@@ -97,14 +99,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="logger"></param>
         public void ParseTrackData(ILogger logger)
         {
-            //logger.LogError("Parsing track: " + Name);
-            
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 
             if (cleanedName.Length < 6)
             {
+                if (cleanedName.Length == 3)
+                {
+                    ModelName = cleanedName;
+                    IsNameParsed = true;
+                    return;
+                }
+                
                 ModelName = cleanedName;
-                logger.LogError("Early exit, model name: " + ModelName);
+                logger.LogError("Early exit, model name: " + this.Name + " with: " + TrackDefFragment.Name + " and: " + TrackDefFragment.Frames2.Count);
+                logger.LogError("frag: " + TrackDefFragment.Index);
+                logger.LogError("data: " + TrackDefFragment.Frames2.First().Translation);
+                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation);
+                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation2);
+                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation3);
                 return;
             }
             
@@ -114,6 +126,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             cleanedName = cleanedName.Remove(0, 3);
             PieceName = cleanedName;
 
+            IsNameParsed = true;
             //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
         }
     }

@@ -275,6 +275,17 @@ namespace LanternExtractor.EQ.Pfs
             for (int i = 0; i < _files.Count; ++i)
             {
                 string filename = _files[i].Name;
+                
+                if (FilenameChanges != null)
+                {
+                    string filenameWithoutExtension = filename.Substring(0, filename.Length - 4);
+                    
+                    if (FilenameChanges.ContainsKey(filenameWithoutExtension))
+                    {
+                        _files[i].Name = FilenameChanges[filenameWithoutExtension] + ".bmp";
+                        filename = _files[i].Name;
+                    }
+                }
 
                 if (filename.EndsWith(".bmp"))
                 {
@@ -370,14 +381,6 @@ namespace LanternExtractor.EQ.Pfs
             }
 
             string bitmapName = _files[index].Name.Substring(0, _files[index].Name.Length - 4);
-
-            if (FilenameChanges != null)
-            {
-                if (FilenameChanges.ContainsKey(bitmapName))
-                {
-                    bitmapName = FilenameChanges[bitmapName];
-                }
-            }
 
             string pngName = bitmapName + ".png";
             var byteStream = new MemoryStream(_files[index].Bytes);

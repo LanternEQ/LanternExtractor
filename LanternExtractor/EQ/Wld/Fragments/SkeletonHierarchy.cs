@@ -46,7 +46,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Skeleton = new List<SkeletonPieceData>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
 
-            _boneNameMapping[0] = "ROOT";
+            _boneNameMapping[0] = "root";
             
             var reader = new BinaryReader(new MemoryStream(data));
 
@@ -171,6 +171,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     pieceNew.MeshReference = fragments[meshReferenceIndex - 1] as MeshReference;
 
+                    if (pieceNew.Name == "root")
+                    {
+                        pieceNew.Name = FragmentNameCleaner.CleanName(pieceNew.MeshReference.Mesh);
+                    }
+                    
                     // Never null
                     // Confirmed
                     if (pieceNew.MeshReference == null)
@@ -227,7 +232,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     if (meshRef.Mesh == null)
                     {
-                        logger.LogError("Null reference to mesh!");
+                        logger.LogError("SkeletonHierarchy: Null reference to mesh for skeleton: " + Name);
                         continue;
                     }
 
@@ -245,11 +250,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 for (int i = 0; i < size2; ++i)
                 {
                     things.Add(reader.ReadInt32());
-                }
-
-                if (Name.Contains("FAF"))
-                {
-                    
                 }
             }
 
@@ -318,11 +318,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             track.SetTrackData(modelName, animationName, pieceName);
 
-            // Prevent adding alternate animation if the original model's already exists
-            if (Animations.ContainsKey(track.AnimationName) &&
-                Animations[track.AnimationName].AnimModelBase != modelName)
+            if (Animations.ContainsKey(track.AnimationName))
             {
-                return;
+                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
+                {
+                    Animations.Remove(animationName);
+                }
+                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase)
+                {
+                    return;
+                }
             }
             
             if (!Animations.ContainsKey(track.AnimationName))
@@ -370,6 +375,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             if (HelmMeshes.Any(x => x.Name == mesh.Name))
+            {
+                return;
+            }
+
+            if (mesh.MobPieces.Count == 0)
             {
                 return;
             }
