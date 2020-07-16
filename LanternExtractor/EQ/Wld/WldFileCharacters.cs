@@ -80,8 +80,9 @@ namespace LanternExtractor.EQ.Wld
             FixKaladimKingCrown();
             FixFayDrake();
             FixTurtleTextures();
+            FixBlackAndWhiteDragon();
         }
-        
+
         private void FixTurtleTextures()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
@@ -419,6 +420,49 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
         }
+        
+        private void FixBlackAndWhiteDragon()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
+            {
+                return;
+            }
+
+            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
+            {
+                Actor actor = actorFragment as Actor;
+
+                if (actor == null)
+                {
+                    continue;
+                }
+
+                if (!actor.Name.StartsWith("BWD"))
+                {
+                    continue;
+                }
+                
+                if (_fragmentNameDictionary.ContainsKey("BWDCH0101_MDF"))
+                {
+                    Material material = _fragmentNameDictionary["BWDCH0101_MDF"] as Material;
+                    if (material != null)
+                    {
+                        material.ShaderType = ShaderType.Diffuse;
+                    }
+                }
+
+                if (_fragmentNameDictionary.ContainsKey("BWD_MP"))
+                {
+                    MaterialList bwdMaterialList = _fragmentNameDictionary["BWD_MP"] as MaterialList;
+
+                    if (bwdMaterialList != null)
+                    {
+                        var slot = bwdMaterialList.Slots["bwd_ch01"];
+                        slot[1] = "d_bwdch0101";
+                    }
+                }
+            }
+        }
 
         private void BuildSlotMapping()
         {
@@ -581,13 +625,8 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 string modelBase = skeleton.ModelBase;
-                string alternateModel = string.Empty;//GetAnimationModelLink(modelBase);
-
-                if (modelBase == "ske")
-                {
-                    
-                }
-
+                string alternateModel = GetAnimationModelLink(modelBase);
+                
                 // TODO: Alternate model bases
                 foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
                 {
@@ -609,15 +648,10 @@ namespace LanternExtractor.EQ.Wld
                     }
                     
                     string trackModelBase = track.ModelName;
-
+                    
                     if (trackModelBase != modelBase && alternateModel != trackModelBase)
                     {
                         continue;
-                    }
-
-                    if (trackModelBase == "hom")
-                    {
-                        
                     }
 
                     skeleton.AddTrackData(track);
