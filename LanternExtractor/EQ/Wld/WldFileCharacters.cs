@@ -81,6 +81,11 @@ namespace LanternExtractor.EQ.Wld
             FixFayDrake();
             FixTurtleTextures();
             FixBlackAndWhiteDragon();
+
+            if (_fragmentNameDictionary.ContainsKey("SED_ACTORDEF"))
+            {
+                string zoneName = _zoneName;
+            }
         }
 
         private void FixTurtleTextures()
@@ -579,9 +584,21 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAnimationList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
+            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+
+            if (skeletons == null)
             {
-                return;
+                if (_wldToInject == null)
+                {
+                    return;
+                }
+
+                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+
+                if (skeletons == null)
+                {
+                    return;
+                }
             }
 
             TextAssetWriter animationWriter = null;
@@ -595,7 +612,7 @@ namespace LanternExtractor.EQ.Wld
                 animationWriter = new CharacterAnimationGlobalListWriter();
             }
 
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
+            foreach (var skeletonFragment in skeletons)
             {
                 animationWriter.AddFragmentData(skeletonFragment);
             }
@@ -609,13 +626,25 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
-            
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
+
+            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+
+            if (skeletons == null)
+            {
+                if (_wldToInject == null)
+                {
+                    return;
+                }
+                
+                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+            }
+
+            if (skeletons == null)
             {
                 return;
             }
 
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
+            foreach (var skeletonFragment in skeletons)
             {
                 SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
 
@@ -657,47 +686,51 @@ namespace LanternExtractor.EQ.Wld
                     skeleton.AddTrackData(track);
                 }
                 
-                foreach (var meshReferenceFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                // TODO: Split to another function
+                if(_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
                 {
-                    Mesh mesh = meshReferenceFragment as Mesh;
-
-                    if (mesh == null)
+                    foreach (var meshReferenceFragment in _fragmentTypeDictionary[FragmentType.Mesh])
                     {
-                        continue;
-                    }
+                        Mesh mesh = meshReferenceFragment as Mesh;
 
-                    if (mesh.IsHandled)
-                    {
-                        continue;
-                    }
-
-                    string cleanedName = FragmentNameCleaner.CleanName(mesh);
-
-                    string basename = cleanedName;
-
-                    bool endsWithNumber = char.IsDigit(cleanedName[cleanedName.Length - 1]);
-                    
-                    if (endsWithNumber)
-                    {
-                        int id = Convert.ToInt32(cleanedName.Substring(cleanedName.Length - 2));
-                        cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
-
-                        if (cleanedName.Length != 3)
+                        if (mesh == null)
                         {
-                            string modelType = cleanedName.Substring(cleanedName.Length - 3);
-                            cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
+                            continue;
                         }
 
-                        basename = cleanedName;
-                    }
+                        if (mesh.IsHandled)
+                        {
+                            continue;
+                        }
+
+                        string cleanedName = FragmentNameCleaner.CleanName(mesh);
+
+                        string basename = cleanedName;
+
+                        bool endsWithNumber = char.IsDigit(cleanedName[cleanedName.Length - 1]);
                     
-                    if (basename == modelBase)
-                    {
-                        skeleton.AddAdditionalMesh(mesh);
+                        if (endsWithNumber)
+                        {
+                            int id = Convert.ToInt32(cleanedName.Substring(cleanedName.Length - 2));
+                            cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
+
+                            if (cleanedName.Length != 3)
+                            {
+                                string modelType = cleanedName.Substring(cleanedName.Length - 3);
+                                cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
+                            }
+
+                            basename = cleanedName;
+                        }
+                    
+                        if (basename == modelBase)
+                        {
+                            skeleton.AddAdditionalMesh(mesh);
+                        }
                     }
                 }
             }
-            
+
             foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
             {
                 TrackFragment track = trackFragment as TrackFragment;

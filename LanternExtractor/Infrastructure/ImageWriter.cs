@@ -50,13 +50,6 @@ namespace LanternExtractor.Infrastructure
             }
 
             Bitmap cloneBitmap;
-            
-            
-            if (fileName == "sndua0006.png")
-            {
-                isMasked = true;
-                //paletteIndex = 255;
-            }
 
             if (isMasked)
             {

@@ -512,17 +512,30 @@ namespace LanternExtractor.EQ.Wld
         {
             string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
             string animationsFolder = GetExportFolderForWldType() + "Animations/";
-            
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.SkeletonHierarchy))
-            {
-                _logger.LogWarning("Cannot export animations. No model references.");
-                return;
-            }
 
+            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+
+            if (skeletons == null)
+            {
+                if (_wldToInject == null)
+                {
+                    _logger.LogWarning("Cannot export animations. No model references.");
+                    return;
+                }
+
+                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+                
+                if (skeletons == null)
+                {
+                    _logger.LogWarning("Cannot export animations. No model references.");
+                    return;
+                }
+            }
+            
             SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
             AnimationWriter animationWriter = new AnimationWriter(_wldType == WldType.Characters);
             
-            foreach (var skeletonFragment in _fragmentTypeDictionary[FragmentType.SkeletonHierarchy])
+            foreach (var skeletonFragment in skeletons)
             {
                 SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
 
@@ -531,8 +544,8 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                // TODO: Put this elsewhere
-                if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+                // TODO: Put this elsewhere - what does this even do?
+                /*if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
                 {
                     if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
                     {
@@ -541,7 +554,7 @@ namespace LanternExtractor.EQ.Wld
                             continue;
                         }
                     }
-                }
+                }*/
                 
                 skeletonWriter.AddFragmentData(skeleton);
                 skeletonWriter.WriteAssetToFile(skeletonsFolder + skeleton.ModelBase + ".txt");
