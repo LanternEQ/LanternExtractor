@@ -36,16 +36,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (Material material in allMaterials)
             {
-                if (material.ShaderType == ShaderType.Invisible)
-                {
-                    continue;
-                }
-
-                if (material.BitmapInfoReference == null)
-                {
-                    continue;
-                }
-
                 if (_processedFragments.Contains(material.ShaderType + material.Name))
                 {
                     continue;
@@ -55,6 +45,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 string materialPrefix = MaterialList.GetMaterialPrefix(material.ShaderType);
                 string materialName = materialPrefix + FragmentNameCleaner.CleanName(material);
+                
+                if (material.BitmapInfoReference == null)
+                {
+                    _export.Append(materialName);
+                    _export.Append(",");
+                    _export.Append(0);
+                    _export.AppendLine();
+                    continue;
+                }
 
                 _export.Append(materialName);
                 _export.Append(",");

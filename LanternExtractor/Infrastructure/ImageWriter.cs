@@ -3,7 +3,6 @@ using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 using System.Drawing;
 using System.Drawing.Imaging;
-using LanternExtractor.EQ.Wld;
 
 namespace LanternExtractor.Infrastructure
 {
@@ -56,21 +55,11 @@ namespace LanternExtractor.Infrastructure
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height),
                     PixelFormat.Format8bppIndexed);
 
-                int paletteIndex = 0;
+                int paletteIndex = GetPaletteIndex(fileName);
                 var palette = cloneBitmap.Palette;
-                
-                if (fileName == "clhe0004.png")
-                {
-                    paletteIndex = 255;
-                }
-
-                if (fileName == "kahe0001.png")
-                {
-                    paletteIndex = 255;
-                }
 
                 Color transparencyColor = palette.Entries[paletteIndex];
-                
+
                 bool isUnique = false;
 
                 // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
@@ -102,13 +91,29 @@ namespace LanternExtractor.Infrastructure
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
             }
-            
+
             if (rotate)
             {
                 cloneBitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
             }
 
             cloneBitmap.Save(filePath + fileName, ImageFormat.Png);
+        }
+
+        private static int GetPaletteIndex(string fileName)
+        {
+            switch (fileName)
+            {
+                case "clhe0004.png":
+                case "kahe0001.png":
+                    return 255;
+                case "furpile1.png":
+                    return 250;
+                case "bearrug.png":
+                    return 47;
+                default:
+                    return 0;
+            }
         }
     }
 }

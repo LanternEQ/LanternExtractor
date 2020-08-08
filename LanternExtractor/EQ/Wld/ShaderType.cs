@@ -15,6 +15,7 @@
         DiffuseSkydome,
         TransparentSkydome, 
         TransparentAdditiveUnlitSkydome,
-        Invisible
-    };
+        Invisible,
+        Boundary,
+    }
 }

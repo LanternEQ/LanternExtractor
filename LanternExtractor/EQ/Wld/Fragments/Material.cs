@@ -127,6 +127,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             switch (materialType)
             {
                 case MaterialType.Boundary:
+                    ShaderType = ShaderType.Boundary;
+                    break;
                 case MaterialType.InvisibleUnknown:
                 case MaterialType.InvisibleUnknown2:
                 case MaterialType.InvisibleUnknown3:
@@ -173,6 +175,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     break;
                 default:
                     ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
+                    break;
+            }
+
+            CheckForSpecialCaseMasked();
+        }
+
+        private void CheckForSpecialCaseMasked()
+        {
+            switch (Name)
+            {
+                case "TREE20_MDF":
+                case "TOP_MDF":
+                case "FURPILE1_MDF":
+                case "BEARRUG_MDF":
+                    ShaderType = ShaderType.TransparentMasked;
                     break;
             }
         }

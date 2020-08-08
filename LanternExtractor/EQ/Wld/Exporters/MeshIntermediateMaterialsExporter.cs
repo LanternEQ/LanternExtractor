@@ -29,12 +29,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
             for (var i = 0; i < list.Materials.Count; i++)
             {
                 Material material = list.Materials[i];
-
+                
                 if (string.IsNullOrEmpty(material.GetFirstBitmapExportFilename()))
                 {
                     _export.Append(i);
                     _export.Append(",");
-                    _export.Append("d_fallback,;1");
+                    _export.Append(MaterialList.GetMaterialPrefix(material.ShaderType) + FragmentNameCleaner.CleanName(material) + ",;1");
                     _export.AppendLine();
                     continue;
                 }

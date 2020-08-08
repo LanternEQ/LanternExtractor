@@ -544,21 +544,39 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                // TODO: Put this elsewhere - what does this even do?
-                /*if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
-                {
-                    if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
-                    {
-                        if (!skeleton.Meshes[0].MaterialList.HasBeenExported)
-                        {
-                            continue;
-                        }
-                    }
-                }*/
+                string filePath = skeletonsFolder + skeleton.ModelBase + ".txt";
                 
                 skeletonWriter.AddFragmentData(skeleton);
-                skeletonWriter.WriteAssetToFile(skeletonsFolder + skeleton.ModelBase + ".txt");
-                skeletonWriter.ClearExportData();
+
+                // TODO: Put this elsewhere - what does this even do?
+                if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
+                {
+                    if (File.Exists(filePath))
+                    {
+                        var file = File.ReadAllText(filePath);
+                        int oldFileSize = file.Length;
+                        int newFileSize = skeletonWriter.GetExportByteCount();
+
+                        if (newFileSize > oldFileSize)
+                        {
+                            skeletonWriter.WriteAssetToFile(filePath);
+                        }
+ 
+                        skeletonWriter.ClearExportData();
+                    }
+                    else
+                    {
+                        skeletonWriter.WriteAssetToFile(filePath);
+                        skeletonWriter.ClearExportData();
+                    }
+                }
+                else
+                {
+                    skeletonWriter.WriteAssetToFile(filePath);
+                    skeletonWriter.ClearExportData();
+                }
+                
+
 
                 foreach (var animation in skeleton.Animations)
                 {

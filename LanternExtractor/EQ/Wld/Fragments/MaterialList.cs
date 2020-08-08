@@ -137,6 +137,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 case ShaderType.Diffuse:
                     return "d_";
+                case ShaderType.Invisible:
+                    return "i_";
+                case ShaderType.Boundary:
+                    return "b_";
                 case ShaderType.Transparent25:
                     return "t25_";
                 case ShaderType.Transparent50:
