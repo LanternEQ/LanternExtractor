@@ -43,7 +43,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             if (_isFirstMesh)
             {
                 string name = LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
-                              ".mtl";
+                              "_materials.mtl";
 
                 if (!string.IsNullOrEmpty(_forcedMeshList))
                 {
@@ -102,7 +102,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 string textureChange = string.Empty;
 
                 if (mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
-                    || (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible &&
+                    || (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Boundary &&
                         _exportHiddenGeometry))
                 {
                     // Material change
@@ -296,6 +296,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             base.WriteAssetToFile(fileName);
+        }
+
+        public override void ClearExportData()
+        {
+            base.ClearExportData();
+            _activeMaterial = null;
+            _usedVertices = 0;
+            _baseVertex = 0;
+            _isFirstMesh = true;
         }
     }
 }
