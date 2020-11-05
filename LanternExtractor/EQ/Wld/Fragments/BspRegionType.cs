@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The region type associated with the region list
         /// </summary>
-        public RegionType RegionType { get; private set; }
+        public List<RegionType> RegionTypes { get; private set; }
 
         public List<int> BspRegionIndices { get; private set; }
         
@@ -59,34 +59,81 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 BspRegionIndices.Add(reader.ReadInt32());
             }
-
+            
             int regionStringSize = reader.ReadInt32();
 
             string regionTypeString = regionStringSize == 0 ? Name.ToLower() : 
                 WldStringDecoder.DecodeString(reader.ReadBytes(regionStringSize)).ToLower();
 
-            if(regionTypeString.StartsWith("wt"))
+            RegionTypes = new List<RegionType>();
+            
+            if(regionTypeString.StartsWith("wtn_"))
             {
-                RegionType = RegionType.Water;
+                RegionTypes.Add(RegionType.Water);
             }
-            else if (regionTypeString.StartsWith("la"))
+            else if (regionTypeString.StartsWith("wtntp"))
             {
-                RegionType = RegionType.Lava;
+                RegionTypes.Add(RegionType.Water);
+                RegionTypes.Add(RegionType.Zoneline);
+                DecodeZoneline(regionTypeString);
+                RegionString = regionTypeString;
             }
-            else if (regionTypeString.StartsWith("drp"))
+            else if (regionTypeString.StartsWith("lan_"))
             {
-                RegionType = RegionType.Pvp;
+                RegionTypes.Add(RegionType.Lava);
             }
-            else if (regionTypeString.StartsWith("drn"))
+            else if (regionTypeString.StartsWith("wt_zone"))
             {
-                RegionType = RegionType.Zoneline;
+                RegionTypes.Add(RegionType.Normal);
+                // TODO: Figure this out
+            }
+            else if (regionTypeString.StartsWith("drp_"))
+            {
+                RegionTypes.Add(RegionType.Pvp);
+            }
+            else if (regionTypeString.StartsWith("drn_"))
+            {
+                RegionTypes.Add(RegionType.Normal);
+                // TODO: Figure this out
+            }
+            else if (regionTypeString.StartsWith("sln_"))
+            {
+                RegionTypes.Add(RegionType.Normal);
+                // TODO: Figure this out
+            }
+            else if (regionTypeString.StartsWith("la_zone"))
+            {
+                RegionTypes.Add(RegionType.Normal);
+                // TODO: Figure this out - lava zoneline?
+            }
+            else if (regionTypeString.StartsWith("vwn_"))
+            {
+                RegionTypes.Add(RegionType.Normal);
+                // TODO: Figure this out - sleeper
+            }
+            else if (regionTypeString.StartsWith("lantp"))
+            {
+                // TODO: Figure this out - soldunga
+                RegionTypes.Add(RegionType.Lava);
+                RegionTypes.Add(RegionType.Zoneline);
+                DecodeZoneline(regionTypeString);
+                RegionString = regionTypeString;
+            }
+            else if (regionTypeString.StartsWith("drntp"))
+            {
+                RegionTypes.Add(RegionType.Zoneline);
                 DecodeZoneline(regionTypeString);
 
                 RegionString = regionTypeString;
             }
             else
             {
-                //logger.LogError("Unknown region type: " + regionTypeString);
+                RegionTypes.Add(RegionType.Normal);
+            }
+
+            if (RegionTypes.Count == 0)
+            {
+                
             }
         }
 
@@ -143,14 +190,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x29: Region type: " + RegionType);
+            logger.LogInfo("0x29: Region type: " + RegionTypes);
         }
 
         internal void LinkRegionType(List<BspRegion> bspRegions)
         {
             foreach(var regionIndex in BspRegionIndices)
             {
-                if (RegionType == RegionType.Zoneline)
+                if (RegionTypes.Contains(RegionType.Zoneline))
                 {
                     
                 }
