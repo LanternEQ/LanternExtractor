@@ -1,3 +1,5 @@
+using System.Drawing;
+using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 
@@ -25,6 +27,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (var node in tree.Nodes)
             {
+                // Normal node
                 if (node.Region == null)
                 {
                     _export.Append(node.NormalX.ToString(_numberFormat));
@@ -39,27 +42,46 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
                     _export.Append(node.RightNode.ToString(_numberFormat));
                     _export.AppendLine();
+                }
+                else
+                // Leaf node
+                {
+                    _export.Append(node.RegionId.ToString(_numberFormat));
+                    _export.Append(",");
 
-
-                    if (node.RightNode == -1 && node.LeftNode == -1)
+                    if (node.RegionId == 1514)
                     {
                         
                     }
-                }
-                else
-                {
-                    RegionType type = RegionType.Normal;
+
+                    string types = string.Empty;
 
                     if (node.Region.Type != null)
                     {
-                        type = node.Region.Type.RegionType;
+                        foreach (var type in node.Region.Type.RegionTypes)
+                        {
+                            types += type.ToString();
+                        
+                            if(node.Region.Type.RegionTypes.Last() != type)
+                            {
+                                types += ";";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        types = RegionType.Normal.ToString();
                     }
                     
-                    _export.Append(node.RegionId.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(type.ToString());
+                    _export.Append(types);
 
-                    if (type != RegionType.Normal)
+                    if (node.Region.Type == null)
+                    {
+                        _export.AppendLine();
+                        continue;
+                    }
+
+                    if (node.Region.Type.RegionTypes.Contains(RegionType.Zoneline))
                     {
                         BspRegionType.ZonelineInfo zoneline = node.Region.Type?.Zoneline;
 
