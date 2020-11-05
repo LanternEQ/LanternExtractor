@@ -48,6 +48,13 @@ namespace LanternExtractor.Infrastructure
                 return;
             }
 
+            // The filename is misspelled in the archive
+            // It only works because there is a matching canwall1.png in the objects archive
+            if (fileName == "canwall1a.png")
+            {
+                fileName = "canwall1.png";
+            }
+
             Bitmap cloneBitmap;
 
             if (isMasked)
