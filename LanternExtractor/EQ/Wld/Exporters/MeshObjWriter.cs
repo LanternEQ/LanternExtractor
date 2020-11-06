@@ -10,13 +10,38 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class MeshObjWriter : TextAssetWriter
     {
-        private Material _activeMaterial;
-        private ObjExportType _objExportType;
-        private bool _exportHiddenGeometry;
-        private int _usedVertices;
-        private int _baseVertex;
+        /// <summary>
+        /// Is this the first mesh in the export?
+        /// Zones are made up of multiple meshes. The OBJ header is only added when this is set.
+        /// </summary>
         private bool _isFirstMesh = true;
+
+        /// <summary>
+        /// The currently active material
+        /// As zones are made of multiple meshes, this prevents multiple usemtl declarations of the same material
+        /// </summary>
+        private Material _activeMaterial;
+        
+        /// <summary>
+        /// Used when dealing with multiple meshes
+        /// The base vertex is added to submesh vertex to get the correct vertex value
+        /// </summary>
+        private int _baseVertex;
+        
+        /// <summary>
+        /// If we export groups, the mesh is divided into submeshes.
+        /// Only applies to the zone mesh.
+        /// </summary>
         private bool _exportGroups;
+
+        /// <summary>
+        /// If true, invisible and boundary surfaces will be exported as well
+        /// Only applies to the zone mesh.
+        /// </summary>
+        private bool _exportHiddenGeometry;
+        
+        private ObjExportType _objExportType;
+        private int _usedVertices;
         private string _forcedMeshList;
 
         private List<StringBuilder> _frames = new List<StringBuilder>();
@@ -40,7 +65,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            if (_isFirstMesh)
+            // We only add the header if it's the first mesh
+            // Zones, for example are made up of several smaller meshes
+            if (_isFirstMesh && _objExportType == ObjExportType.Textured)
             {
                 string name = LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
                               "_materials.mtl";
@@ -78,21 +105,23 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 int textureIndex = group.MaterialIndex;
                 int polygonCount = group.PolygonCount;
 
-                List<int> activeArray = null;
-                //bool bitmapValid = false;
+                List<int> activeArray;
 
-                if (mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible)
+                bool shouldExport = true;
+
+                if (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Boundary ||
+                    mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Invisible)
                 {
-                    activeArray = usedVertices;
+                    if (_objExportType != ObjExportType.Collision || !_exportHiddenGeometry)
+                    {
+                        shouldExport = false;
+                    }
                 }
-                else
-                {
-                    activeArray = _exportHiddenGeometry ? usedVertices : unusedVertices;
-                }
+
+                activeArray = shouldExport ? usedVertices : unusedVertices;
 
                 if (textureIndex < 0 || textureIndex >= mesh.MaterialList.Materials.Count)
                 {
-                    //logger.LogError("Invalid texture index");
                     continue;
                 }
 
@@ -101,12 +130,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 string textureChange = string.Empty;
 
-                if (mesh.MaterialList.Materials[textureIndex].ShaderType != ShaderType.Invisible
-                    || (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Boundary &&
-                        _exportHiddenGeometry))
+                if (shouldExport)
                 {
                     // Material change
-                    if (_activeMaterial != mesh.MaterialList.Materials[textureIndex])
+                    if (_activeMaterial != mesh.MaterialList.Materials[textureIndex] && _objExportType == ObjExportType.Textured)
                     {
                         if (string.IsNullOrEmpty(filenameWithoutExtension))
                         {

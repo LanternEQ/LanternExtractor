@@ -24,7 +24,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             TextAssetWriter meshWriter;
             TextAssetWriter collisionMeshWriter;
-            TextAssetWriter materialListWriter = null;
+            TextAssetWriter materialListWriter;
 
             switch (settings.ModelExportFormat)
             {
@@ -150,7 +150,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     if (exportCollisionMesh)
                     {
-                        collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment)+ "_collision.txt");
+                        collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment) + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
                         collisionMeshWriter.ClearExportData();
                     }
                 }
@@ -162,7 +162,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 if (exportCollisionMesh)
                 {
-                    collisionMeshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_collision.txt");
+                    collisionMeshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
                 }
             }
         }

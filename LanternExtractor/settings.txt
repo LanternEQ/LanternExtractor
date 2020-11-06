@@ -13,14 +13,12 @@ RawS3DExtract = false
 # If enabled, these regions are exported. If disabled, the mesh is combined into one single mesh.
 ExportZoneMeshGroups = false
 
-# Include hidden geometry in the zone export?
-# Mainly used for invisible walls/boundaries.
-# Will also affect exporting of collision models.
+# Include hidden geometry (invisible boundaries) in the zone collision export?
 ExportHiddenGeometry = false
 
 # Sets the desired export format for models
 # 0 = Intermediate, 1 = OBJ, 2 = FBX
-ModelExportFormat = 0
+ModelExportFormat = 1
 
 ExportAllCharacterToSingleFolder = true
 
