@@ -167,11 +167,11 @@
     <None Include="FodyWeavers.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="animationsources.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="ClientData\animationsources.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="musictracks.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="ClientData\musictracks.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="settings.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
