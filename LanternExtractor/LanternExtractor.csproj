@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EqFileHelper.cs" />
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
     <Compile Include="EQ\Sound\EffSndBnk.cs" />
