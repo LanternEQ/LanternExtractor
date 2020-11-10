@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x2A - Ambient Light
-    /// Defines the ambient light for a group of regions. I have never actually seen this fragment used. 
+    /// Ambient Light (0x2A)
+    /// Defines the ambient light for a group of regions. This fragment exists, but is unused in the Trilogy client. 
     /// </summary>
     class AmbientLight : WldFragment
     {
@@ -30,29 +29,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             var reader = new BinaryReader(new MemoryStream(data));
 
             Name = stringHash[-reader.ReadInt32()];
-
             int reference = reader.ReadInt32();
-
             LightReference = fragments[reference - 1] as LightSourceReference;
-            
             int flags = reader.ReadInt32();
-
-            if (flags != 0)
-            {
-                
-            }
-
-            if (LightReference.LightSource.IsColoredLight)
-            {
-                //logger.LogError("Ambient light value (true): " + LightReference.LightSource.Color);
-            }
-            else
-            {
-                //logger.LogError("Ambient light value (false): " + LightReference.LightSource.SomeValue);
-            }
-            
-            
-
             int regionCount = reader.ReadInt32();
 
             Regions = new List<int>();
@@ -61,12 +40,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int regionId = reader.ReadInt32();
                 Regions.Add(regionId);
-                //logger.LogError("Region: " + regionId);
-
-                if (regionId != i)
-                {
-                    
-                }
             }
         }
 
@@ -74,8 +47,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x2A: Reference: " + (LightReference.Index + 1));
-            logger.LogInfo("0x2A: Regions: " + Regions.Count);
+            logger.LogInfo("AmbientLight: Reference: " + (LightReference.Index + 1));
+            logger.LogInfo("AmbientLight: Regions: " + Regions.Count);
         }
     }
 }

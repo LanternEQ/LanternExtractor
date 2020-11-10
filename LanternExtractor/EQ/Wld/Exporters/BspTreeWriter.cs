@@ -56,13 +56,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     string types = string.Empty;
 
-                    if (node.Region.Type != null)
+                    if (node.Region.RegionType != null)
                     {
-                        foreach (var type in node.Region.Type.RegionTypes)
+                        foreach (var type in node.Region.RegionType.RegionTypes)
                         {
                             types += type.ToString();
                         
-                            if(node.Region.Type.RegionTypes.Last() != type)
+                            if(node.Region.RegionType.RegionTypes.Last() != type)
                             {
                                 types += ";";
                             }
@@ -75,15 +75,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     
                     _export.Append(types);
 
-                    if (node.Region.Type == null)
+                    if (node.Region.RegionType == null)
                     {
                         _export.AppendLine();
                         continue;
                     }
 
-                    if (node.Region.Type.RegionTypes.Contains(RegionType.Zoneline))
+                    if (node.Region.RegionType.RegionTypes.Contains(RegionType.Zoneline))
                     {
-                        BspRegionType.ZonelineInfo zoneline = node.Region.Type?.Zoneline;
+                        BspRegionType.ZonelineInfo zoneline = node.Region.RegionType?.Zoneline;
 
                         if (zoneline != null)
                         {

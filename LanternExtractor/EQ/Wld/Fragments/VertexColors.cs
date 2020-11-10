@@ -7,7 +7,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x32 - Vertex Color
+    /// Vertex Colors (0x32)
     /// A list of colors, one per vertex, representing baked lighting data
     /// </summary>
     class VertexColors : WldFragment
@@ -28,7 +28,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-reader.ReadInt32()];
 
             int unknown = reader.ReadInt32();
-
             int vertexColorCount = reader.ReadInt32();
 
             // Typically contains 1
@@ -60,7 +59,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x32: Vertex color count: " + Colors.Count);
+            logger.LogInfo("VertexColors: Vertex color count: " + Colors.Count);
         }
     }
 }

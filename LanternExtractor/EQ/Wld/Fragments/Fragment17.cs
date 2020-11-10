@@ -28,14 +28,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 float y = reader.ReadSingle();
                 float z = reader.ReadSingle();
             }
-            
-            
-        }
-        
-        public override void OutputInfo(ILogger logger)
-        {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
         }
     }
 }

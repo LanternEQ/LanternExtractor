@@ -6,8 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x28 - Light Instance
-    /// Defines a position and radius of a light instance 
+    /// Light Instance (0x28)
+    /// Defines a position and radius of a light
     /// </summary>
     class LightInstance : WldFragment
     {
@@ -51,9 +51,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x28: Reference: " + (LightReference.Index + 1));
-            logger.LogInfo("0x28: Position: " + Position);
-            logger.LogInfo("0x28: Radius: " + Radius);
+            logger.LogInfo("LightInstance: Reference: " + (LightReference.Index + 1));
+            logger.LogInfo("LightInstance: Position: " + Position);
+            logger.LogInfo("LightInstance: Radius: " + Radius);
         }
     }
 }

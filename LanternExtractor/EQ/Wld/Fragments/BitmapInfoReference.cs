@@ -38,7 +38,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x05: Reference: " + (BitmapInfo.Index + 1));
+            logger.LogInfo("BitmapInfoReference: Reference: " + (BitmapInfo.Index + 1));
         }
     }
 }

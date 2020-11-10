@@ -6,7 +6,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// Camera (0x08)
-    /// A fragment that is not understood. Contains 26 parameters. It's here in case someone wants to take a look.
+    /// Unknown fragment purpose. Contains 26 parameters. It's here in case someone wants to take a look.
     /// </summary>
     class Camera : WldFragment
     {
@@ -56,16 +56,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int params23 = reader.ReadInt32();
             int params24 = reader.ReadInt32();
             int params25 = reader.ReadInt32();
-
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
-        }
-
-        public override void OutputInfo(ILogger logger)
-        {
-            base.OutputInfo(logger);
         }
     }
 }

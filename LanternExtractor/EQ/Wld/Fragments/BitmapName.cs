@@ -24,10 +24,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             var reader = new BinaryReader(new MemoryStream(data));
-            
             Name = stringHash[-reader.ReadInt32()];
 
-            // The client supports more than one bitmap reference but it is not used
+            // The client supports more than one bitmap reference but is never used
             int bitmapCount = reader.ReadInt32();
 
             if (bitmapCount > 1)
@@ -64,7 +63,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x03: Bitmap filename: " + Filename);
+            logger.LogInfo("BitmapName: Filename: " + Filename);
         }
     }
 }

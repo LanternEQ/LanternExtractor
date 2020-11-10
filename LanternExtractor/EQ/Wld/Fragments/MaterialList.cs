@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
@@ -8,7 +7,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x31 - Material List
+    /// Material List (0x31)
     /// A list of material fragments (0x30) that make up a single list.
     /// This list is used in the rendering of an mesh (via the list indices).
     /// </summary>
@@ -19,12 +18,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<Material> Materials { get; private set; }
 
+        /// <summary>
+        /// A mapping of slot names to alternate skins
+        /// </summary>
         public Dictionary<string, Dictionary<int, string>> Slots { get; private set; }
 
-        public int VariantCount { get; private set; }
+        /// <summary>
+        /// The number of alternate skins
+        /// </summary>
+        private int VariantCount { get; set; }
+        
         
         public List<Material> AdditionalMaterials { get; set; }
         
+        /// <summary>
+        /// Prevents the material list from being exported multiple times due to being shared
+        /// TODO: Move this out of here
+        /// </summary>
         public bool HasBeenExported { get; set; }
         
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -35,14 +45,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             var reader = new BinaryReader(new MemoryStream(data));
 
-            // String reference
             Name = stringHash[-reader.ReadInt32()];
 
             Materials = new List<Material>();
 
-            // flags
-            reader.ReadInt32();
-
+            int flags = reader.ReadInt32();
             int materialCount = reader.ReadInt32();
 
             for (int i = 0; i < materialCount; ++i)
@@ -58,6 +65,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
 
                 Materials.Add(material);
+                
+                // Materials that are referenced in the MaterialList are already handled
                 material.IsHandled = true;
             }
         }

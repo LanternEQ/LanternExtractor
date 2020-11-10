@@ -26,7 +26,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// Camera reference (optional)
         /// </summary>
-        /// <returns></returns>
         public CameraReference CameraReference { get; private set; }
         
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -126,16 +125,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // Always 0 in qeynos2 objects
             int name3Bytes = reader.ReadInt32();
-            
-            if (name3Bytes != 0)
-            {
-                
-            }
-
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
         }
 
         public override void OutputInfo(ILogger logger)

@@ -7,7 +7,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x1B - Light Source
+    /// Light Source (0x1B)
     /// Defines color information about a light
     /// </summary>
     class LightSource : WldFragment
@@ -72,20 +72,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     
                     return;
                 }
-                else
+
+                Attenuation = reader.ReadInt32();
+
+                float alpha = reader.ReadSingle();
+                float red = reader.ReadSingle();
+                float green = reader.ReadSingle();
+                float blue = reader.ReadSingle();
+                Color = new vec4(red, green, blue, alpha);
+
+                if (Attenuation != 1)
                 {
-                    Attenuation = reader.ReadInt32();
-
-                    float alpha = reader.ReadSingle();
-                    float red = reader.ReadSingle();
-                    float green = reader.ReadSingle();
-                    float blue = reader.ReadSingle();
-                    Color = new vec4(red, green, blue, alpha);
-
-                    if (Attenuation != 1)
-                    {
                         
-                    }
                 }
 
                 return;
@@ -95,10 +93,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int something1 = reader.ReadInt32();
                 float something2 = reader.ReadSingle();
-
-                //float something3 = reader.ReadSingle();
-                //float something4 = reader.ReadSingle();
-                //float something5 = reader.ReadSingle();
                 return;
             }
             
@@ -108,9 +102,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             if (!IsPlacedLightSource && Name == "DEFAULT_LIGHTDEF")
             {
                 int unknown = reader.ReadInt32();
-
                 float unknown6 = reader.ReadSingle();
-
                 return;
             }
 
@@ -120,7 +112,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 int unknown = reader.ReadInt32();
                 Color = new vec4(1.0f);
-                
                 int unknown2 = reader.ReadInt32();
                 int unknown3 = reader.ReadInt32();
 
@@ -142,13 +133,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x1B: Is a placed light: " + IsPlacedLightSource);
-            logger.LogInfo("0x1B: Is a colored light: " + IsColoredLight);
+            logger.LogInfo("LightSource: Is a placed light: " + IsPlacedLightSource);
+            logger.LogInfo("LightSource: Is a colored light: " + IsColoredLight);
 
             if (IsColoredLight)
             {
-                logger.LogInfo("0x1B: Color: " + Color);
-                logger.LogInfo("0x1B: Attenuation (?): " + Attenuation);
+                logger.LogInfo("LightSource: Color: " + Color);
+                logger.LogInfo("LightSource: Attenuation (?): " + Attenuation);
             }
         }
     }

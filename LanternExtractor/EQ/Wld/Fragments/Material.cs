@@ -46,8 +46,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
     }
 
     /// <summary>
-    /// 0x30 - Material
-    /// Contains information about the material and how it's rendered
+    /// Material (0x30)
+    /// Contains information about a material's shader and textures
     /// </summary>
     public class Material : WldFragment
     {

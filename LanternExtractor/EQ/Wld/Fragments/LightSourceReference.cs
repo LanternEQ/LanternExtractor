@@ -5,8 +5,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x1C - Light Source Reference
-    /// References a LightSource (0x1B) fragment
+    /// Light Source Reference (0x1C)
+    /// References a LightSource fragment
     /// </summary>
     class LightSourceReference : WldFragment
     {
@@ -34,7 +34,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x1C: Reference: " + (LightSource.Index + 1));
+            logger.LogInfo("LightSourceReference: Reference: " + (LightSource.Index + 1));
         }
     }
 }

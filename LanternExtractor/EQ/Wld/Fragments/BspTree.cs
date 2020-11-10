@@ -6,9 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x21 - BSP Tree
-    /// The BSP tree is a binary tree with each leaf node containing a region (0x22) and usually polygons
-    /// BSP trees are generally not efficient especially when used in non BSP engines so we handle it but don't export it
+    /// BSP Tree (0x21)
+    /// Binary tree with each leaf node containing a BspRegion fragment
     /// </summary>
     class BspTree : WldFragment
     {
@@ -59,21 +58,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 node.Region = fragments[node.RegionId - 1];
             }
-
-            foreach (var node in Nodes)
-            {
-                if (node.LeftNode == 0 && node.RightNode == 0 && node.Region == null)
-                {
-                    
-                }
-            }
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x21: Node count: " + Nodes.Count);
+            logger.LogInfo("BSPTree: Node count: " + Nodes.Count);
         }
     }
 }

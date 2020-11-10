@@ -57,22 +57,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int fragmentIndex = reader.ReadInt32() - 1;
                 BitmapNames.Add(fragments[fragmentIndex] as BitmapName);
             }
-            
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x04: Animated: " + IsAnimated);
+            logger.LogInfo("BitmapInfo: Animated: " + IsAnimated);
 
             if (IsAnimated)
             {
-                logger.LogInfo("0x04: Animation delay: " + AnimationDelayMs + "ms");
+                logger.LogInfo("BitmapInfo: Animation delay: " + AnimationDelayMs + "ms");
             }
 
             string references = string.Empty;
@@ -85,10 +80,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
 
                 BitmapName bitmapName = BitmapNames[i];
-                references += (bitmapName.Index + 1);
+                references += bitmapName.Index + 1;
             }
 
-            logger.LogInfo("0x04: Reference(s): " + references);
+            logger.LogInfo("BitmapInfo: Reference(s): " + references);
         }
     }
 }

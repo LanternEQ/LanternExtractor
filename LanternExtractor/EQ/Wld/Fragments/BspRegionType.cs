@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Security.Policy;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
@@ -9,7 +8,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x29 - Region Flag
+    /// Region Flag (0x29)
     /// Associates a list of regions with a specified region flag (Water, Lava, PvP or Zoneline)
     /// </summary>
     public class BspRegionType : WldFragment
@@ -190,7 +189,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x29: Region type: " + RegionTypes);
+            logger.LogInfo("BspRegionType: Region type: " + RegionTypes);
         }
 
         internal void LinkRegionType(List<BspRegion> bspRegions)

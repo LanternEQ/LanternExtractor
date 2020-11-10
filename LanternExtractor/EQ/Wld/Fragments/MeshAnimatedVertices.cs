@@ -6,9 +6,9 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x37 - Mesh Animated Vertices
+    /// Mesh Animated Vertices (0x37)
     /// Contains a list of frames each containing a vertex position the model
-    /// The frame vertices are cycled through animating the model
+    /// The frame vertices are cycled through, animating the model
     /// </summary>
     public class MeshAnimatedVertices : WldFragment
     {
@@ -66,7 +66,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x37: Frame count: " + Frames.Count);
+            logger.LogInfo("MeshAnimatedVertices: Frame count: " + Frames.Count);
         }
     }
 }

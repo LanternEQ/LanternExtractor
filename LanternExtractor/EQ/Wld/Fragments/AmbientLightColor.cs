@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// <summary>
     /// Global Ambient Light (0x35)
     /// Contains the color value which is added to boost the darkness in some zone.
-    /// This fragment contains no name reference and is only found in the zone WLD (e.g. akanon.wld)
+    /// This fragment contains no name reference and is only found in zone WLDs (e.g. akanon.wld)
     /// </summary>
     public class AmbientLightColor : WldFragment
     {
@@ -28,6 +28,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             byte[] colorBytes = BitConverter.GetBytes(colorValue);
 
             Color = new Color {R = colorBytes[2], G = colorBytes[1], B = colorBytes[0], A = colorBytes[3]};
+        }
+        
+        public override void OutputInfo(ILogger logger)
+        {
+            base.OutputInfo(logger);
+            logger.LogInfo("-----");
+            logger.LogInfo("AmbientLightColor: Color: " + Color);
         }
     }
 }

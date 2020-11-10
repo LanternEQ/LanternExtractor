@@ -5,9 +5,9 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x22 - BSP Region
-    /// BSP regions are leaf nodes in the BSP tree. They can contain references to mesh data (0x36)
-    /// This fragment is largely unhandled as we don't need the tree data or the PVS (potentially visible set)
+    /// BSP Region (0x22)
+    /// Leaf nodes in the BSP tree. They can contain references to Mesh fragments.
+    /// This fragment's PVS (potentially visible set) data is unhandled
     /// </summary>
     public class BspRegion : WldFragment
     {
@@ -21,7 +21,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh RegionMesh { get; private set; }
 
-        public BspRegionType Type { get; private set; }
+        public BspRegionType RegionType { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -47,32 +47,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // Always 0
             int unknown1 = reader.ReadInt32();
-
             int data1Size = reader.ReadInt32();
-
             int data2Size = reader.ReadInt32();
 
             // Always 0
             int unknown2 = reader.ReadInt32();
-
             int data3Size = reader.ReadInt32();
-
             int data4Size = reader.ReadInt32();
 
             // Always 0
             int unknown3 = reader.ReadInt32();
-
             int data5Size = reader.ReadInt32();
-
             int data6Size = reader.ReadInt32();
 
             // Move past data1 and 2
-            reader.BaseStream.Position += ((12 * data1Size) + (12 * data2Size));
+            reader.BaseStream.Position += 12 * data1Size + 12 * data2Size;
 
             // Move past data3
             for (int i = 0; i < data3Size; ++i)
             {
-                // Get the flags and size of the data 3 structure
                 int data3Flags = reader.ReadInt32();
                 int data3Size2 = reader.ReadInt32();
 
@@ -88,7 +81,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Move past the data5
             for (int i = 0; i < data5Size; i++)
             {
-                reader.BaseStream.Position += (7 * 4);
+                reader.BaseStream.Position += 7 * 4;
             }
 
             // Get the size of the PVS and allocate memory
@@ -111,18 +104,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void SetRegionFlag(BspRegionType bspRegionType)
         {
-            Type = bspRegionType;
+            RegionType = bspRegionType;
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x22: Contains polygons: " + ContainsPolygons);
+            logger.LogInfo("BspRegion: Contains polygons: " + ContainsPolygons);
 
             if (ContainsPolygons)
             {
-                logger.LogInfo("0x22: Mesh index: " + RegionMesh.Index);
+                logger.LogInfo("BspRegion: Mesh index: " + RegionMesh.Index);
             }
         }
     }

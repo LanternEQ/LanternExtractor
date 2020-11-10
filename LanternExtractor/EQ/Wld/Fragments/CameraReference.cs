@@ -5,14 +5,11 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x09 - Camera Reference
-    /// References a camera fragment (0x08)
+    /// Camera Reference (0x09)
+    /// References a Camera fragment
     /// </summary>
     class CameraReference : WldFragment
     {
-        /// <summary>
-        /// Reference to a camera fragment (0x08)
-        /// </summary>
         public Camera Camera { get; private set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -29,23 +26,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // Usually 0
             int flags = reader.ReadInt32();
-
-            if (flags != 0)
-            {
-                
-            }
-
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x09: Reference: " + (Camera.Index + 1));
+            logger.LogInfo("CameraReference: Reference: " + (Camera.Index + 1));
         }
     }
 }

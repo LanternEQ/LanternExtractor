@@ -5,7 +5,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x16 - Zone Unknown
+    /// Fragment16 (0x16)
     /// An unknown fragment
     /// </summary>
     class Fragment16 : WldFragment
@@ -29,16 +29,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 
             }
-            
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
-        }
-
-        public override void OutputInfo(ILogger logger)
-        {
-            base.OutputInfo(logger);
         }
     }
 }
