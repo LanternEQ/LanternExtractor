@@ -25,7 +25,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ParseAnimationSources()
         {
-            string filename = "animationsources.txt";
+            string filename = "ClientData/animationsources.txt";
             if (!File.Exists(filename))
             {
                 _logger.LogError("WldFileCharacters: No animationsources.txt file found.");
@@ -479,13 +479,7 @@ namespace LanternExtractor.EQ.Wld
             foreach (var meshListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
             {
                 MaterialList materialList = meshListFragment as MaterialList;
-
-                if (materialList == null)
-                {
-                    continue;
-                }
-                
-                materialList.BuildSlotMapping(_logger);
+                materialList?.BuildSlotMapping(_logger);
             }
         }
 
