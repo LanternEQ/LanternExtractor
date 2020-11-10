@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
@@ -13,24 +12,26 @@ namespace LanternExtractor
     static class LanternExtractor
     {
         private static Settings _settings;
-        
         private static ILogger _logger;
 
+        /// <summary>
+        /// Threaded extraction utilizes tasks
+        /// </summary>
         private static bool _useThreading = false;
-        
+
         private static void Main(string[] args)
-        {            
+        {
             _logger = new TextFileLogger("log.txt");
             _settings = new Settings("settings.txt", _logger);
             _settings.Initialize();
-            _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
+            _logger.SetVerbosity((LogVerbosity) _settings.LoggerVerbosity);
 
             string archiveName;
 
             DateTime start = DateTime.Now;
-            
+
 #if DEBUG
-            archiveName = "oot";
+            archiveName = "arena";
 #else
             if (args.Length != 1)
             {
@@ -41,11 +42,12 @@ namespace LanternExtractor
             archiveName = args[0];
 #endif
 
-            List<string> eqFiles = GetValidEqFilePaths(archiveName);
+            List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
 
             if (eqFiles.Count == 0)
             {
-                Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " + _settings.EverQuestDirectory);
+                Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " +
+                                  _settings.EverQuestDirectory);
                 return;
             }
 
@@ -62,7 +64,7 @@ namespace LanternExtractor
                     });
                     tasks.Add(task);
                 }
-                
+
                 Task.WaitAll(tasks.ToArray());
             }
             else
@@ -72,65 +74,10 @@ namespace LanternExtractor
                     ExtractArchive(file);
                 }
             }
-            
+
             Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds})s");
         }
-        
-        private static List<string> GetValidEqFilePaths(string archiveName)
-        {
-            archiveName = archiveName.ToLower();
-            
-            var validFiles = new List<string>();
 
-            if (archiveName == "all")
-            {
-                validFiles = Directory.GetFiles(_settings.EverQuestDirectory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip")).ToList();
-            }
-            else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
-            {
-                string archivePath = _settings.EverQuestDirectory + archiveName;
-
-                if (File.Exists(archivePath))
-                {
-                    validFiles.Add(archivePath);
-                }
-            }
-            else
-            {
-                // If it's the shortname of a PFS file, we assume it's standalone - used for sound files
-                string archivePath = _settings.EverQuestDirectory + archiveName + ".pfs";
-                
-                if (File.Exists(archivePath))
-                {
-                    validFiles.Add(archivePath);
-                    
-                    return validFiles;
-                }
-                
-                // Try and find all associated files with the shortname - can theoretically be a non zone file
-                string mainArchivePath = _settings.EverQuestDirectory + archiveName + ".s3d";
-                if (File.Exists(mainArchivePath))
-                {
-                    validFiles.Add(mainArchivePath);
-                }
-                
-                string objectsArchivePath = _settings.EverQuestDirectory + archiveName + "_obj.s3d";
-                if (File.Exists(objectsArchivePath))
-                {
-                    validFiles.Add(objectsArchivePath);
-                }
-                
-                string charactersArchivePath = _settings.EverQuestDirectory + archiveName + "_chr.s3d";
-                if (File.Exists(charactersArchivePath))
-                {
-                    validFiles.Add(charactersArchivePath);
-                }
-            }
-
-            return validFiles;
-        }
-        
         private static void ExtractArchive(string path)
         {
             var s3dArchive = new PfsArchive(path, _logger);
@@ -146,16 +93,16 @@ namespace LanternExtractor
                 s3dArchive.WriteAllFiles(true);
                 return;
             }
-            
+
             string archiveName = Path.GetFileNameWithoutExtension(path);
 
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
-            
+
             string shortName = archiveName.Split('_')[0];
-            
+
             // For non WLD files, we can just extract their contents
             // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
             if (!s3dArchive.IsWldArchive)
@@ -165,7 +112,7 @@ namespace LanternExtractor
             }
 
             string wldFileName = archiveName + LanternStrings.WldFormatExtension;
-            
+
             PfsFile wldFileInArchive = s3dArchive.GetFile(wldFileName);
 
             if (wldFileInArchive == null)
@@ -174,22 +121,22 @@ namespace LanternExtractor
                 return;
             }
 
-            if (IsModelsArchive(archiveName))
+            if (EqFileHelper.IsModelsArchive(archiveName))
             {
-                WldFileModels wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
+                var wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Models/Textures/", true);
             }
-            else if (IsSkyArchive(archiveName))
+            else if (EqFileHelper.IsSkyArchive(archiveName))
             {
-                WldFileSky wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
+                var wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "sky/Textures/", true);
             }
-            else if (IsCharactersArchive(archiveName))
+            else if (EqFileHelper.IsCharactersArchive(archiveName))
             {
                 WldFileCharacters wldFileToInject = null;
-                
+
                 if (archiveName.StartsWith("global3_chr"))
                 {
                     var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), _logger);
@@ -199,14 +146,16 @@ namespace LanternExtractor
                         _logger.LogError("Failed to initialize PFS archive at path: " + path);
                         return;
                     }
-                    
+
                     PfsFile wldFileInArchive2 = s3dArchive2.GetFile("global_chr.wld");
 
-                    wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters, _logger, _settings);
+                    wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters,
+                        _logger, _settings);
                     wldFileToInject.Initialize(false);
                 }
 
-                WldFileCharacters wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters, _logger, _settings, wldFileToInject);
+                var wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters,
+                    _logger, _settings, wldFileToInject);
                 wldFile.Initialize();
 
                 string exportPath = _settings.ExportAllCharacterToSingleFolder
@@ -216,40 +165,39 @@ namespace LanternExtractor
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), exportPath, true);
             }
-            else if (IsObjectsArchive(archiveName))
+            else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
-                WldFileObjects wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
+                var wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Objects/Textures/", true);
             }
             else
             {
-                _logger.LogError("Extracting: " + Path.GetFileNameWithoutExtension(path));
-
-                WldFileZone wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
+                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
                 s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Zone/Textures/", true);
-                
+
                 PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 
                 if (lightsFileInArchive != null)
                 {
-                    WldFileLights lightsWldFile = new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, _logger, _settings);
+                    var lightsWldFile = new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, _logger, _settings);
                     lightsWldFile.Initialize();
                 }
-                
+
                 PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
 
                 if (zoneObjectsFileInArchive != null)
                 {
-                    WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName, WldType.ZoneObjects, _logger, _settings);
+                    WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                        WldType.ZoneObjects, _logger, _settings);
                     zoneObjectsWldFile.Initialize();
                 }
-                
+
                 ExtractSoundData(shortName);
             }
         }
-        
+
         private static void ExtractSoundData(string shortName)
         {
             var sounds = new EffSndBnk(_settings.EverQuestDirectory + shortName + "_sndbnk" +
@@ -260,27 +208,6 @@ namespace LanternExtractor
                     _settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
             soundEntries.Initialize();
             soundEntries.ExportSoundData(shortName);
-        }
-
-        private static bool IsModelsArchive(string archiveName)
-        {
-            return archiveName.StartsWith("gequip");
-        }
-
-        private static bool IsCharactersArchive(string archiveName)
-        {
-            return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") || archiveName.Contains("_amr") ||
-                   archiveName == "sky";
-        }
-
-        private static bool IsObjectsArchive(string archiveName)
-        {
-            return archiveName.Contains("_obj");
-        }
-        
-        private static bool IsSkyArchive(string archiveName)
-        {
-            return archiveName == "sky";
         }
     }
 }
