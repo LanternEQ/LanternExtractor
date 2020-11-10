@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Text.RegularExpressions;
-using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -63,31 +61,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public ShaderType ShaderType { get; set; }
 
-        public string SlotKey { get; set; }
-
-        public string ExportName { get; set; }
-
+        /// <summary>
+        /// If a material has not been handled, we still need to find the corresponding material list
+        /// Used for alternate character skins
+        /// </summary>
         public bool IsHandled { get; set; }
-
-        public bool IsGlobalMaterial { get; set; }
-
-        public int Parameters;
-
-        private int colorR;
-        private int colorG;
-        private int colorB;
-        private int colorA;
-
-        public float UnknownFloat1 { get; set; }
-        public float UnknownFloat2 { get; set; }
-
-        public enum CharacterMaterialType
-        {
-            NormalTexture,
-            CharacterSkin,
-            GlobalSkin,
-        }
-
+        
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -96,23 +75,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             var reader = new BinaryReader(new MemoryStream(data));
 
-            // String reference
             Name = stringHash[-reader.ReadInt32()];
-            
-            // Flags?
             int flags = reader.ReadInt32();
+            int parameters = reader.ReadInt32();
 
-            // Params
-            Parameters = reader.ReadInt32();
+            // Unsure what this color is used for
+            byte colorR = reader.ReadByte();
+            byte colorG = reader.ReadByte();
+            byte colorB = reader.ReadByte();
+            byte colorA = reader.ReadByte();
 
-            colorR = reader.ReadByte();
-            colorG = reader.ReadByte();
-            colorB = reader.ReadByte();
-            colorA = reader.ReadByte();
-
-            UnknownFloat1 = reader.ReadSingle();
-
-            UnknownFloat2 = reader.ReadSingle();
+            float unknownFloat1 = reader.ReadSingle();
+            float unknownFloat2 = reader.ReadSingle();
 
             int reference6 = reader.ReadInt32();
 
@@ -122,7 +96,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Thanks to PixelBound for figuring this out
-            MaterialType materialType = (MaterialType) (Parameters & ~0x80000000);
+            MaterialType materialType = (MaterialType) (parameters & ~0x80000000);
 
             switch (materialType)
             {
@@ -177,10 +151,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
                     break;
             }
-
+            
             CheckForSpecialCaseMasked();
         }
 
+        /// <summary>
+        /// These materials use an incorrectly flagged shader and should be marked as masked
+        /// </summary>
         private void CheckForSpecialCaseMasked()
         {
             switch (Name)
@@ -198,17 +175,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x30: Display type: " + ShaderType);
-            logger.LogInfo("0x30: Parameters: " + Parameters);
-            logger.LogInfo("0x30: UnknownFloat1: " + UnknownFloat1);
-            logger.LogInfo("0x30: UnknownFloat2: " + UnknownFloat2);
+            logger.LogInfo("Material: Shader type: " + ShaderType);
 
             if (ShaderType != ShaderType.Invisible && BitmapInfoReference != null)
             {
-                logger.LogInfo("0x30: Reference: " + (BitmapInfoReference.Index + 1));
+                logger.LogInfo("Material: Reference: " + (BitmapInfoReference.Index + 1));
             }
         }
 
+        /// <summary>
+        /// Returns all bitmap names referenced by this material
+        /// </summary>
+        /// <param name="includeExtension">Should be .bmp extension be included?</param>
+        /// <returns>List of bitmap names</returns>
         public List<string> GetAllBitmapNames(bool includeExtension = false)
         {
             var bitmapNames = new List<string>();
@@ -233,11 +212,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return bitmapNames;
         }
 
+        /// <summary>
+        /// Returns the first bitmap name this material uses
+        /// </summary>
+        /// <returns></returns>
         public string GetFirstBitmapNameWithoutExtension()
         {
-            if (BitmapInfoReference == null || BitmapInfoReference.BitmapInfo == null ||
-                BitmapInfoReference.BitmapInfo.BitmapNames == null ||
-                BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
+            if (BitmapInfoReference?.BitmapInfo?.BitmapNames == null || BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
             {
                 return string.Empty;
             }
@@ -247,9 +228,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public string GetFirstBitmapExportFilename()
         {
-            if (BitmapInfoReference == null || BitmapInfoReference.BitmapInfo == null ||
-                BitmapInfoReference.BitmapInfo.BitmapNames == null ||
-                BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
+            if (BitmapInfoReference?.BitmapInfo?.BitmapNames == null || BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
             {
                 return string.Empty;
             }
