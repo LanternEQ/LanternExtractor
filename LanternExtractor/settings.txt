@@ -17,10 +17,12 @@ ExportZoneMeshGroups = false
 ExportHiddenGeometry = false
 
 # Sets the desired export format for models
-# 0 = Intermediate, 1 = OBJ, 2 = FBX
+# 0 = Intermediate, 1 = OBJ
 ModelExportFormat = 1
 
-ExportAllCharacterToSingleFolder = true
+# If true, will export all characters to the 'all' folder
+# This is useful when batch importing into Unity
+ExportAllCharacterToSingleFolder = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
