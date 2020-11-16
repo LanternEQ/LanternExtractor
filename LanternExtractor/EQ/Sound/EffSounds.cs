@@ -113,7 +113,7 @@ namespace LanternExtractor.EQ.Sound
         
         private void LoadMusicTrackNames(string zoneShortName)
         {
-            string[] trackLines = File.ReadAllLines("LanternData/musictracks.txt");
+            string[] trackLines = File.ReadAllLines("ClientData/musictracks.txt");
 
             bool isTargetZone = false;
             
