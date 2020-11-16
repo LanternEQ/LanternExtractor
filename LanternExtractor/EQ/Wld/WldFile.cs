@@ -201,7 +201,7 @@ namespace LanternExtractor.EQ.Wld
                 {
                     _bspRegions.Add(newFragment as BspRegion);
                 }
-
+/*
                 long cachedPosition = reader.BaseStream.Position;
                 // Create data mods class
                 if (_wldType == WldType.Zone && newFragment.Type == FragmentType.Mesh)
@@ -230,7 +230,7 @@ namespace LanternExtractor.EQ.Wld
                     }
                 }
 
-                reader.BaseStream.Position = cachedPosition;
+                reader.BaseStream.Position = cachedPosition;*/
 
                 _fragmentTypeDictionary[fragId].Add(newFragment);
             }
