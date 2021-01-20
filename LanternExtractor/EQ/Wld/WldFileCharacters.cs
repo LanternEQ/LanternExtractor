@@ -81,10 +81,36 @@ namespace LanternExtractor.EQ.Wld
             FixFayDrake();
             FixTurtleTextures();
             FixBlackAndWhiteDragon();
+            FixGhoulTextures();
+        }
 
-            if (_fragmentNameDictionary.ContainsKey("SED_ACTORDEF"))
+        private void FixGhoulTextures()
+        {
+            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
-                string zoneName = _zoneName;
+                return;
+            }
+
+            foreach (var meshFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            {
+                Mesh mesh = meshFragment as Mesh;
+
+                if (mesh == null)
+                {
+                    continue;
+                }
+                
+                // Fix head material assignment
+                if (mesh.Name.StartsWith("GHUHE00"))
+                {
+                    var materialGroups = mesh.MaterialGroups;
+                    materialGroups[1].MaterialIndex = 7;
+                }
+                else if(mesh.Name.StartsWith("GHU_"))
+                {
+                    var materialGroups = mesh.MaterialGroups;
+                    materialGroups[0].MaterialIndex = 0;
+                }
             }
         }
 

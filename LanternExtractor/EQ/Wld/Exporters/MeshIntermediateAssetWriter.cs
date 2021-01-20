@@ -184,7 +184,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (RenderGroup group in mesh.MaterialGroups)
             {
-                if (!_isCollisionMesh)
+                /*if (!_isCollisionMesh)
                 {
                     _export.Append("mg");
                     _export.Append(",");
@@ -192,7 +192,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
                     _export.Append(group.PolygonCount);
                     _export.AppendLine();
-                }
+                }*/
 
                 for (int i = 0; i < group.PolygonCount; ++i)
                 {
