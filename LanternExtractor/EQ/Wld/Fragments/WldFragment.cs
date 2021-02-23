@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -24,6 +25,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The name of the fragment - not always used
         /// </summary>
         public string Name { get; set; }
+        
+        public BinaryReader Reader { get; set; }
 
         /// <summary>
         /// Initializes the WLD fragment and handles it based on the type
@@ -43,6 +46,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Index = index;
             Type = id;
             Size = size;
+            Reader = new BinaryReader(new MemoryStream(data));
         }
 
         /// <summary>

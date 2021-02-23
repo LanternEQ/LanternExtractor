@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -34,13 +32,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int reference = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
             
+            int reference = Reader.ReadInt32();
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
 
             if (TrackDefFragment == null)
@@ -51,20 +45,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Either 4 or 5 - maybe something to look into
             // Bits are set 0, or 2. 0 has the extra field for delay.
             // 2 doesn't have any additional fields.
-            int flags = reader.ReadInt32();
+            int flags = Reader.ReadInt32();
 
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
-
-            if (bitAnalyzer.IsBitSet(0))
-            {
-                FrameMs = reader.ReadInt32();
-            }
-            else
-            {
-                FrameMs = 0;
-            }
+            FrameMs = bitAnalyzer.IsBitSet(0) ? Reader.ReadInt32() : 0;
             
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            if (Reader.BaseStream.Position != Reader.BaseStream.Length)
             {
                 
             }
@@ -111,12 +97,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 
                 ModelName = cleanedName;
-                logger.LogError("Early exit, model name: " + this.Name + " with: " + TrackDefFragment.Name + " and: " + TrackDefFragment.Frames2.Count);
+               /* logger.LogError("Early exit, model name: " + this.Name + " with: " + TrackDefFragment.Name + " and: " + TrackDefFragment.Frames2.Count);
                 logger.LogError("frag: " + TrackDefFragment.Index);
                 logger.LogError("data: " + TrackDefFragment.Frames2.First().Translation);
                 logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation);
                 logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation2);
-                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation3);
+                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation3);*/
+                return;
+            }
+            
+            // Equipment edge case
+            if (cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3))
+            {
+                AnimationName = cleanedName.Substring(0, 3);
+                ModelName = cleanedName.Substring(7);
+                PieceName = "root";
+                IsNameParsed = true;
                 return;
             }
             
@@ -128,6 +124,28 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             IsNameParsed = true;
             //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
+        }
+        
+        public void ParseTrackDataEquipment(SkeletonHierarchy skeletonHierarchy, ILogger logger)
+        {
+            string cleanedName = FragmentNameCleaner.CleanName(this, true);
+
+            // Equipment edge case
+            if (cleanedName == skeletonHierarchy.ModelBase && cleanedName.Length > 6 || cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3))
+            {
+                AnimationName = cleanedName.Substring(0, 3);
+                ModelName = cleanedName.Substring(7);
+                PieceName = "root";
+                IsNameParsed = true;
+                return;
+            }
+
+            AnimationName = cleanedName.Substring(0, 3);
+            cleanedName = cleanedName.Remove(0, 3);
+            ModelName = skeletonHierarchy.ModelBase;
+            cleanedName = cleanedName.Replace(skeletonHierarchy.ModelBase, string.Empty);
+            PieceName = cleanedName;
+            IsNameParsed = true;
         }
     }
 }

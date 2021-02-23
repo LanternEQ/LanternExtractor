@@ -112,7 +112,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 case MaterialType.Diffuse3:
                 case MaterialType.Diffuse4:
                 case MaterialType.Diffuse6:
-                case MaterialType.Diffuse5:
                 case MaterialType.Diffuse7:
                 case MaterialType.Diffuse8:
                 case MaterialType.Diffuse2:
@@ -136,6 +135,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = ShaderType.TransparentAdditiveUnlit;
                     break;
                 case MaterialType.TransparentMasked:
+                case MaterialType.Diffuse5:
                     ShaderType = ShaderType.TransparentMasked;
                     break;
                 case MaterialType.DiffuseSkydome:
@@ -150,6 +150,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 default:
                     ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
                     break;
+            }
+
+            if (materialType == MaterialType.Diffuse5)
+            {
+                logger.LogError("DIFFUSE 5: " + Name);
             }
             
             CheckForSpecialCaseMasked();

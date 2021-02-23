@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
-using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -47,17 +45,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool hasData2Values = bitAnalyzer.IsBitSet(3);
             
             int frameCount = reader.ReadInt32();
+            
+            if (Name.ToLower().Contains("it153") && Name.ToLower().Contains("c05") && frameCount != 1)
+            {
+                
+            }
 
             Frames = new List<BonePosition>();
             Frames2 = new List<BoneTransform>();
 
             float l = 0.0f;
 
-            if (Name.Contains("DRM") && Name.Contains("PE"))
-            {
-                
-            }
-            
             for (int i = 0; i < frameCount; ++i)
             {
                 // Windcatcher
@@ -71,15 +69,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Int16 shiftDenominator = reader.ReadInt16();
                 
                 BoneTransform frameTransform = new BoneTransform();
-
-                if (rotDenominator != 0)
-                {
-                    l = (float)Math.Sqrt((float)(rotDenominator * rotDenominator + rotX * rotX + rotY * rotY + rotZ * rotZ));
-                    
-                    frameTransform.Rotation2 = new vec4(rotX / l, rotY / l, rotZ / l, rotDenominator / l);
-                    frameTransform.Rotation3 = new vec3(RadianToDegree((float)rotX / rotDenominator), RadianToDegree((float)rotY / rotDenominator),
-                        RadianToDegree((float)rotZ / rotDenominator));
-                }
                 
                 if (shiftDenominator != 0)
                 {

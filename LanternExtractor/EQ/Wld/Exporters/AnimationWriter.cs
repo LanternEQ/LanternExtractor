@@ -38,25 +38,66 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             Animation anim = skeleton.Animations[_targetAnimation];
+
+            if (skeleton.Name.ToLower().Contains("it153") && _targetAnimation == "c05")
+            {
+                
+            }
             
-            _export.AppendLine("# Animation Test: " + _targetAnimation);
+            _export.AppendLine("# Animation: " + _targetAnimation);
             _export.AppendLine("framecount," + anim.FrameCount);
             _export.AppendLine("totalTimeMs," + anim.AnimationTimeMs);
+            
+            
+            if(skeleton.Name.Contains("IT4"))
+            {}
+            
 
             for (int i = 0; i < skeleton.Tree.Count; ++i)
             {
-                string boneName = skeleton._boneNameMapping[i];
-
+                string boneName = _isCharacterAnimation ? skeleton.BoneMappingClean[i].ToLower() : skeleton.BoneMapping[i].ToLower();
+                
                 if (boneName == "")
                 {
                     continue;
                 }
-                
+
+                string fullPath = _isCharacterAnimation ? skeleton.Tree[i].FullPath : skeleton.Tree[i].CleanedFullPath;
+
                 if (!anim.Tracks.ContainsKey(boneName))
                 {
-                    var bt = skeleton.Animations["pos"].Tracks[boneName].TrackDefFragment.Frames2[0];
-                    CreateTrackString(skeleton.Tree[i].FullPath, 0, bt, anim.AnimationTimeMs);
-                    continue;
+                    if (_isCharacterAnimation)
+                    {
+                        if (!skeleton.Animations["pos"].TracksCleaned.ContainsKey(boneName))
+                        {
+                            return;
+                        }
+                    
+                        var bt = skeleton.Animations["pos"]?.TracksCleaned[boneName]?.TrackDefFragment.Frames2[0];
+
+                        if (bt == null)
+                        {
+                            return;
+                        }
+                        CreateTrackString(fullPath, 0, bt, anim.AnimationTimeMs);
+                        continue;
+                    }
+                    else
+                    {
+                        if (!skeleton.Animations["pos"].Tracks.ContainsKey(boneName))
+                        {
+                            return;
+                        }
+                    
+                        var bt = skeleton.Animations["pos"]?.Tracks[boneName]?.TrackDefFragment.Frames2[0];
+
+                        if (bt == null)
+                        {
+                            return;
+                        }
+                        CreateTrackString(fullPath, 0, bt, anim.AnimationTimeMs);
+                        continue;
+                    }
                 }
                 
                 for (int j = 0; j < anim.FrameCount; ++j)
@@ -80,7 +121,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         delay = skeleton.Tree[i].Track.FrameMs;
                     }
 
-                    CreateTrackString(skeleton.Tree[i].FullPath, j, boneTransform, delay);
+                    CreateTrackString(fullPath, j, boneTransform, delay);
                 }
             }
         }

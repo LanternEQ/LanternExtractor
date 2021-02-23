@@ -31,7 +31,7 @@ namespace LanternExtractor
             DateTime start = DateTime.Now;
 
 #if DEBUG
-            archiveName = "arena";
+            archiveName = "equipment";
 #else
             if (args.Length != 1)
             {
@@ -123,9 +123,9 @@ namespace LanternExtractor
 
             if (EqFileHelper.IsModelsArchive(archiveName))
             {
-                var wldFile = new WldFileModels(wldFileInArchive, shortName, WldType.Models, _logger, _settings);
+                var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Models/Textures/", true);
+                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(),"equipment/Textures/", true);
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {

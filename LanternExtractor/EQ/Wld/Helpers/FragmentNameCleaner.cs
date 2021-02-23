@@ -17,6 +17,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     cleanedName = fragment.Name.Replace("_MDF", "");
                     break;
                 case FragmentType.Mesh:
+                case FragmentType.AlternateMesh:
                     cleanedName = fragment.Name.Replace("_DMSPRITEDEF", "");                    
                     break;
                 case FragmentType.Actor:
@@ -30,6 +31,9 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     break;
                 case FragmentType.TrackFragment:
                     cleanedName = fragment.Name.Replace("_TRACK", "");
+                    break;
+                case FragmentType.ParticleCloud:
+                    cleanedName = fragment.Name.Replace("_PCD", "");
                     break;
             }
 

@@ -1,10 +1,20 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
+    public enum ActorType
+    {
+        Camera,
+        Static,
+        Skeletal,
+        Particle,
+        Sprite
+    }
+
     /// <summary>
     /// Actor (0x14)
     /// Internal name: ACTORDEF
@@ -24,19 +34,32 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public SkeletonHierarchyReference SkeletonReference { get; private set; }
 
         /// <summary>
+        /// Skeleton track reference (optional)
+        /// </summary>
+        public SkeletonHierarchy SecondSkeleton { get; private set; }
+        
+        /// <summary>
         /// Camera reference (optional)
         /// </summary>
         public CameraReference CameraReference { get; private set; }
+        public ParticleSpriteReference ParticleSpriteReference { get; private set; }
+
+        public Fragment07 Frag07;
+
+        public ActorType ActorType;
+        public string ReferenceName;
         
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-            
+
             var reader = new BinaryReader(new MemoryStream(data));
-                                     
+
             Name = stringHash[-reader.ReadInt32()];
+            
+            //logger.LogError($"Actor: {Name} - {size}");
 
             int flags = reader.ReadInt32();
 
@@ -61,7 +84,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // 0 for both static and animated objects
             int fragment2 = reader.ReadInt32();
-            
+
             if (params1Exist)
             {
                 int params1 = reader.ReadInt32();
@@ -102,6 +125,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 if (SkeletonReference != null)
                 {
+                    SkeletonReference.SkeletonHierarchy.IsAssigned = true;
+
+                    if (SkeletonReference.SkeletonHierarchy.Name.ToLower().Contains("146"))
+                    {
+                        
+                    }
+                    
                     break;
                 }
 
@@ -109,6 +139,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 if (MeshReference != null)
                 {
+                    if (MeshReference.Mesh != null)
+                    {
+                        if (MeshReference.Mesh.Name.ToLower().Contains("146"))
+                        {
+                        
+                        }
+                    }
+
+                    
                     break;
                 }
                 
@@ -119,14 +158,72 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     break;
                 }
+                
+                ParticleSpriteReference = fragments[fragmentIndex - 1] as ParticleSpriteReference;
 
+                if (ParticleSpriteReference != null)
+                {
+                    break;
+                }
+                
+                Frag07 = fragments[fragmentIndex - 1] as Fragment07;
+
+                if (Frag07 != null)
+                {
+                    break;
+                }
+                
                 logger.LogError($"Actor: Cannot link fragment with index {fragmentIndex}");
             }
 
             // Always 0 in qeynos2 objects
             int name3Bytes = reader.ReadInt32();
+            
+            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            {
+                
+            }
+            
+            CalculateActorType();
         }
 
+        private void CalculateActorType()
+        {
+            if (CameraReference != null)
+            {
+                ActorType = ActorType.Camera;
+                ReferenceName = CameraReference.Name;
+            }
+            else if (SkeletonReference != null)
+            {
+                ActorType = ActorType.Skeletal;
+            }
+            else if (MeshReference != null)
+            {
+                // If the MeshReference is null, both the SkeletonReference and the SecondSkeleton are null
+                ActorType = ActorType.Static;
+
+                if (MeshReference != null)
+                {
+                    ReferenceName = MeshReference.Name;
+                }
+            }
+            else if (ParticleSpriteReference != null)
+            {
+                ActorType = ActorType.Particle;
+                ReferenceName = ParticleSpriteReference.Name;
+            }
+            else if (Frag07 != null)
+            {
+                ActorType = ActorType.Sprite;
+                ReferenceName = Frag07.Name;
+            }
+            else
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+        
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
@@ -137,6 +234,36 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             logger.LogInfo("-----");
+        }
+
+        public void AssignSkeletonReference(SkeletonHierarchy skeleton)
+        {
+            SkeletonReference = new SkeletonHierarchyReference
+            {
+                SkeletonHierarchy = skeleton
+            };
+            CalculateActorType();
+            skeleton.IsAssigned = true;
+        }
+
+        public Mesh GetMainMesh()
+        {
+            if (MeshReference != null)
+            {
+                return MeshReference.Mesh;
+            }
+
+            if (SkeletonReference != null)
+            {
+                return SkeletonReference.SkeletonHierarchy.Meshes.FirstOrDefault();
+            }
+
+            if (SecondSkeleton != null)
+            {
+                return SecondSkeleton.Meshes.FirstOrDefault();
+            }
+
+            return null;
         }
     }
 }

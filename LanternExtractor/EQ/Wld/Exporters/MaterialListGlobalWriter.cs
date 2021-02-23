@@ -12,9 +12,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         private List<string> _materials = new List<string>();
 
-        public MaterialListGlobalWriter()
+        public MaterialListGlobalWriter(string filePath)
         {
-            string filePath = "all/materials_characters.txt";
             if (!File.Exists(filePath))
             {
                 return;

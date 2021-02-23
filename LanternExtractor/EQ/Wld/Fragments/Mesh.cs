@@ -113,7 +113,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 
             }
-            
+
             int textureList = reader.ReadInt32();
 
             MaterialList = fragments[textureList - 1] as MaterialList;
@@ -155,22 +155,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
             TextureUvCoordinates = new List<vec2>();
 
             short vertexCount = reader.ReadInt16();
-
             short textureCoordinateCount = reader.ReadInt16();
-
             short normalsCount = reader.ReadInt16();
-
             short colorsCount = reader.ReadInt16();
-
             short polygonCount = reader.ReadInt16();
-
             short vertexPieceCount = reader.ReadInt16();
-
             short polygonTextureCount = reader.ReadInt16();
-
             short vertexTextureCount = reader.ReadInt16();
-
             short size9 = reader.ReadInt16();
+            
+            if (Name.Contains("IT4"))
+            {
+                
+            }
 
             if (size9 != 0)
             {
@@ -294,6 +291,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     TextureUvCoordinates.Add(new vec2(0.0f, 0.0f));
                 }
             }
+        }
+
+        public bool HasBones()
+        {
+            return MobPieces != null && MobPieces.Count != 0;
         }
 
         public override void OutputInfo(ILogger logger)

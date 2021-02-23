@@ -55,6 +55,11 @@ namespace LanternExtractor.Infrastructure
                 fileName = "canwall1.png";
             }
 
+            if (fileName == "it154trans.png")
+            {
+                
+            }
+
             Bitmap cloneBitmap;
 
             if (isMasked)

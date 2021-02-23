@@ -56,6 +56,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected override void ExportData()
         {
+            DoAllSkeletons();
             FindAdditionalAnimationsAndMeshes();
             BuildSlotMapping();
             FindMaterialVariants();
@@ -69,6 +70,16 @@ namespace LanternExtractor.EQ.Wld
             ExportMeshList();
             ExportAnimationList();
             ExportCharacterList();
+        }
+
+        private void DoAllSkeletons()
+        {
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+
+            foreach (var skeleton in skeletons)
+            {
+                skeleton.BuildSkeletonData(true);
+            }
         }
 
         private void PostProcessGlobal()

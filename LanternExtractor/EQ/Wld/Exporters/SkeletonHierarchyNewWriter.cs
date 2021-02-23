@@ -4,7 +4,7 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class SkeletonHierarchyWriter : TextAssetWriter
+    public class SkeletonHierarchyNewWriter : TextAssetWriter
     {
         public override void AddFragmentData(WldFragment data)
         {
@@ -17,7 +17,29 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-
+            
+            if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
+            {
+                _export.Append("meshes,");
+                foreach (var mesh in skeleton.Meshes)
+                {
+                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                }
+                
+                _export.AppendLine();
+            }
+            
+            if (skeleton.AlternateMeshes != null && skeleton.AlternateMeshes.Count != 0)
+            {
+                _export.Append("meshes,");
+                foreach (var mesh in skeleton.AlternateMeshes)
+                {
+                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                }
+                
+                _export.AppendLine();
+            }
+            
             foreach (var node in skeleton.Tree)
             {
                 string childrenList = string.Empty;
@@ -32,7 +54,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
 
-                _export.Append(node.CleanedName);
+                _export.Append(node.Name.Replace("_DAG", "").ToLower());
                 _export.Append(",");
                 _export.Append(childrenList);
 

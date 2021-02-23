@@ -42,6 +42,6 @@
         /// Contains general models - only a few of these exist
         /// Example: gequip.s3d
         /// </summary>
-        Models
+        Equipment
     }
 }

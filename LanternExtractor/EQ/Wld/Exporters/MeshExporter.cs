@@ -13,9 +13,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public static void ExportMeshes(WldFile wldFile, Settings settings, ILogger logger)
         {
             List<WldFragment> meshFragments = wldFile.GetFragmentsOfType(FragmentType.Mesh);
+            List<AlternateMesh> alternateMeshFragments = wldFile.GetFragmentsOfType2<AlternateMesh>();
             List<WldFragment> materialListFragments = wldFile.GetFragmentsOfType(FragmentType.MaterialList);
             
-            if (meshFragments == null || meshFragments.Count == 0)
+            if (meshFragments?.Count == 0 && alternateMeshFragments?.Count == 0)
             {
                 return;
             }
@@ -23,6 +24,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             string exportFolder = GetExportFolderForExportFormat(wldFile.GetExportFolderForWldType(), settings.ModelExportFormat);
             
             TextAssetWriter meshWriter;
+            TextAssetWriter alternateMeshWriter = null;
             TextAssetWriter collisionMeshWriter;
             TextAssetWriter materialListWriter;
 
@@ -31,6 +33,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 case ModelExportFormat.Intermediate:
                 {
                     meshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, false);
+                    alternateMeshWriter = new AlternateMeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
                     collisionMeshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
                     materialListWriter = new MeshIntermediateMaterialsExport(settings, wldFile.ZoneShortname, logger);
                     break;
@@ -56,58 +59,79 @@ namespace LanternExtractor.EQ.Wld.Exporters
             // For objects, it's done for each fragment
             if (!exportEachPass)
             {
-                foreach (WldFragment fragment in meshFragments)
+                if (meshFragments != null)
                 {
-                    Mesh mesh = fragment as Mesh;
-
-                    if (mesh == null)
+                    foreach (WldFragment fragment in meshFragments)
                     {
-                        continue;
-                    }
+                        Mesh mesh = fragment as Mesh;
 
-                    if (!mesh.ExportSeparateCollision)
-                    {
-                        continue;
-                    }
+                        if (mesh == null)
+                        {
+                            continue;
+                        }
+
+                        if (!mesh.ExportSeparateCollision)
+                        {
+                            continue;
+                        }
                     
-                    exportCollisionMesh = true;
-                    break;
+                        exportCollisionMesh = true;
+                        break;
+                    }
+                }
+
+                if (alternateMeshFragments != null)
+                {
+                    foreach (var alternateMesh in alternateMeshFragments)
+                    {
+                        // if (!mesh.ExportSeparateCollision)
+                        // {
+                        //     continue;
+                        // }
+                    
+                        exportCollisionMesh = true;
+                        break;
+                    }
                 }
             }
             
             // Export materials
-            foreach (WldFragment fragment in materialListFragments)
+            if (materialListFragments != null)
             {
-                materialListWriter.AddFragmentData(fragment);
-
-                var filePath = exportFolder + FragmentNameCleaner.CleanName(fragment) + "_materials" +
-                               GetExtensionForMaterialList(settings.ModelExportFormat);
-
-                if (exportEachPass)
+                foreach (WldFragment fragment in materialListFragments)
                 {
-                    if (settings.ExportAllCharacterToSingleFolder && wldFile.WldType == WldType.Characters)
-                    {
-                        if (File.Exists(filePath))
-                        {
-                            var file = File.ReadAllText(filePath);
-                            int oldFileSize = file.Length;
-                            int newFileSize = materialListWriter.GetExportByteCount();
-                            
-                            if (newFileSize <= oldFileSize)
-                            {
-                                materialListWriter.ClearExportData();
-                                continue;
-                            }
-                            
-                        }
-                    }
+                    materialListWriter.AddFragmentData(fragment);
 
-                    // TODO: Clean this up
-                    (fragment as MaterialList).HasBeenExported = true;
-                    materialListWriter.WriteAssetToFile(filePath);
-                    materialListWriter.ClearExportData();
+                    var filePath = exportFolder + FragmentNameCleaner.CleanName(fragment) + "_materials" +
+                                   GetExtensionForMaterialList(settings.ModelExportFormat);
+
+                    if (exportEachPass)
+                    {
+                        if (settings.ExportAllCharacterToSingleFolder && wldFile.WldType == WldType.Characters)
+                        {
+                            if (File.Exists(filePath))
+                            {
+                                var file = File.ReadAllText(filePath);
+                                int oldFileSize = file.Length;
+                                int newFileSize = materialListWriter.GetExportByteCount();
+
+                                if (newFileSize <= oldFileSize)
+                                {
+                                    materialListWriter.ClearExportData();
+                                    continue;
+                                }
+
+                            }
+                        }
+
+                        // TODO: Clean this up
+                        (fragment as MaterialList).HasBeenExported = true;
+                        materialListWriter.WriteAssetToFile(filePath);
+                        materialListWriter.ClearExportData();
+                    }
                 }
             }
+            
 
             if (!exportEachPass)
             {
@@ -116,41 +140,89 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             // Exporting meshes
-            foreach (WldFragment fragment in meshFragments)
+            if (meshFragments != null)
             {
-                meshWriter.AddFragmentData(fragment);
+                foreach (WldFragment fragment in meshFragments)
+                {
+                    meshWriter.AddFragmentData(fragment);
+
+                    // Determine if we need collision
+                    if (exportEachPass)
+                    {
+                        Mesh mesh = fragment as Mesh;
+                        exportCollisionMesh = mesh != null && mesh.ExportSeparateCollision;
+                    }
+
+                    if (exportCollisionMesh)
+                    {
+                        collisionMeshWriter.AddFragmentData(fragment);
+                    }
+
+                    if (exportEachPass)
+                    {
+                        // TODO: Fix this mess
+                        if (wldFile.WldType == WldType.Characters && settings.ExportAllCharacterToSingleFolder)
+                        {
+                            if (!((Mesh) fragment).MaterialList.HasBeenExported)
+                            {
+                                meshWriter.ClearExportData();
+                                collisionMeshWriter.ClearExportData();
+                                continue;
+                            }
+                        }
+
+                        meshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment) +
+                                                    GetExtensionForMesh(settings.ModelExportFormat));
+                        meshWriter.ClearExportData();
+
+                        if (exportCollisionMesh)
+                        {
+                            collisionMeshWriter.WriteAssetToFile(exportFolder +
+                                                                 FragmentNameCleaner.CleanName(fragment) +
+                                                                 "_collision" +
+                                                                 GetExtensionForMesh(settings.ModelExportFormat));
+                            collisionMeshWriter.ClearExportData();
+                        }
+                    }
+                }
+            }
+  
+            
+            foreach (var alternateMesh in alternateMeshFragments)
+            {
+                alternateMeshWriter.AddFragmentData(alternateMesh);
 
                 // Determine if we need collision
-                if (exportEachPass)
-                {
-                    Mesh mesh = fragment as Mesh;
-                    exportCollisionMesh = mesh != null && mesh.ExportSeparateCollision;
-                }
+                // if (exportEachPass)
+                // {
+                //     AlternateMesh mesh = fragment as AlternateMesh;
+                //     exportCollisionMesh = mesh != null && mesh.ExportSeparateCollision;
+                // }
 
-                if (exportCollisionMesh)
-                {
-                    collisionMeshWriter.AddFragmentData(fragment);
-                }
+                // if (exportCollisionMesh)
+                // {
+                //     collisionMeshWriter.AddFragmentData(fragment);
+                // }
 
                 if (exportEachPass)
                 {
                     // TODO: Fix this mess
-                    if (wldFile.WldType == WldType.Characters && settings.ExportAllCharacterToSingleFolder)
-                    {
-                        if (!((Mesh) fragment).MaterialList.HasBeenExported)
-                        {
-                            meshWriter.ClearExportData();
-                            collisionMeshWriter.ClearExportData();
-                            continue;
-                        }
-                    }
+                    // if (wldFile.WldType == WldType.Characters && settings.ExportAllCharacterToSingleFolder)
+                    // {
+                    //     if (!alternateMesh.MaterialList.HasBeenExported)
+                    //     {
+                    //         meshWriter.ClearExportData();
+                    //         collisionMeshWriter.ClearExportData();
+                    //         continue;
+                    //     }
+                    // }
                     
-                    meshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment) + GetExtensionForMesh(settings.ModelExportFormat));
-                    meshWriter.ClearExportData();
+                    alternateMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(alternateMesh) + GetExtensionForMesh(settings.ModelExportFormat));
+                    alternateMeshWriter.ClearExportData();
 
                     if (exportCollisionMesh)
                     {
-                        collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(fragment) + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
+                        collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(alternateMesh) + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
                         collisionMeshWriter.ClearExportData();
                     }
                 }

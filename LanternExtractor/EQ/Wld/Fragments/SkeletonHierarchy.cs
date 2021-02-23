@@ -18,18 +18,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public List<SkeletonPieceData> Skeleton { get; private set; }
 
         public List<Mesh> Meshes { get; private set; }
+        public List<AlternateMesh> AlternateMeshes { get; private set; }
         
         public List<SkeletonNode> Tree { get; set; }
 
         public Fragment18 _fragment18Reference;
 
         public string ModelBase;
+
+        public bool HasBoneMeshes;
+        
+        public bool IsAssigned { get; set; }
         
         private Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary { get; set; }
         
         public Dictionary<string, Animation> Animations = new Dictionary<string, Animation>();
         
-        public Dictionary<int, string> _boneNameMapping = new Dictionary<int, string>();
+        public Dictionary<int, string> BoneMappingClean = new Dictionary<int, string>();
+        public Dictionary<int, string> BoneMapping = new Dictionary<int, string>();
         
         public float BoundingRadius;
 
@@ -43,10 +49,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             Tree = new List<SkeletonNode>();
             Meshes = new List<Mesh>();
+            AlternateMeshes = new List<AlternateMesh>();
             Skeleton = new List<SkeletonPieceData>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
 
-            _boneNameMapping[0] = "root";
+            BoneMapping[0] = ModelBase;
+            BoneMappingClean[0] = "root";
             
             var reader = new BinaryReader(new MemoryStream(data));
 
@@ -100,7 +108,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 BoundingRadius = reader.ReadSingle();
             }
-            
+
             // Read in each bone
             for (int i = 0; i < boneCount; ++i)
             {
@@ -117,23 +125,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 if (stringHash.ContainsKey(-boneNameIndex))
                 {
                     boneName = stringHash[-boneNameIndex];
-
-                    if (boneName.Length != 0)
-                    {
-                        boneName = boneName.ToLower();
-
-                        if (boneName.StartsWith(ModelBase))
-                        {
-                            boneName = boneName.Substring(ModelBase.Length);
-                        }
-                        
-                        boneName = boneName.Replace("_dag", string.Empty);
-
-                        if (boneName == string.Empty)
-                        {
-                            boneName = "root";
-                        }
-                    }
                 }
                 
                 // Always 0 for object bones
@@ -155,7 +146,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 piece.Name = boneName;
                 pieceNew.Name = boneName;
-                _boneNameMapping[i] = boneName;
+                BoneMappingClean[i] = boneName.ToLower();
+                BoneMapping[i] = boneName.ToLower();
 
                 pieceNew.Track.IsPoseAnimation = true;
                 
@@ -175,6 +167,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 else if (meshReferenceIndex != 0)
                 {
                     pieceNew.MeshReference = fragments[meshReferenceIndex - 1] as MeshReference;
+                    
+                    if (pieceNew.MeshReference != null)
+                    {
+                        HasBoneMeshes = true;
+
+                        if (pieceNew.MeshReference.Mesh != null)
+                        {
+                            if (pieceNew.MeshReference.Mesh.Name.ToLower().Contains("it145"))
+                            {
+                            
+                            }
+                        }
+                    }
+                    else
+                    {
+                        pieceNew.ParticleCloud = fragments[meshReferenceIndex - 1] as ParticleCloud;
+                    }
 
                     if (pieceNew.Name == "root")
                     {
@@ -183,7 +192,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     
                     // Never null
                     // Confirmed
-                    if (pieceNew.MeshReference == null)
+                    if (pieceNew.MeshReference == null && pieceNew.ParticleCloud == null)
                     {
                         logger.LogError("Mesh reference null");
                     }
@@ -219,7 +228,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Read in mesh references
-            // These are never used in object animation
+            // All meshes will have vertex bone assignments
             if (hasMeshReferences)
             {
                 int size2 = reader.ReadInt32();
@@ -230,21 +239,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                     MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
 
-                    if (meshRef == null)
+                    if (meshRef?.Mesh != null)
                     {
-                        continue;
+                        if (Meshes.All(x => x.Name != meshRef.Mesh.Name))
+                        {
+                            Meshes.Add(meshRef.Mesh);
+                            meshRef.Mesh.IsHandled = true;
+                        }
                     }
 
-                    if (meshRef.Mesh == null)
+                    if (meshRef?.AlternateMesh != null)
                     {
-                        logger.LogError("SkeletonHierarchy: Null reference to mesh for skeleton: " + Name);
-                        continue;
-                    }
-
-                    if (Meshes.All(x => x.Name != meshRef.Mesh.Name))
-                    {
-                        Meshes.Add(meshRef.Mesh);
-                        meshRef.Mesh.IsHandled = true;
+                        if (AlternateMeshes.All(x => x.Name != meshRef.AlternateMesh.Name))
+                        {
+                            AlternateMeshes.Add(meshRef.AlternateMesh);
+                            //meshRef.AlternateMesh.IsHandled = true;
+                        }
                     }
                 }
                 
@@ -257,14 +267,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     things.Add(reader.ReadInt32());
                 }
             }
-
-            BuildSkeletonTreeData(0, Tree, string.Empty, string.Empty, new Dictionary<int, string>());
             
             // Confirmed end for objects
             if (reader.BaseStream.Position != reader.BaseStream.Length)
             {
                 
             }
+        }
+
+        public void BuildSkeletonData(bool stripModelBase)
+        {
+            BuildSkeletonTreeData(0, Tree, string.Empty, string.Empty, string.Empty, stripModelBase);
         }
 
         public override void OutputInfo(ILogger logger)
@@ -281,10 +294,78 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Animations["pos"] = new Animation();
             }
             
-            Animations["pos"].AddTrack(track, pieceName);
+            Animations["pos"].AddTrack(track, pieceName, Animation.CleanBoneName(pieceName, ModelBase));
             track.TrackDefFragment.IsAssigned = true;
             track.IsProcessed = true;
             track.IsPoseAnimation = true;
+        }
+        
+        public void AddTrackDataEquipment(TrackFragment track, string boneName, bool isDefault = false)
+        {
+            if (track.Name.Contains("C05IT153") && track.TrackDefFragment.Frames2.Count != 1)
+            {
+                
+            }
+
+            string animationName = string.Empty;
+            string modelName = string.Empty;
+            string pieceName = string.Empty;
+            
+            string cleanedName = FragmentNameCleaner.CleanName(track, true);
+
+            if (isDefault)
+            {
+                animationName = "pos";
+                modelName = ModelBase;
+                cleanedName = cleanedName.Replace(ModelBase, String.Empty);
+                pieceName = cleanedName == string.Empty ? "root" : cleanedName;
+            }
+            else
+            {
+                if (cleanedName.Length <= 3)
+                {
+                    return;
+                }
+                
+                animationName = cleanedName.Substring(0, 3);
+                cleanedName = cleanedName.Remove(0, 3);
+
+                if (cleanedName.Length < 3)
+                {
+                    return;
+                }
+                
+                modelName = ModelBase;
+                pieceName = boneName;
+
+                if (pieceName == string.Empty)
+                {
+                    pieceName = "root";
+                }
+            }
+
+            track.SetTrackData(modelName, animationName, pieceName);
+
+            if (Animations.ContainsKey(track.AnimationName))
+            {
+                if (modelName == ModelBase && ModelBase != Animations[animationName].AnimModelBase)
+                {
+                    Animations.Remove(animationName);
+                }
+                if (modelName != ModelBase && ModelBase == Animations[animationName].AnimModelBase)
+                {
+                    return;
+                }
+            }
+            
+            if (!Animations.ContainsKey(track.AnimationName))
+            {
+                Animations[track.AnimationName] = new Animation();
+            }
+            
+            Animations[track.AnimationName].AddTrack(track, track.PieceName,Animation.CleanBoneName(track.PieceName, ModelBase));
+            track.TrackDefFragment.IsAssigned = true;
+            track.IsProcessed = true;
         }
 
         public void AddTrackData(TrackFragment track, bool isDefault = false)
@@ -311,6 +392,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 animationName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
+
+                if (cleanedName.Length < 3)
+                {
+                    return;
+                }
+                
                 modelName = cleanedName.Substring(0, 3);
                 cleanedName = cleanedName.Remove(0, 3);
                 pieceName = cleanedName;
@@ -340,36 +427,54 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Animations[track.AnimationName] = new Animation();
             }
             
-            Animations[track.AnimationName].AddTrack(track, track.PieceName);
+            Animations[track.AnimationName].AddTrack(track, track.PieceName, Animation.CleanBoneName(track.PieceName, ModelBase));
             track.TrackDefFragment.IsAssigned = true;
             track.IsProcessed = true;
         }
-        
-        private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName, string runningIndex,
-            Dictionary<int, string> paths)
+
+        private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName, string runningNameCleaned,
+            string runningIndex, bool stripModelBase)
         {
-            SkeletonNode currentNode = treeNodes[index];
-            
-            if (currentNode.Name != string.Empty)
+            // TODO: rename to bone
+            SkeletonNode node = treeNodes[index];
+            node.CleanedName = CleanBoneName(node.Name, stripModelBase);
+            BoneMappingClean[index] = node.CleanedName;
+
+            if (node.Name != string.Empty)
             {
-                runningIndex += currentNode.Index + "/";
+                runningIndex += node.Index + "/";
             }
 
-            runningName += currentNode.Name;
-
-            currentNode.FullPath = runningName;
+            runningName += node.Name;
+            runningNameCleaned += node.CleanedName;
             
-            if (currentNode.Children.Count == 0)
+            node.FullPath = runningName;
+            node.CleanedFullPath = runningNameCleaned;
+            
+            if (node.Children.Count == 0)
             {
                 return;
             }
 
             runningName += "/";
+            runningNameCleaned += "/";
 
-            foreach (var childNode in currentNode.Children)
+            foreach (var childNode in node.Children)
             {
-                BuildSkeletonTreeData(childNode, treeNodes, runningName, runningIndex, paths);
+                BuildSkeletonTreeData(childNode, treeNodes, runningName, runningNameCleaned, runningIndex, stripModelBase);
             }
+        }
+
+        private string CleanBoneName(string nodeName, bool stripModelBase)
+        {
+            nodeName = nodeName.ToLower();
+            nodeName = nodeName.Replace("_dag", "");
+            if (stripModelBase)
+            {
+                nodeName = nodeName.Replace(ModelBase, string.Empty);
+            }
+            nodeName += nodeName.Length == 0 ? "root" : string.Empty;
+            return nodeName;
         }
 
         public void AddAdditionalMesh(Mesh mesh)
@@ -390,6 +495,29 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             HelmMeshes.Add(mesh);
+        }
+
+        public bool IsValidSkeleton(string trackName, out string boneName)
+        {
+            trackName = trackName.Substring(3);
+
+            if (trackName == ModelBase)
+            {
+                boneName = ModelBase;
+                return true;
+            }
+            
+            foreach (var bone in Tree)
+            {
+                if(bone.Name.ToLower() == trackName)
+                {
+                    boneName = bone.Name.ToLower();
+                    return true;
+                }
+            }
+
+            boneName = string.Empty;
+            return false;
         }
     }
 }

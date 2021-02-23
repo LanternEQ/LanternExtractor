@@ -37,6 +37,11 @@ namespace LanternExtractor
                 validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
                     .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip")).ToList();
             }
+            else if(archiveName == "equipment")
+            {
+                validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
+                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && s.Contains("gequip")).ToList();
+            }
             else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
             {
                 string archivePath = directory + archiveName;

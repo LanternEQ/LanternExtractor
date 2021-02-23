@@ -11,8 +11,10 @@ namespace LanternExtractor.EQ.Wld.DataTypes
     {
         public int Index;
         public string Name;
-
         public string FullPath;
+        
+        public string CleanedName;
+        public string CleanedFullPath;
 
         // Track fragment (TrackFragment) 0x13
         public TrackFragment Track;
@@ -22,20 +24,13 @@ namespace LanternExtractor.EQ.Wld.DataTypes
 
         // The children indices in the tree
         public List<int> Children;
+        public ParticleCloud ParticleCloud { get; set; }
     }
 
     public class BoneTransform
     {
-        // translation
         public vec3 Translation;
-
-        // rotation
         public quat Rotation;
-        public vec4 Rotation2;
-        public vec3 Rotation3;
-
         public float Scale;
-
-        public float padding;
     }
 }

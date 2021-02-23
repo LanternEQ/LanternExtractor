@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// </summary>
     class SkeletonHierarchyReference : WldFragment
     {
-        public SkeletonHierarchy SkeletonHierarchy { get; private set; }
+        public SkeletonHierarchy SkeletonHierarchy { get; set; }
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,

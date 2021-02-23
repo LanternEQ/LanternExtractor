@@ -27,13 +27,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         // TODO: Rename these
         SkeletonHierarchy = 0x10,
-        HierSpriteFragment = 0x11,
+        SkeletonHierarchyReference = 0x11,
         TrackDefFragment = 0x12,
         TrackFragment = 0x13,
         
         Fragment16 = 0x16,
         Fragment17 = 0x17,
         Fragment18 = 0x18,
-        Fragment2F = 0x2F
+        Fragment2F = 0x2F,
+        Fragment26 = 0x26,
+        Fragment27 = 0x27,
+        AlternateMesh = 0x2C,
+        ParticleCloud = 0x34,
+        Fragment06 = 0x06,
+        Fragment07 = 0x07,
     }
 }

@@ -6,11 +6,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class ActorWriter : TextAssetWriter
     {
-        private bool _isAnimatedActor;
+        private ActorType _actorType;
         private int _actorCount;
-        public ActorWriter(bool modelCount)
+        public ActorWriter(ActorType actorType)
         {
-            _isAnimatedActor = modelCount;
+            _actorType = actorType;
         }
         
         public override void AddFragmentData(WldFragment data)
@@ -22,26 +22,40 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
             
-            if (_isAnimatedActor)
+            if (actor.ActorType != _actorType)
             {
-                if (actor.SkeletonReference == null)
+                return;
+            }
+
+            if (_actorType == ActorType.Skeletal)
+            {
+                _export.Append(FragmentNameCleaner.CleanName(actor));
+                _export.Append(",");
+                _export.Append(FragmentNameCleaner.CleanName(actor.SkeletonReference.SkeletonHierarchy));
+                _export.AppendLine();
+            }
+            else if (_actorType == ActorType.Static)
+            {
+                _export.Append(FragmentNameCleaner.CleanName(actor));
+                _export.Append(",");
+
+                if (actor.MeshReference.Mesh != null)
                 {
-                    return;
+                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.Mesh));
+                }
+                else if (actor.MeshReference.AlternateMesh != null)
+                {
+                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.AlternateMesh));
                 }
                 
-                _export.AppendLine(FragmentNameCleaner.CleanName(actor));
-                _actorCount++;
+                _export.AppendLine();
             }
             else
             {
-                if (actor.MeshReference == null)
-                {
-                    return;
-                }
-                
                 _export.AppendLine(FragmentNameCleaner.CleanName(actor));
-                _actorCount++;
             }
+            
+            _actorCount++;
         }
 
         public override void WriteAssetToFile(string fileName)
@@ -52,7 +66,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
             
             StringBuilder headerBuilder = new StringBuilder();
-            headerBuilder.AppendLine(LanternStrings.ExportHeaderTitle + (_isAnimatedActor ? "Animated " : "Static ") +
+            headerBuilder.AppendLine(LanternStrings.ExportHeaderTitle +
                                      "Actor List");
             headerBuilder.AppendLine("# Total models: " + _actorCount);
             _export.Insert(0, headerBuilder.ToString());

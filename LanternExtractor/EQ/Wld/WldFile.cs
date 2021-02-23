@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.Exporters;
@@ -37,6 +38,8 @@ namespace LanternExtractor.EQ.Wld
         /// A collection of fragment lists that can be referenced by a fragment type
         /// </summary>
         protected Dictionary<FragmentType, List<WldFragment>> _fragmentTypeDictionary;
+        
+        protected Dictionary<Type, List<WldFragment>> _fragmentTypeDictionary2;
 
         /// <summary>
         /// A collection of fragment lists that can be referenced by a fragment type
@@ -82,6 +85,8 @@ namespace LanternExtractor.EQ.Wld
 
         protected readonly WldFile _wldToInject;
 
+        protected SkeletonHierarchy _lastSkeleton;
+
         /// <summary>
         /// Constructor setting data references used during the initialization process
         /// </summary>
@@ -112,6 +117,7 @@ namespace LanternExtractor.EQ.Wld
 
             _fragments = new List<WldFragment>();
             _fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
+            _fragmentTypeDictionary2 = new Dictionary<Type, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
             
@@ -165,7 +171,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 uint fragSize = reader.ReadUInt32();
                 FragmentType fragId = (FragmentType)reader.ReadInt32();
-
+                
                 // Create the fragments
                 var newFragment = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
 
@@ -190,6 +196,7 @@ namespace LanternExtractor.EQ.Wld
                 if (!_fragmentTypeDictionary.ContainsKey(fragId))
                 {
                     _fragmentTypeDictionary[fragId] = new List<WldFragment>();
+                    _fragmentTypeDictionary2[newFragment.GetType()] = new List<WldFragment>();
                 }
 
                 if (!string.IsNullOrEmpty(newFragment.Name) && !_fragmentNameDictionary.ContainsKey(newFragment.Name))
@@ -233,6 +240,20 @@ namespace LanternExtractor.EQ.Wld
                 reader.BaseStream.Position = cachedPosition;*/
 
                 _fragmentTypeDictionary[fragId].Add(newFragment);
+                _fragmentTypeDictionary2[newFragment.GetType()].Add(newFragment);
+
+                if (newFragment is SkeletonHierarchy fragment)
+                {
+                    _lastSkeleton = fragment;
+                }
+
+                if (newFragment is TrackFragment)
+                {
+                    if (!(newFragment as TrackFragment).IsPoseAnimation)
+                    {
+                        
+                    }
+                }
             }
 
             _logger.LogInfo("-----------------------------------");
@@ -252,6 +273,7 @@ namespace LanternExtractor.EQ.Wld
             
             return true;
         }
+        
 
         public List<WldFragment> GetFragmentsOfType(FragmentType type)
         {
@@ -261,6 +283,26 @@ namespace LanternExtractor.EQ.Wld
             }
 
             return _fragmentTypeDictionary[type];
+        }
+        
+        public List<T> GetFragmentsOfType2<T>() where T : WldFragment
+        {
+            if (!_fragmentTypeDictionary2.ContainsKey(typeof(T)))
+            {
+                return new List<T>();
+            }
+
+            return _fragmentTypeDictionary2[typeof(T)].Cast<T>().ToList();
+        }
+
+        protected T GetFragmentByName<T>(string fragmentName) where T : WldFragment
+        {
+            if (!_fragmentNameDictionary.ContainsKey(fragmentName))
+            {
+                return default(T);
+            }
+
+            return _fragmentNameDictionary[fragmentName] as T;
         }
 
         protected virtual void ProcessData()
@@ -291,11 +333,12 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.Mesh, () => new Mesh()},
                 {FragmentType.MeshVertexAnimation, () => new MeshAnimatedVertices()},
                 {FragmentType.MeshReference, () => new MeshReference()},
+                {FragmentType.AlternateMesh, () => new AlternateMesh()},
 
                 // Animation
                 {FragmentType.Actor, () => new Actor()},
                 {FragmentType.SkeletonHierarchy, () => new SkeletonHierarchy()},
-                {FragmentType.HierSpriteFragment, () => new SkeletonHierarchyReference()},
+                {FragmentType.SkeletonHierarchyReference, () => new SkeletonHierarchyReference()},
                 {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
                 {FragmentType.TrackFragment, () => new TrackFragment()},
 
@@ -320,6 +363,11 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.Fragment17, () => new Fragment17()},
                 {FragmentType.Fragment18, () => new Fragment18()},
                 {FragmentType.Fragment2F, () => new MeshAnimatedVerticesReference()},
+                {FragmentType.Fragment26, () => new ParticleSprite()},
+                {FragmentType.Fragment27, () => new ParticleSpriteReference()},
+                {FragmentType.ParticleCloud, () => new ParticleCloud()},
+                {FragmentType.Fragment06, () => new Fragment06()},
+                {FragmentType.Fragment07, () => new Fragment07()},
             };
         }
         
@@ -421,11 +469,17 @@ namespace LanternExtractor.EQ.Wld
 
             if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
             {
-                export = new MaterialListGlobalWriter();
+                export = new MaterialListGlobalWriter("all/materials_characters.txt");
                 exportFilename = "all/materials";
+            }
+            else if (_wldType == WldType.Equipment)
+            {
+                export = new MaterialListGlobalWriter("equipment/materials_equipment.txt");
+                exportFilename = "equipment/materials";
             }
             else
             {
+                // TODO: Replace this with the root path
                 export = new MaterialListWriter();
                 exportFilename = _zoneName + "/materials";
             }
@@ -450,6 +504,10 @@ namespace LanternExtractor.EQ.Wld
             else if (_wldType == WldType.Sky)
             {
                 exportFilename += "_sky";
+            }
+            else if (_wldType == WldType.Equipment)
+            {
+                exportFilename += "_equipment";
             }
 
             exportFilename += ".txt";
@@ -499,7 +557,8 @@ namespace LanternExtractor.EQ.Wld
             {
                 case WldType.Zone:
                     return _zoneName + "/Zone/";
-                case WldType.Models:
+                case WldType.Equipment:
+                    return "equipment/";
                 case WldType.ZoneObjects:
                 case WldType.Lights:
                     return GetRootExportFolder();
@@ -516,6 +575,11 @@ namespace LanternExtractor.EQ.Wld
 
         protected string GetRootExportFolder()
         {
+            if (_wldType == WldType.Equipment)
+            {
+                return "equipment/";
+            }
+            
             return _wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder ? "all/" : _zoneName + "/";
         }
 
@@ -525,21 +589,39 @@ namespace LanternExtractor.EQ.Wld
             {
                 return;
             }
+
+            TextAssetWriter actorWriterStatic, actorWriterSkeletal, actorWriterParticle, actorWriterSprite2d;
             
-            ActorWriter actorWriterStatic = new ActorWriter(false);
-            ActorWriter actorWriterAnimated = new ActorWriter(true);
+            if (_wldType == WldType.Equipment)
+            {
+                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static);
+                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal);
+                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle);
+                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite);
+            }
+            else
+            {
+                actorWriterStatic = new ActorWriter(ActorType.Static);
+                actorWriterSkeletal = new ActorWriter(ActorType.Skeletal);
+                actorWriterParticle = new ActorWriter(ActorType.Particle);
+                actorWriterSprite2d = new ActorWriter(ActorType.Sprite);
+            }
 
             foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
             {
                 actorWriterStatic.AddFragmentData(actorFragment);
-                actorWriterAnimated.AddFragmentData(actorFragment);
+                actorWriterSkeletal.AddFragmentData(actorFragment);
+                actorWriterParticle.AddFragmentData(actorFragment);
+                actorWriterSprite2d.AddFragmentData(actorFragment);
             }
             
             string exportPath = GetRootExportFolder();
             exportPath += "actors_" + _wldType.ToString().ToLower();
             
             actorWriterStatic.WriteAssetToFile(exportPath + "_static.txt");
-            actorWriterAnimated.WriteAssetToFile(exportPath + "_animated.txt");
+            actorWriterSkeletal.WriteAssetToFile(exportPath + "_skeletal.txt");
+            actorWriterParticle.WriteAssetToFile(exportPath + "_particle.txt");
+            actorWriterSprite2d.WriteAssetToFile(exportPath + "_sprite.txt");
         }
         
         protected void ExportSkeletonAndAnimations()
