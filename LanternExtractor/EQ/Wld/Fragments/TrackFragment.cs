@@ -97,12 +97,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 
                 ModelName = cleanedName;
-               /* logger.LogError("Early exit, model name: " + this.Name + " with: " + TrackDefFragment.Name + " and: " + TrackDefFragment.Frames2.Count);
-                logger.LogError("frag: " + TrackDefFragment.Index);
-                logger.LogError("data: " + TrackDefFragment.Frames2.First().Translation);
-                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation);
-                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation2);
-                logger.LogError("data: " + TrackDefFragment.Frames2.First().Rotation3);*/
                 return;
             }
             

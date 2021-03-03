@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.DataTypes
@@ -15,6 +16,24 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         {
             Tracks = new Dictionary<string, TrackFragment>();
             TracksCleaned = new Dictionary<string, TrackFragment>();
+        }
+        
+        public static string CleanBoneName(string boneName)
+        {
+            var cleanedName = boneName.Replace("_DAG", string.Empty).ToLower();
+            return cleanedName.Length == 0 ? "root" : cleanedName;
+        }
+        
+        public static string CleanBoneAndStripBase(string boneName, string modelBase)
+        {
+            var cleanedName = boneName.Replace("_DAG", string.Empty).ToLower();
+
+            if (cleanedName.StartsWith(modelBase))
+            {
+                cleanedName = cleanedName.Substring(modelBase.Length);
+            }
+            
+            return cleanedName.Length == 0 ? "root" : cleanedName;
         }
 
         public static string CleanBoneName(string name, string modelBase)
@@ -44,12 +63,12 @@ namespace LanternExtractor.EQ.Wld.DataTypes
                 AnimModelBase = track.ModelName;
             }
              
-            if (track.TrackDefFragment.Frames2.Count > FrameCount)
+            if (track.TrackDefFragment.Frames.Count > FrameCount)
             {
-                FrameCount = track.TrackDefFragment.Frames2.Count;
+                FrameCount = track.TrackDefFragment.Frames.Count;
             }
 
-            int totalTime = track.TrackDefFragment.Frames2.Count * track.FrameMs;
+            int totalTime = track.TrackDefFragment.Frames.Count * track.FrameMs;
 
             if (totalTime > AnimationTimeMs)
             {
