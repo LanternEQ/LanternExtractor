@@ -29,9 +29,8 @@ namespace LanternExtractor
             string archiveName;
 
             DateTime start = DateTime.Now;
-
 #if DEBUG
-            archiveName = "equipment";
+            archiveName = "arena";
 #else
             if (args.Length != 1)
             {

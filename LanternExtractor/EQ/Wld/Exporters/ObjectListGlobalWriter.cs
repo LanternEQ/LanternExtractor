@@ -11,7 +11,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         public ObjectListGlobalWriter(int modelCount)
         {
-            string filePath = "all/meshes_characters.txt";
+            string filePath = "characters/meshes_characters.txt";
             if (!File.Exists(filePath))
             {
                 return;

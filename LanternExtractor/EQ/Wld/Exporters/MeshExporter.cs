@@ -33,9 +33,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 case ModelExportFormat.Intermediate:
                 {
                     meshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, false);
-                    alternateMeshWriter = new AlternateMeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
+                    alternateMeshWriter = new AlternateMeshIntermediateAssetWriter();
                     collisionMeshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
-                    materialListWriter = new MeshIntermediateMaterialsExport(settings, wldFile.ZoneShortname, logger);
+                    materialListWriter = new MeshIntermediateMaterialsExport();
                     break;
                 }
                 case ModelExportFormat.Obj:
@@ -102,7 +102,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     materialListWriter.AddFragmentData(fragment);
 
-                    var filePath = exportFolder + FragmentNameCleaner.CleanName(fragment) + "_materials" +
+                    var newExportFolder = wldFile.GetExportFolderForWldType() + "/MaterialLists/";
+                    var filePath = newExportFolder + FragmentNameCleaner.CleanName(fragment) +
                                    GetExtensionForMaterialList(settings.ModelExportFormat);
 
                     if (exportEachPass)
@@ -217,13 +218,16 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     //     }
                     // }
                     
-                    alternateMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(alternateMesh) + GetExtensionForMesh(settings.ModelExportFormat));
+                    
+                    var newExportFolder = wldFile.GetExportFolderForWldType() + "/AlternateMeshes/";
+                    Directory.CreateDirectory(newExportFolder);
+                    alternateMeshWriter.WriteAssetToFile(newExportFolder + FragmentNameCleaner.CleanName(alternateMesh) + GetExtensionForMesh(settings.ModelExportFormat));
                     alternateMeshWriter.ClearExportData();
 
                     if (exportCollisionMesh)
                     {
-                        collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(alternateMesh) + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
-                        collisionMeshWriter.ClearExportData();
+                        //collisionMeshWriter.WriteAssetToFile(exportFolder + FragmentNameCleaner.CleanName(alternateMesh) + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
+                        //collisionMeshWriter.ClearExportData();
                     }
                 }
             }
@@ -250,8 +254,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 default:
                     throw new ArgumentOutOfRangeException(nameof(format), format, null);
             }
-             
-            throw new NotImplementedException();
         }
 
         private static string GetExtensionForMaterialList(ModelExportFormat format)

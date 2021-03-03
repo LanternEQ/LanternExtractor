@@ -10,12 +10,12 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x10 - Skeleton Hierarchy
+    /// Skeleton Hierarchy
     /// Describes the layout of a complete skeleton and which pieces connect to eachother
     /// </summary>
     public class SkeletonHierarchy : WldFragment
     {
-        public List<SkeletonPieceData> Skeleton { get; private set; }
+        public List<SkeletonNode> Skeleton { get; private set; }
 
         public List<Mesh> Meshes { get; private set; }
         public List<AlternateMesh> AlternateMeshes { get; private set; }
@@ -26,11 +26,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public string ModelBase;
 
-        public bool HasBoneMeshes;
-        
         public bool IsAssigned { get; set; }
         
-        private Dictionary<string, SkeletonPieceData> SkeletonPieceDictionary { get; set; }
+        private Dictionary<string, SkeletonNode> SkeletonPieceDictionary { get; set; }
         
         public Dictionary<string, Animation> Animations = new Dictionary<string, Animation>();
         
@@ -50,30 +48,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Tree = new List<SkeletonNode>();
             Meshes = new List<Mesh>();
             AlternateMeshes = new List<AlternateMesh>();
-            Skeleton = new List<SkeletonPieceData>();
-            SkeletonPieceDictionary = new Dictionary<string, SkeletonPieceData>();
-
-            BoneMapping[0] = ModelBase;
-            BoneMappingClean[0] = "root";
+            Skeleton = new List<SkeletonNode>();
+            SkeletonPieceDictionary = new Dictionary<string, SkeletonNode>();
             
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            // Name is (OBJECT)_HS_DEF
-            Name = stringHash[-reader.ReadInt32()];
-
+            Name = stringHash[-Reader.ReadInt32()];
             ModelBase = FragmentNameCleaner.CleanName(this, true);
 
             // Always 2 when used in main zone, and object files.
             // This means, it has a bounding radius
             // Some differences in character + model archives
             // Confirmed
-            int flags = reader.ReadInt32();
+            int flags = Reader.ReadInt32();
 
             if (flags != 2)
             {
                 
             }
-
             var ba = new BitAnalyzer(flags);
 
             bool hasUnknownParams = ba.IsBitSet(0);
@@ -82,12 +72,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             // Number of bones in the skeleton
             // Confirmed
-            int boneCount = reader.ReadInt32();
+            int boneCount = Reader.ReadInt32();
             
             // Fragment 18 reference
             // Not used for the UFO, used for trees. Let's figure this out.
             // Confirmed
-            int fragment18Reference = reader.ReadInt32();
+            int fragment18Reference = Reader.ReadInt32();
 
             if (fragment18Reference > 0)
             {
@@ -99,29 +89,26 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Confirmed
             if (hasUnknownParams)
             {
-                reader.BaseStream.Position += 3 * sizeof(int);
+                Reader.BaseStream.Position += 3 * sizeof(int);
             }
 
             // This is the sphere radius checked against the frustum to cull this object
             // Confirmed we can see this exact in game
             if (hasBoundingRadius)
             {
-                BoundingRadius = reader.ReadSingle();
+                BoundingRadius = Reader.ReadSingle();
             }
-
-            // Read in each bone
+            
             for (int i = 0; i < boneCount; ++i)
             {
-                var piece = new SkeletonPieceData();
-                var pieceNew = new SkeletonNode();
-
-                pieceNew.Index = i;
-
+                var pieceNew = new SkeletonNode
+                {
+                    Index = i
+                };
+                
                 // An index into the string has to get this bone's name
-                int boneNameIndex = reader.ReadInt32();
-
+                int boneNameIndex = Reader.ReadInt32();
                 string boneName = string.Empty;
-
                 if (stringHash.ContainsKey(-boneNameIndex))
                 {
                     boneName = stringHash[-boneNameIndex];
@@ -129,36 +116,28 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 // Always 0 for object bones
                 // Confirmed
-                int boneFlags = reader.ReadInt32();
-
-                if (boneFlags != 0)
-                {
-                    
-                }
+                int boneFlags = Reader.ReadInt32();
 
                 // Reference to a bone track
                 // Confirmed - is never a bad reference
-                int trackReferenceIndex = reader.ReadInt32();
+                int trackReferenceIndex = Reader.ReadInt32() - 1;
 
-                TrackFragment track = fragments[trackReferenceIndex - 1] as TrackFragment;
+                TrackFragment track = fragments[trackReferenceIndex] as TrackFragment;
                 AddPoseTrack(track, boneName);
                 pieceNew.Track = track;
-                
-                piece.Name = boneName;
                 pieceNew.Name = boneName;
-                BoneMappingClean[i] = boneName.ToLower();
-                BoneMapping[i] = boneName.ToLower();
+                BoneMappingClean[i] = Animation.CleanBoneAndStripBase(boneName, ModelBase);
+                BoneMapping[i] = boneName;
 
                 pieceNew.Track.IsPoseAnimation = true;
-                
-                piece.AnimationTracks = new Dictionary<string, TrackFragment>();
+                pieceNew.AnimationTracks = new Dictionary<string, TrackFragment>();
 
                 if (pieceNew.Track == null)
                 {
                     logger.LogError("Unable to link track reference!");
                 }
 
-                int meshReferenceIndex = reader.ReadInt32();
+                int meshReferenceIndex = Reader.ReadInt32() - 1;
                 
                 if (meshReferenceIndex < 0)
                 {
@@ -166,23 +145,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 }
                 else if (meshReferenceIndex != 0)
                 {
-                    pieceNew.MeshReference = fragments[meshReferenceIndex - 1] as MeshReference;
+                    pieceNew.MeshReference = fragments[meshReferenceIndex] as MeshReference;
                     
                     if (pieceNew.MeshReference != null)
                     {
-                        HasBoneMeshes = true;
-
                         if (pieceNew.MeshReference.Mesh != null)
                         {
-                            if (pieceNew.MeshReference.Mesh.Name.ToLower().Contains("it145"))
-                            {
                             
-                            }
                         }
                     }
                     else
                     {
-                        pieceNew.ParticleCloud = fragments[meshReferenceIndex - 1] as ParticleCloud;
+                        pieceNew.ParticleCloud = fragments[meshReferenceIndex] as ParticleCloud;
                     }
 
                     if (pieceNew.Name == "root")
@@ -197,32 +171,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         logger.LogError("Mesh reference null");
                     }
                 }
+                
+                int childCount = Reader.ReadInt32();
 
-                // The number of children
-                // These could be int16 but I think they are int32
-                int childrenCount = reader.ReadInt32();
-
-                List<int> children = new List<int>();
                 pieceNew.Children = new List<int>();
 
-                for (int j = 0; j < childrenCount; ++j)
+                for (int j = 0; j < childCount; ++j)
                 {
-                    int childIndex = reader.ReadInt32();
-                    children.Add(childIndex);
+                    int childIndex = Reader.ReadInt32();
                     pieceNew.Children.Add(childIndex);
                 }
                 
                 Tree.Add(pieceNew);
-                
-                piece.ConnectedPieces = children;
+                Skeleton.Add(pieceNew);
 
-                Skeleton.Add(piece);
-
-                if (piece.Name != "")
+                if (pieceNew.Name != "")
                 {
-                    if (!SkeletonPieceDictionary.ContainsKey(piece.Name))
+                    if (!SkeletonPieceDictionary.ContainsKey(pieceNew.Name))
                     {
-                        SkeletonPieceDictionary.Add(piece.Name, piece);
+                        SkeletonPieceDictionary.Add(pieceNew.Name, pieceNew);
                     }
                 }
             }
@@ -231,13 +198,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // All meshes will have vertex bone assignments
             if (hasMeshReferences)
             {
-                int size2 = reader.ReadInt32();
+                int size2 = Reader.ReadInt32();
                 
                 for (int i = 0; i < size2; ++i)
                 {
-                    int meshRefIndex = reader.ReadInt32();
+                    int meshRefIndex = Reader.ReadInt32() - 1;
 
-                    MeshReference meshRef = fragments[meshRefIndex - 1] as MeshReference;
+                    MeshReference meshRef = fragments[meshRefIndex] as MeshReference;
 
                     if (meshRef?.Mesh != null)
                     {
@@ -264,12 +231,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 for (int i = 0; i < size2; ++i)
                 {
-                    things.Add(reader.ReadInt32());
+                    things.Add(Reader.ReadInt32());
                 }
             }
             
             // Confirmed end for objects
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
+            if (Reader.BaseStream.Position != Reader.BaseStream.Length)
             {
                 
             }
@@ -302,7 +269,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public void AddTrackDataEquipment(TrackFragment track, string boneName, bool isDefault = false)
         {
-            if (track.Name.Contains("C05IT153") && track.TrackDefFragment.Frames2.Count != 1)
+            if (track.Name.Contains("C05IT153") && track.TrackDefFragment.Frames.Count != 1)
             {
                 
             }
@@ -467,8 +434,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         private string CleanBoneName(string nodeName, bool stripModelBase)
         {
+            nodeName = nodeName.Replace("_DAG", "");
             nodeName = nodeName.ToLower();
-            nodeName = nodeName.Replace("_dag", "");
             if (stripModelBase)
             {
                 nodeName = nodeName.Replace(ModelBase, string.Empty);
@@ -499,7 +466,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public bool IsValidSkeleton(string trackName, out string boneName)
         {
-            trackName = trackName.Substring(3);
+            string track = trackName.Substring(3);
 
             if (trackName == ModelBase)
             {
@@ -509,7 +476,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             foreach (var bone in Tree)
             {
-                if(bone.Name.ToLower() == trackName)
+                string cleanBoneName = bone.Name.Replace("_DAG", string.Empty).ToLower();
+                if(cleanBoneName == track)
                 {
                     boneName = bone.Name.ToLower();
                     return true;

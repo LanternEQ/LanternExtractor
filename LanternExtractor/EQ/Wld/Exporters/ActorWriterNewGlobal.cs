@@ -72,8 +72,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 newActor.Append(FragmentNameCleaner.CleanName(actor));
             }
             
-            _objects.Add(newActor.ToString());
+            if(_objects.Contains(newActor.ToString()))
+            {
+                return;
+            }
             
+            _objects.Add(newActor.ToString());
             _actorCount++;
         }
 

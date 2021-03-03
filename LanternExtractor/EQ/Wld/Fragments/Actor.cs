@@ -185,6 +185,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             
             CalculateActorType();
+
+            if (Name.ToLower() == ("it2_actordef"))
+            {
+                
+            }
         }
 
         private void CalculateActorType()

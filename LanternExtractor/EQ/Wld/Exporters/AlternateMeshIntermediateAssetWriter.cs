@@ -4,22 +4,19 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
+    /// <summary>
+    /// Exports an alternate mesh in the intermediate mesh format
+    /// </summary>
     public class AlternateMeshIntermediateAssetWriter : TextAssetWriter
     {
-        public AlternateMeshIntermediateAssetWriter(bool useGroups, bool isCollisionMesh)
-        {
-            _export.AppendLine("# Lantern Test Intermediate Format");
-        }
-        
         public override void AddFragmentData(WldFragment data)
         {
-            AlternateMesh am = data as AlternateMesh;
-
-            if (am == null)
+            if (!(data is AlternateMesh am))
             {
                 return;
             }
             
+            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Alternate Mesh Intermediate Format");
             _export.AppendLine($"ml,{FragmentNameCleaner.CleanName(am.MaterialList)}");
 
             foreach (var v in am.Vertices)

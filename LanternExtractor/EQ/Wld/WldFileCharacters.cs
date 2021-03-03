@@ -70,15 +70,33 @@ namespace LanternExtractor.EQ.Wld
             ExportMeshList();
             ExportAnimationList();
             ExportCharacterList();
+            ExportSkeletonsNew();
         }
 
-        private void DoAllSkeletons()
+        private void ExportSkeletonsNew()
+        {
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+
+            foreach (var skeleton in skeletons)
+            {
+                var writer = new SkeletonHierarchyNewWriter(true);
+                writer.AddFragmentData(skeleton);
+                writer.WriteAssetToFile(GetExportFolderForWldType() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
+            }
+        }
+
+        public void DoAllSkeletons()
         {
             var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
 
             foreach (var skeleton in skeletons)
             {
                 skeleton.BuildSkeletonData(true);
+            }
+
+            if (_wldToInject != null)
+            {
+                (_wldToInject as WldFileCharacters).DoAllSkeletons();
             }
         }
 

@@ -6,10 +6,17 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class SkeletonHierarchyNewWriter : TextAssetWriter
     {
+        private bool _stripModelBase;
+        
+        public SkeletonHierarchyNewWriter(bool stripModelBase)
+        {
+            _stripModelBase = stripModelBase;
+        }
+        
         public override void AddFragmentData(WldFragment data)
         {
             _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, ParticleCloud");
+            _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, AlternateMesh, ParticleCloud");
             
             SkeletonHierarchy skeleton = data as SkeletonHierarchy;
 
@@ -54,7 +61,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
 
-                _export.Append(node.Name.Replace("_DAG", "").ToLower());
+                var boneName = CleanSkeletonNodeName(node.Name);
+
+                if (_stripModelBase)
+                {
+                    boneName = StripModelBase(boneName, skeleton.ModelBase);
+                }
+                
+                _export.Append(CleanSkeletonNodeName(boneName));
                 _export.Append(",");
                 _export.Append(childrenList);
 
@@ -65,6 +79,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
                 }
                 
+                _export.Append(",");
+
                 if (node.MeshReference?.AlternateMesh != null)
                 {
                     _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.AlternateMesh));
@@ -79,6 +95,26 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 
                 _export.AppendLine();
             }
+        }
+        
+        private string CleanSkeletonNodeName(string name)
+        {
+            return name.Replace("_DAG", "").ToLower();
+        }
+
+        private string StripModelBase(string boneName, string modelBase)
+        {
+            if (boneName.StartsWith(modelBase))
+            {
+                boneName = boneName.Substring(modelBase.Length);
+            }
+
+            if (string.IsNullOrEmpty(boneName))
+            {
+                boneName = "root";
+            }
+
+            return boneName;
         }
     }
 }

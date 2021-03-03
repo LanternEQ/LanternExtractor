@@ -19,12 +19,15 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         // Track fragment (TrackFragment) 0x13
         public TrackFragment Track;
         
-        // MeshFragment (MeshFragment) 0x2D
+        // MeshFragment (MeshFragment) 0x2D        Residential
         public MeshReference MeshReference;
 
         // The children indices in the tree
         public List<int> Children;
         public ParticleCloud ParticleCloud { get; set; }
+        
+        public List<int> ConnectedPieces { get; set; }
+        public Dictionary<string, TrackFragment> AnimationTracks { get; set; }
     }
 
     public class BoneTransform

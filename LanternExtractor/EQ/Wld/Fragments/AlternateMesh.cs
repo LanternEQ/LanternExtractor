@@ -26,6 +26,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             
             var reader = new BinaryReader(new MemoryStream(data));
             Name = stringHash[-reader.ReadInt32()];
+
+
+            if (Name.ToLower().Contains("sword"))
+            {
+                
+            }
+            
             int flags = reader.ReadInt32();
             int vertexCount = reader.ReadInt32();
             int texCoordCount = reader.ReadInt32();

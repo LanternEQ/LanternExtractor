@@ -1,70 +1,69 @@
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class MeshIntermediateMaterialsExport : TextAssetWriter
     {
-        private Settings _settings;
-        private string _modelName;
-        private ILogger _logger;
-
-        public MeshIntermediateMaterialsExport(Settings settings, string modelName, ILogger logger)
-        {
-            _settings = settings;
-            _modelName = modelName;
-            _logger = logger;
-        }
-
         public override void AddFragmentData(WldFragment data)
         {
-            MaterialList list = data as MaterialList;
-
-            if (list == null)
+            if (!(data is MaterialList list))
             {
                 return;
             }
+            
+            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Intermediate Format");
+            _export.AppendLine(LanternStrings.ExportHeaderFormat + "Index, MaterialName, AnimationTextures, AnimationDelayMs, SkinTextures");
 
-            for (var i = 0; i < list.Materials.Count; i++)
+            for (int i = 0; i < list.Materials.Count; i++)
             {
                 Material material = list.Materials[i];
-                
-                if (string.IsNullOrEmpty(material.GetFirstBitmapExportFilename()))
-                {
-                    _export.Append(i);
-                    _export.Append(",");
-                    _export.Append(MaterialList.GetMaterialPrefix(material.ShaderType) + FragmentNameCleaner.CleanName(material) + ",;1");
-                    _export.AppendLine();
-                    continue;
-                }
 
                 string materialName = material.GetFullMaterialName();
 
                 _export.Append(i);
                 _export.Append(",");
                 _export.Append(materialName);
+                _export.Append(",");
 
-                var skinVariants = list.GetMaterialVariants(material, _logger);
+                var bitmapNames = list.Materials[i].GetAllBitmapNames();
+
+                if (bitmapNames.Count != 0)
+                {
+                    for (int j = 0; j < bitmapNames.Count; j++)
+                    {
+                        if (j != 0)
+                        {
+                            _export.Append(";");
+                        }
+
+                        _export.Append(bitmapNames[j]);
+                    }
+                }
+
+                _export.Append(",");
+                _export.Append(material.BitmapInfoReference?.BitmapInfo.BitmapNames.Count ?? 0);
+                
+                _export.Append(",");
+                _export.Append(material.BitmapInfoReference?.BitmapInfo.AnimationDelayMs ?? 0);
+
+                _export.Append(",");
+
+                var skinVariants = list.GetMaterialVariants(material, new EmptyLogger());
 
                 if (skinVariants.Count != 0)
                 {
-                    foreach (var variant in skinVariants)
+                    for (int j = 0; j < skinVariants.Count; j++)
                     {
-                        _export.Append(";");
-                        _export.Append(variant);
+                        if (j != 0)
+                        {
+                            _export.Append(";");
+                        }
+
+                        _export.Append(skinVariants[j]);
                     }
                 }
                 
-                _export.Append(",");
-                _export.Append(material.BitmapInfoReference.BitmapInfo.BitmapNames.Count);
-
-                if (material.BitmapInfoReference.BitmapInfo.IsAnimated)
-                {
-                    _export.Append(",");
-                    _export.Append(material.BitmapInfoReference.BitmapInfo.AnimationDelayMs);
-                }
-
                 _export.AppendLine();
             }
         }

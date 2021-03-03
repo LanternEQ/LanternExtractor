@@ -114,6 +114,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
             }
 
+            if (Name.StartsWith("IT2_"))
+            {
+                
+            }
+
             int textureList = reader.ReadInt32();
 
             MaterialList = fragments[textureList - 1] as MaterialList;

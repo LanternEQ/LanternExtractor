@@ -20,10 +20,18 @@ namespace LanternExtractor.EQ.Wld
             FindUnhandledSkeletons();
             FindAdditionalAnimations();
             base.ExportData();
-            ExportMeshList();
+            //ExportMeshList();
             ExportParticleSystems();
             ExportSkeletonsNew();
             //ExportActorsNew();
+
+            foreach (var fragment in _fragments)
+            {
+                if (fragment.Name.ToLower().Contains("it66"))
+                {
+                    
+                }
+            }
         }
 
         private void DoAllSkeletons()
@@ -54,7 +62,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (var skeleton in skeletons)
             {
-                var writer = new SkeletonHierarchyNewWriter();
+                var writer = new SkeletonHierarchyNewWriter(false);
                 writer.AddFragmentData(skeleton);
                 writer.WriteAssetToFile(GetRootExportFolder() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
             }
@@ -127,19 +135,21 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
+
+                
                 
                 foreach (var skeleton in skeletons)
                 {
+                    if (track.Name == "O01IT154BONE2_TRACK" && skeleton.Name.ToLower().Contains("154"))
+                    {
+                    
+                    }
+                    
                     string boneName = string.Empty;
                     if (skeleton.IsValidSkeleton(FragmentNameCleaner.CleanName(track), out boneName))
                     {
                         _logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
                         track.IsProcessed = true;
-
-                        if (track.Name == "C05IT153MAIN05_TRACK")
-                        {
-                            
-                        }
                         
                         skeleton.AddTrackDataEquipment(track, boneName.ToLower());
                     }
@@ -147,7 +157,6 @@ namespace LanternExtractor.EQ.Wld
 
                 if (!track.IsNameParsed)
                 {
-                    //_logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
                     //track.ParseTrackDataEquipment(skeleton, _logger);
                 }
             }

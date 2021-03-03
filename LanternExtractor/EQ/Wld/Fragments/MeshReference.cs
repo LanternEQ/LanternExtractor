@@ -29,6 +29,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (Mesh != null)
             {
+                
+                if(Mesh.Name.Contains("IT66"))
+                {}
                 return;
             }
             
@@ -36,8 +39,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (AlternateMesh != null)
             {
+                if(AlternateMesh.Name.Contains("IT66"))
+                {}
+                
                 return;
             }
+            
+
             
             logger.LogError("MeshReference: NO MESH: " + reference);
         }
