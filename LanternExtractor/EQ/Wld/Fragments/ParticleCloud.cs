@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Particle Cloud - Defines a particle system
+    /// ParticleCloud (0x34)
+    /// Internal name: None
+    /// Defines a particle system. Can be referenced from a skeleton bone.
     /// </summary>
     public class ParticleCloud : WldFragment
     {
@@ -16,7 +17,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
             Name = stringHash[-Reader.ReadInt32()];
             
             //File.WriteAllBytes("ParticleClouds/" + Name, data);
@@ -44,9 +44,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int value_72 = Reader.ReadInt32(); // probably int 13, 15, 20, 600, 83? or bytes
             float value_76 = Reader.ReadSingle(); // confirmed float 0.4, 0.5, 1.5, 0.1
             float value_80 = Reader.ReadSingle(); // float 0.4, 1.9
-            int fragmentRef = Reader.ReadInt32(); // various numbers 100-300. possibly bytes.
-
-            _particleSprite = fragments[fragmentRef - 1] as ParticleSprite;
+            _particleSprite = fragments[Reader.ReadInt32() - 1] as ParticleSprite;
         }
     }
 }

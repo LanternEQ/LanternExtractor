@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -333,7 +334,7 @@ namespace LanternExtractor.EQ.Wld
                 {FragmentType.Mesh, () => new Mesh()},
                 {FragmentType.MeshVertexAnimation, () => new MeshAnimatedVertices()},
                 {FragmentType.MeshReference, () => new MeshReference()},
-                {FragmentType.AlternateMesh, () => new AlternateMesh()},
+                {FragmentType.AlternateMesh, () => new LegacyMesh()},
 
                 // Animation
                 {FragmentType.Actor, () => new Actor()},
@@ -351,7 +352,7 @@ namespace LanternExtractor.EQ.Wld
 
                 // Vertex colors
                 {FragmentType.VertexColor, () => new VertexColors()},
-                {FragmentType.VertexColorReference, () => new VertexColorReference()},
+                {FragmentType.VertexColorReference, () => new VertexColorsReference()},
 
                 // General
                 {FragmentType.ObjectInstance, () => new ObjectInstance()},

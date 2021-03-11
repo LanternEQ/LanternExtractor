@@ -4,9 +4,9 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Generic Fragment (0xXX)
-    /// Used for unknown fragments
-    /// Left the functions here for debugging purposes
+    /// GenericFragment (0xXX)
+    /// Used for unknown fragments.
+    /// Left the functions here for debugging purposes.
     /// </summary>
     class Generic : WldFragment
     {

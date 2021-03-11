@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public List<SkeletonNode> Skeleton { get; private set; }
 
         public List<Mesh> Meshes { get; private set; }
-        public List<AlternateMesh> AlternateMeshes { get; private set; }
+        public List<LegacyMesh> AlternateMeshes { get; private set; }
 
         public List<SkeletonNode> Tree { get; set; }
 
@@ -46,7 +46,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Tree = new List<SkeletonNode>();
             Meshes = new List<Mesh>();
-            AlternateMeshes = new List<AlternateMesh>();
+            AlternateMeshes = new List<LegacyMesh>();
             Skeleton = new List<SkeletonNode>();
             SkeletonPieceDictionary = new Dictionary<string, SkeletonNode>();
 
@@ -213,11 +213,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         }
                     }
 
-                    if (meshRef?.AlternateMesh != null)
+                    if (meshRef?.LegacyMesh != null)
                     {
-                        if (AlternateMeshes.All(x => x.Name != meshRef.AlternateMesh.Name))
+                        if (AlternateMeshes.All(x => x.Name != meshRef.LegacyMesh.Name))
                         {
-                            AlternateMeshes.Add(meshRef.AlternateMesh);
+                            AlternateMeshes.Add(meshRef.LegacyMesh);
                             //meshRef.AlternateMesh.IsHandled = true;
                         }
                     }

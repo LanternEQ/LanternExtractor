@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -7,7 +8,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// <summary>
     /// Material (0x30)
     /// Internal name: _MDF
-    /// Contains information about a material's shader and textures
+    /// Contains information about a material's shader and textures.
     /// </summary>
     public class Material : WldFragment
     {

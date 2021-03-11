@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// Fragment16 (0x16)
-    /// An unknown fragment
+    /// Internal Name: None
+    /// An unknown fragment. Found in zone files.
     /// </summary>
     class Fragment16 : WldFragment
     {
@@ -15,20 +15,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
+            Name = stringHash[-Reader.ReadInt32()];
 
             // Should be 0.1
-            //float unknown = reader.ReadSingle();
-            int unknown = reader.ReadInt32();
-
-            // Int representation of 0.1
-            if (unknown != 1036831949)
-            {
-                
-            }
+            float unknown = Reader.ReadSingle();
         }
     }
 }

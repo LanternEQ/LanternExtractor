@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Light Instance (0x28)
-    /// Defines a position and radius of a light
+    /// LightInstance (0x28)
+    /// Internal name: None
+    /// Defines the position and radius of a light.
     /// </summary>
     class LightInstance : WldFragment
     {
@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public LightSourceReference LightReference { get; private set; }
 
         /// <summary>
-        /// The position of this light
+        /// The position of the light
         /// </summary>
         public vec3 Position { get; private set; }
 
@@ -31,20 +31,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int reference = reader.ReadInt32();
-
-            LightReference = fragments[reference - 1] as LightSourceReference;
-
-            int flags = reader.ReadInt32();
-
-            Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-
-            Radius = reader.ReadSingle();
+            Name = stringHash[-Reader.ReadInt32()];
+            LightReference = fragments[Reader.ReadInt32() - 1] as LightSourceReference;
+            int flags = Reader.ReadInt32();
+            Position = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
+            Radius = Reader.ReadSingle();
         }
 
         public override void OutputInfo(ILogger logger)

@@ -68,17 +68,19 @@
     <Compile Include="EQ\Sound\EmissionType.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
-    <Compile Include="EQ\Wld\DataTypes\BonePosition.cs" />
     <Compile Include="EQ\Wld\DataTypes\BspNode.cs" />
     <Compile Include="EQ\Wld\DataTypes\Color.cs" />
+    <Compile Include="EQ\Wld\DataTypes\MaterialType.cs" />
     <Compile Include="EQ\Wld\DataTypes\MobVertexPiece.cs" />
     <Compile Include="EQ\Wld\DataTypes\ObjExportType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Polygon.cs" />
     <Compile Include="EQ\Wld\DataTypes\RegionType.cs" />
     <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
     <Compile Include="EQ\Wld\DataTypes\Skeleton.cs" />
-    <Compile Include="EQ\Wld\DataTypes\SkeletonPiece.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ZonelineInfo.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ZonelineType.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriterNew.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriterNewGlobal.cs" />
     <Compile Include="EQ\Wld\Exporters\AlternateMeshIntermediateAssetWriter.cs" />
@@ -110,7 +112,7 @@
     <Compile Include="EQ\Wld\Exporters\ObjectListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextAssetWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\VertexColorsWriter.cs" />
-    <Compile Include="EQ\Wld\Fragments\AlternateMesh.cs" />
+    <Compile Include="EQ\Wld\Fragments\LegacyMesh.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
@@ -122,7 +124,6 @@
     <Compile Include="EQ\Wld\Fragments\Fragment07.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
-    <Compile Include="EQ\Wld\Fragments\MaterialType.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleSprite.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleSpriteReference.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleCloud.cs" />
@@ -147,7 +148,7 @@
     <Compile Include="EQ\Wld\Fragments\BitmapInfoReference.cs" />
     <Compile Include="EQ\Wld\Fragments\MaterialList.cs" />
     <Compile Include="EQ\Wld\Fragments\VertexColors.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColorReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\VertexColorsReference.cs" />
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
     <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />

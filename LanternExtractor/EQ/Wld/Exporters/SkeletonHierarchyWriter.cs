@@ -43,9 +43,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
                 }
                 
-                if (node.MeshReference?.AlternateMesh != null)
+                if (node.MeshReference?.LegacyMesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.AlternateMesh));
+                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.LegacyMesh));
                 }
                 
                 _export.Append(",");

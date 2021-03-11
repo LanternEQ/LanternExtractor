@@ -1,4 +1,5 @@
 using System.Text;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 
@@ -43,9 +44,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.Mesh));
                 }
-                else if (actor.MeshReference.AlternateMesh != null)
+                else if (actor.MeshReference.LegacyMesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.AlternateMesh));
+                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.LegacyMesh));
                 }
                 
                 _export.AppendLine();

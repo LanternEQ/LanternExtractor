@@ -5,8 +5,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Bitmap Info (0x04)
-    /// Internal name: SPRITE
+    /// BitmapInfo (0x04)
+    /// Internal name: _SPRITE
     /// This fragment contains a reference to a 0x03 fragment and information about animation.
     /// </summary>
     public class BitmapInfo : WldFragment

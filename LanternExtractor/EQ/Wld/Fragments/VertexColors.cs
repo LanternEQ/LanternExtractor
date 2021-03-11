@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Vertex Colors (0x32)
-    /// A list of colors, one per vertex, representing baked lighting data
+    /// VertexColors (0x32)
+    /// Internal name: _DMT
+    /// A list of colors, one per vertex, representing baked lighting data for an object.
     /// </summary>
     class VertexColors : WldFragment
     {
@@ -22,30 +22,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int unknown = reader.ReadInt32();
-            int vertexColorCount = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int unknown = Reader.ReadInt32();
+            int colorCount = Reader.ReadInt32();
 
             // Typically contains 1
-            int unknown2 = reader.ReadInt32();
+            int unknown2 = Reader.ReadInt32();
 
             // Typically contains 200
-            int unknown3 = reader.ReadInt32();
+            int unknown3 = Reader.ReadInt32();
 
             // Typically contains 0
-            int unknown4 = reader.ReadInt32();
+            int unknown4 = Reader.ReadInt32();
 
             Colors = new List<Color>();
 
-            for (int i = 0; i < vertexColorCount; ++i)
+            for (int i = 0; i < colorCount; ++i)
             {
-                int color = reader.ReadInt32();
-                
-                byte[] colorBytes = BitConverter.GetBytes(color);
+                byte[] colorBytes = BitConverter.GetBytes(Reader.ReadInt32());
                 int b = colorBytes[0];
                 int g = colorBytes[1];
                 int r = colorBytes[2];

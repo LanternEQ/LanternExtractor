@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
@@ -8,8 +7,9 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x36 - Mesh
-    /// Contains geometric data making up a mesh
+    /// Mesh (0x36)
+    /// Internal name: _DMSPRITEDEF
+    /// Contains geometric data for a mesh.
     /// </summary>
     public class Mesh : WldFragment
     {
@@ -94,36 +94,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
 
-            var reader = new BinaryReader(new MemoryStream(data));
+            // Zone: 0x00018003, Objects: 0x00014003
+            int flags = Reader.ReadInt32();
 
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
-
-            if (flags == 0x00018003)
-            {
-                // zone mesh
-            }
-            else if (flags == 0x00014003)
-            {
-                // placeable object
-            }
-            else
-            {
-                
-            }
-
-            if (Name.StartsWith("IT2_"))
-            {
-                
-            }
-
-            int textureList = reader.ReadInt32();
-
-            MaterialList = fragments[textureList - 1] as MaterialList;
-
-            int meshAnimation = reader.ReadInt32();
+            MaterialList = fragments[Reader.ReadInt32() - 1] as MaterialList;
+            int meshAnimation = Reader.ReadInt32();
 
             // Vertex animation only
             if (meshAnimation != 0)
@@ -131,17 +108,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 AnimatedVerticesReference = fragments[meshAnimation - 1] as MeshAnimatedVerticesReference;
             }
 
-            int unknown = reader.ReadInt32();
+            int unknown = Reader.ReadInt32();
 
             // maybe references the first 0x03 in the WLD - unknown
-            int unknown2 = reader.ReadInt32();
+            int unknown2 = Reader.ReadInt32();
 
-            Center = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Center = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 
             // 3 unknown dwords
-            int unknownDword1 = reader.ReadInt32();
-            int unknownDword2 = reader.ReadInt32();
-            int unknownDword3 = reader.ReadInt32();
+            int unknownDword1 = Reader.ReadInt32();
+            int unknownDword2 = Reader.ReadInt32();
+            int unknownDword3 = Reader.ReadInt32();
 
             // Seems to be related to lighting models? (torches, etc.)
             if (unknownDword1 != 0 || unknownDword2 != 0 || unknownDword3 != 0)
@@ -149,70 +126,55 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
             }
             
-            MaxDistance = reader.ReadSingle();
-
-            MinPosition = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
-            MaxPosition = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            MaxDistance = Reader.ReadSingle();
+            MinPosition = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
+            MaxPosition = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 
             Vertices = new List<vec3>();
             Normals = new List<vec3>();
             Colors = new List<Color>();
             TextureUvCoordinates = new List<vec2>();
 
-            short vertexCount = reader.ReadInt16();
-            short textureCoordinateCount = reader.ReadInt16();
-            short normalsCount = reader.ReadInt16();
-            short colorsCount = reader.ReadInt16();
-            short polygonCount = reader.ReadInt16();
-            short vertexPieceCount = reader.ReadInt16();
-            short polygonTextureCount = reader.ReadInt16();
-            short vertexTextureCount = reader.ReadInt16();
-            short size9 = reader.ReadInt16();
-            
-            if (Name.Contains("IT4"))
-            {
-                
-            }
-
-            if (size9 != 0)
-            {
-                
-            }
-
-            float scale = 1.0f / (1 << reader.ReadInt16());
+            short vertexCount = Reader.ReadInt16();
+            short textureCoordinateCount = Reader.ReadInt16();
+            short normalsCount = Reader.ReadInt16();
+            short colorsCount = Reader.ReadInt16();
+            short polygonCount = Reader.ReadInt16();
+            short vertexPieceCount = Reader.ReadInt16();
+            short polygonTextureCount = Reader.ReadInt16();
+            short vertexTextureCount = Reader.ReadInt16();
+            short size9 = Reader.ReadInt16();
+            float scale = 1.0f / (1 << Reader.ReadInt16());
             
             for (int i = 0; i < vertexCount; ++i)
             {
-                Vertices.Add(new vec3(reader.ReadInt16() * scale, reader.ReadInt16() * scale,
-                    reader.ReadInt16() * scale));
+                Vertices.Add(new vec3(Reader.ReadInt16() * scale, Reader.ReadInt16() * scale,
+                    Reader.ReadInt16() * scale));
             }
 
             for (int i = 0; i < textureCoordinateCount; ++i)
             {
                 if (isNewWldFormat)
                 {
-                    TextureUvCoordinates.Add(new vec2(reader.ReadInt32() / 256.0f, reader.ReadInt32() / 256.0f));
+                    TextureUvCoordinates.Add(new vec2(Reader.ReadInt32() / 256.0f, Reader.ReadInt32() / 256.0f));
                 }
                 else
                 {
-                    TextureUvCoordinates.Add(new vec2(reader.ReadInt16() / 256.0f, reader.ReadInt16() / 256.0f));
+                    TextureUvCoordinates.Add(new vec2(Reader.ReadInt16() / 256.0f, Reader.ReadInt16() / 256.0f));
                 }
             }
 
             for (int i = 0; i < normalsCount; ++i)
             {
-                float x = reader.ReadSByte() / 127.0f;
-                float y = reader.ReadSByte() / 127.0f;
-                float z = reader.ReadSByte() / 127.0f;
-                
+                float x = Reader.ReadSByte() / 128.0f;
+                float y = Reader.ReadSByte() / 128.0f;
+                float z = Reader.ReadSByte() / 128.0f;
                 Normals.Add(new vec3(x, y, z));
             }
 
             for (int i = 0; i < colorsCount; ++i)
             {
-                int color = reader.ReadInt32();
-                
-                byte[] colorBytes = BitConverter.GetBytes(color);
+                var colorBytes = BitConverter.GetBytes(Reader.ReadInt32());
                 int b = colorBytes[0];
                 int g = colorBytes[1];
                 int r = colorBytes[2];
@@ -225,7 +187,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < polygonCount; ++i)
             {
-                bool isSolid = (reader.ReadInt16() == 0);
+                bool isSolid = (Reader.ReadInt16() == 0);
 
                 if (!isSolid)
                 {
@@ -235,9 +197,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Indices.Add(new Polygon()
                 {
                     IsSolid = isSolid,
-                    Vertex1 = reader.ReadInt16(),
-                    Vertex2 = reader.ReadInt16(),
-                    Vertex3 = reader.ReadInt16(),
+                    Vertex1 = Reader.ReadInt16(),
+                    Vertex2 = Reader.ReadInt16(),
+                    Vertex3 = Reader.ReadInt16(),
                 });
             }
             
@@ -246,8 +208,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < vertexPieceCount; ++i)
             {
-                int count = reader.ReadInt16();
-                int index1 = reader.ReadInt16();
+                int count = Reader.ReadInt16();
+                int index1 = Reader.ReadInt16();
                 var mobVertexPiece = new MobVertexPiece
                 {
                     Count = count,
@@ -266,8 +228,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             for (int i = 0; i < polygonTextureCount; ++i)
             {
                 var group = new RenderGroup();
-                group.PolygonCount = reader.ReadUInt16();
-                group.MaterialIndex = reader.ReadUInt16();
+                group.PolygonCount = Reader.ReadUInt16();
+                group.MaterialIndex = Reader.ReadUInt16();
                 MaterialGroups.Add(group);
 
                 if (group.MaterialIndex < StartTextureIndex)
@@ -278,12 +240,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < vertexTextureCount; ++i)
             {
-                reader.BaseStream.Position += 4;
+                Reader.BaseStream.Position += 4;
             }
 
             for (int i = 0; i < size9; ++i)
             {
-                reader.BaseStream.Position += 12;
+                Reader.BaseStream.Position += 12;
             }
             
             // In some rare cases, the number of uvs does not match the number of vertices
@@ -296,11 +258,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     TextureUvCoordinates.Add(new vec2(0.0f, 0.0f));
                 }
             }
-        }
-
-        public bool HasBones()
-        {
-            return MobPieces != null && MobPieces.Count != 0;
         }
 
         public override void OutputInfo(ILogger logger)

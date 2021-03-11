@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -7,7 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Light Source (0x1B)
+    /// LightSource (0x1B)
+    /// Internal name: _LIGHTDEF/_LDEF
     /// Defines color information about a light
     /// </summary>
     class LightSource : WldFragment
@@ -38,13 +38,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
-
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
             var bitAnalyzer = new BitAnalyzer(flags);
 
             if (bitAnalyzer.IsBitSet(1))
@@ -61,24 +56,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 if (!IsColoredLight)
                 {
-                    int something1 = reader.ReadInt32();
-                    SomeValue = reader.ReadSingle();
-
-                    // Always 1 and 1.0f
-                    if (something1 != 1 || SomeValue < 1.0f)
-                    {
-                        
-                    }
-                    
+                    int something1 = Reader.ReadInt32();
+                    SomeValue = Reader.ReadSingle();
                     return;
                 }
 
-                Attenuation = reader.ReadInt32();
+                Attenuation = Reader.ReadInt32();
 
-                float alpha = reader.ReadSingle();
-                float red = reader.ReadSingle();
-                float green = reader.ReadSingle();
-                float blue = reader.ReadSingle();
+                float alpha = Reader.ReadSingle();
+                float red = Reader.ReadSingle();
+                float green = Reader.ReadSingle();
+                float blue = Reader.ReadSingle();
                 Color = new vec4(red, green, blue, alpha);
 
                 if (Attenuation != 1)
@@ -91,39 +79,38 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (!IsColoredLight)
             {
-                int something1 = reader.ReadInt32();
-                float something2 = reader.ReadSingle();
+                int something1 = Reader.ReadInt32();
+                float something2 = Reader.ReadSingle();
                 return;
             }
             
-
             // Not sure yet what the purpose of this fragment is in the main zone file
             // For now, return
             if (!IsPlacedLightSource && Name == "DEFAULT_LIGHTDEF")
             {
-                int unknown = reader.ReadInt32();
-                float unknown6 = reader.ReadSingle();
+                int unknown = Reader.ReadInt32();
+                float unknown6 = Reader.ReadSingle();
                 return;
             }
 
-            int unknown1 = reader.ReadInt32();
+            int unknown1 = Reader.ReadInt32();
 
             if (!IsColoredLight)
             {
-                int unknown = reader.ReadInt32();
+                int unknown = Reader.ReadInt32();
                 Color = new vec4(1.0f);
-                int unknown2 = reader.ReadInt32();
-                int unknown3 = reader.ReadInt32();
+                int unknown2 = Reader.ReadInt32();
+                int unknown3 = Reader.ReadInt32();
 
             }
             else
             {
-                Attenuation = reader.ReadInt32();
+                Attenuation = Reader.ReadInt32();
 
-                float alpha = reader.ReadSingle();
-                float red = reader.ReadSingle();
-                float green = reader.ReadSingle();
-                float blue = reader.ReadSingle();
+                float alpha = Reader.ReadSingle();
+                float red = Reader.ReadSingle();
+                float green = Reader.ReadSingle();
+                float blue = Reader.ReadSingle();
 
                 Color = new vec4(red, green, blue, alpha);
             }

@@ -5,7 +5,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// BitmapInfoReference (0x05)
-    /// Internal name: ?
+    /// Internal name: None
     /// Contains a reference to a BitmapInfo fragment.
     /// </summary>
     public class BitmapInfoReference : WldFragment
@@ -20,7 +20,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-            
             Name = stringHash[-Reader.ReadInt32()];
             int fragmentReference = Reader.ReadInt32() - 1;
             BitmapInfo = fragments[fragmentReference] as BitmapInfo;

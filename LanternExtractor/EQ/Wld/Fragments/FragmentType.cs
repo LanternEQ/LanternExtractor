@@ -1,5 +1,6 @@
 namespace LanternExtractor.EQ.Wld.Fragments
 {
+    // TODO: Kill this
     public enum FragmentType
     {
         Bitmap = 0x03,

@@ -6,7 +6,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Global Ambient Light (0x35)
+    /// GlobalAmbientLight (0x35)
     /// Internal name: None
     /// Contains the color value which is added to boost the darkness in some zone.
     /// This fragment contains no name reference and is only found in zone WLDs (e.g. akanon.wld).
@@ -22,8 +22,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
             
             // Color is in BGRA format. A is always 255.
-            int colorValue = Reader.ReadInt32();
-            byte[] colorBytes = BitConverter.GetBytes(colorValue);
+            var colorBytes = BitConverter.GetBytes(Reader.ReadInt32());
             Color = new Color
             {
                 R = colorBytes[2],
@@ -37,7 +36,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("AmbientLightColor: Color: " + Color);
+            logger.LogInfo("GlobalAmbientLight: Color: " + Color);
         }
     }
 }

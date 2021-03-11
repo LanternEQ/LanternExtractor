@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Mesh Animated Vertices (0x37)
-    /// Contains a list of frames each containing a vertex position the model
-    /// The frame vertices are cycled through, animating the model
+    /// MeshAnimatedVertices (0x37)
+    /// Internal name: _DMTRACKDEF
+    /// Contains a list of frames each containing a position for each vertex.
+    /// The frame vertices are cycled through, animating the model.
     /// </summary>
     public class MeshAnimatedVertices : WldFragment
     {
@@ -28,32 +28,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
+            int vertexCount = Reader.ReadInt16();
+            int frameCount = Reader.ReadInt16();
+            Delay = Reader.ReadInt16();
+            int param2 = Reader.ReadInt16();
+
+            float scale = 1.0f / (1 << Reader.ReadInt16());
+
             Frames = new List<List<vec3>>();
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
-
-            int vertexCount = reader.ReadInt16();
-
-            int frameCount = reader.ReadInt16();
-
-            Delay = reader.ReadInt16();
-            int param2 = reader.ReadInt16();
-
-            float scale = 1.0f / (1 << reader.ReadInt16());
-
             for (int i = 0; i < frameCount; ++i)
             {
                 var positions = new List<vec3>();
 
                 for (int j = 0; j < vertexCount; ++j)
                 {
-                    float x = reader.ReadInt16() * scale;
-                    float y = reader.ReadInt16() * scale;
-                    float z = reader.ReadInt16() * scale;
+                    float x = Reader.ReadInt16() * scale;
+                    float y = Reader.ReadInt16() * scale;
+                    float z = Reader.ReadInt16() * scale;
 
                     positions.Add(new vec3(x, y, z));
                 }

@@ -1,5 +1,4 @@
-﻿
-namespace LanternExtractor.EQ.Wld.DataTypes
+﻿namespace LanternExtractor.EQ.Wld.DataTypes
 {
     public enum RegionType
     {

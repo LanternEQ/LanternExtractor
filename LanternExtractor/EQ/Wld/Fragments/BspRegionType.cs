@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
@@ -8,35 +7,21 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Region Flag (0x29)
-    /// Associates a list of regions with a specified region flag (Water, Lava, PvP or Zoneline)
+    /// BspRegionType (0x29)
+    /// Internal Name: None
+    /// Associates a list of regions with a specified region type (Water, Lava, PvP or Zoneline).
     /// </summary>
     public class BspRegionType : WldFragment
     {
         /// <summary>
-        /// The region type associated with the region list
+        /// The region type associated with the region
         /// </summary>
         public List<RegionType> RegionTypes { get; private set; }
 
         public List<int> BspRegionIndices { get; private set; }
         
         public string RegionString { get; set; }
-
-        public enum ZonelineType
-        {
-            Reference,
-            Absolute
-        }
         
-        public class ZonelineInfo
-        {
-            public ZonelineType Type;
-            public int Index;
-            public vec3 Position;
-            public int Heading;
-            public int ZoneIndex { get; set; }
-        }
-
         public ZonelineInfo Zoneline;
 
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -44,25 +29,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
-            int regionCount = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
+            int regionCount = Reader.ReadInt32();
         
             BspRegionIndices = new List<int>();
-
             for (int i = 0; i < regionCount; ++i)
             {
-                BspRegionIndices.Add(reader.ReadInt32());
+                BspRegionIndices.Add(Reader.ReadInt32());
             }
             
-            int regionStringSize = reader.ReadInt32();
+            int regionStringSize = Reader.ReadInt32();
 
             string regionTypeString = regionStringSize == 0 ? Name.ToLower() : 
-                WldStringDecoder.DecodeString(reader.ReadBytes(regionStringSize)).ToLower();
+                WldStringDecoder.DecodeString(Reader.ReadBytes(regionStringSize));
 
             RegionTypes = new List<RegionType>();
             
@@ -153,7 +133,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             if (zoneId == 255)
             {
                 int zonelineId = Convert.ToInt32(regionTypeString.Substring(10, 6));
-
                 Zoneline.Type = ZonelineType.Reference;
                 Zoneline.Index = zonelineId;
                 
@@ -161,7 +140,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             Zoneline.ZoneIndex = zoneId;
-
             
             float x = GetValueFromRegionString(regionTypeString.Substring(10, 6));
             float y = GetValueFromRegionString(regionTypeString.Substring(16, 6));
@@ -196,11 +174,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             foreach(var regionIndex in BspRegionIndices)
             {
-                if (RegionTypes.Contains(RegionType.Zoneline))
-                {
-                    
-                }
-                
                 bspRegions[regionIndex].SetRegionFlag(this);
             }
         }

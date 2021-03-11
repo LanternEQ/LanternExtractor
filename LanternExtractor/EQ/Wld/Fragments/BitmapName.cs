@@ -5,7 +5,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// BitmapName (0x03)
-    /// Internal Name: ?
+    /// Internal Name: None
     /// This fragment contains the name of a bitmap image. It supports more than one bitmap but this is never used.
     /// Fragment end is padded to end on a DWORD boundary.
     /// </summary>

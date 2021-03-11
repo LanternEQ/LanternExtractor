@@ -1,4 +1,4 @@
-﻿namespace LanternExtractor.EQ.Wld.Fragments
+﻿namespace LanternExtractor.EQ.Wld.DataTypes
 {
     public enum MaterialType
     {

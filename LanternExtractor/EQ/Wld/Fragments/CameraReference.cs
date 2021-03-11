@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Camera Reference (0x09)
-    /// References a Camera fragment
+    /// CameraReference (0x09)
+    /// Internal Name: None
+    /// References a Camera fragment.
     /// </summary>
     class CameraReference : WldFragment
     {
@@ -17,15 +17,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            Camera = fragments[reader.ReadInt32() - 1] as Camera;
+            Name = stringHash[-Reader.ReadInt32()];
+            Camera = fragments[Reader.ReadInt32() - 1] as Camera;
 
             // Usually 0
-            int flags = reader.ReadInt32();
+            int flags = Reader.ReadInt32();
         }
 
         public override void OutputInfo(ILogger logger)

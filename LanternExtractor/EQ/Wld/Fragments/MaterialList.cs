@@ -6,7 +6,7 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Material List (0x31)
+    /// MaterialList (0x31)
     /// Internal name: _MP
     /// A list of material fragments (0x30) that make up a single list.
     /// This list is used in the rendering of an mesh (via the list indices).

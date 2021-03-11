@@ -11,7 +11,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public override void AddFragmentData(WldFragment data)
         {
-            if (!(data is AlternateMesh am))
+            if (!(data is LegacyMesh am))
             {
                 return;
             }

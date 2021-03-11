@@ -6,6 +6,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// BSP Tree (0x21)
+    /// Internal Name: None
     /// Binary tree with each leaf node containing a BspRegion fragment.
     /// </summary>
     class BspTree : WldFragment

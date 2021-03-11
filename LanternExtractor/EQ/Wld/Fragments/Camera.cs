@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// Camera (0x08)
+    /// Internal Name: CAMERA_DUMMY
     /// Unknown fragment purpose. Contains 26 parameters. It's here in case someone wants to take a look.
     /// </summary>
     class Camera : WldFragment
@@ -15,47 +15,35 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            long cachedPosition = reader.BaseStream.Position;
-
-            while (reader.BaseStream.Position < reader.BaseStream.Length)
-            {
-                int value = reader.ReadInt32();
-            }
-
-            reader.BaseStream.Position = cachedPosition;
-            
-            Name = stringHash[-reader.ReadInt32()];
+            Name = stringHash[-Reader.ReadInt32()];
 
             // 26 fields - unknown what they reference
-            int params0 = reader.ReadInt32();
-            int params1 = reader.ReadInt32();
-            int params2 = reader.ReadInt32();
-            int params3 = reader.ReadInt32();
-            int params4 = reader.ReadInt32();
-            float params5 = reader.ReadSingle();
-            float params6 = reader.ReadSingle();
-            int params7 = reader.ReadInt32();
-            float params8 = reader.ReadSingle();
-            float params9 = reader.ReadSingle();
-            int params10 = reader.ReadInt32();
-            float params11 = reader.ReadSingle();
-            float params12 = reader.ReadSingle();
-            int params13 = reader.ReadInt32();
-            float params14 = reader.ReadSingle();
-            float params15 = reader.ReadSingle();
-            int params16 = reader.ReadInt32();
-            int params17 = reader.ReadInt32();
-            int params18 = reader.ReadInt32();
-            int params19 = reader.ReadInt32();
-            int params20 = reader.ReadInt32();
-            int params21 = reader.ReadInt32();
-            int params22 = reader.ReadInt32();
-            int params23 = reader.ReadInt32();
-            int params24 = reader.ReadInt32();
-            int params25 = reader.ReadInt32();
+            int params0 = Reader.ReadInt32();
+            int params1 = Reader.ReadInt32();
+            int params2 = Reader.ReadInt32();
+            int params3 = Reader.ReadInt32();
+            int params4 = Reader.ReadInt32();
+            float params5 = Reader.ReadSingle();
+            float params6 = Reader.ReadSingle();
+            int params7 = Reader.ReadInt32();
+            float params8 = Reader.ReadSingle();
+            float params9 = Reader.ReadSingle();
+            int params10 = Reader.ReadInt32();
+            float params11 = Reader.ReadSingle();
+            float params12 = Reader.ReadSingle();
+            int params13 = Reader.ReadInt32();
+            float params14 = Reader.ReadSingle();
+            float params15 = Reader.ReadSingle();
+            int params16 = Reader.ReadInt32();
+            int params17 = Reader.ReadInt32();
+            int params18 = Reader.ReadInt32();
+            int params19 = Reader.ReadInt32();
+            int params20 = Reader.ReadInt32();
+            int params21 = Reader.ReadInt32();
+            int params22 = Reader.ReadInt32();
+            int params23 = Reader.ReadInt32();
+            int params24 = Reader.ReadInt32();
+            int params25 = Reader.ReadInt32();
         }
     }
 }

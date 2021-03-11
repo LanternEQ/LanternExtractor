@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public static void ExportMeshes(WldFile wldFile, Settings settings, ILogger logger)
         {
             List<WldFragment> meshFragments = wldFile.GetFragmentsOfType(FragmentType.Mesh);
-            List<AlternateMesh> alternateMeshFragments = wldFile.GetFragmentsOfType2<AlternateMesh>();
+            List<LegacyMesh> alternateMeshFragments = wldFile.GetFragmentsOfType2<LegacyMesh>();
             List<WldFragment> materialListFragments = wldFile.GetFragmentsOfType(FragmentType.MaterialList);
             
             if (meshFragments?.Count == 0 && alternateMeshFragments?.Count == 0)

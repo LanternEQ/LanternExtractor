@@ -4,7 +4,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// BSP Region (0x22)
+    /// BspRegion (0x22)
+    /// Internal Name: None
     /// Leaf nodes in the BSP tree. Can contain references to Mesh fragments.
     /// This fragment's PVS (potentially visible set) data is unhandled.
     /// </summary>

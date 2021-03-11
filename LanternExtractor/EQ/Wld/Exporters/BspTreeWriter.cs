@@ -83,7 +83,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     if (node.Region.RegionType.RegionTypes.Contains(RegionType.Zoneline))
                     {
-                        BspRegionType.ZonelineInfo zoneline = node.Region.RegionType?.Zoneline;
+                        ZonelineInfo zoneline = node.Region.RegionType?.Zoneline;
 
                         if (zoneline != null)
                         {
@@ -91,7 +91,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                             _export.Append(zoneline.Type.ToString()); 
                             _export.Append(",");
 
-                            if (zoneline.Type == BspRegionType.ZonelineType.Reference)
+                            if (zoneline.Type == ZonelineType.Reference)
                             {
                                 _export.Append(zoneline.Index);
                             }

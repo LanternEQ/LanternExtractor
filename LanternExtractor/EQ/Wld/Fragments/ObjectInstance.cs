@@ -1,13 +1,13 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Object Instance (0x15)
-    /// Information about a single instance of an actor spawn.
+    /// ObjectInstance (0x15)
+    /// Internal name: None
+    /// Information about a single instance of an object.
     /// </summary>
     class ObjectInstance : WldFragment
     {
@@ -38,98 +38,46 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
 
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            // Always 0 DW
-            int unknown = reader.ReadInt32();
-
-            if (unknown != 0)
-            {
-                
-            }
-            
             // in main zone, points to 0x16, in object wld, it contains the object name
-            int reference = reader.ReadInt32();
+            int reference = Reader.ReadInt32();
 
-            if (reference < 0)
-            {
-                ObjectName = stringHash[-reference].Replace("_ACTORDEF", "").ToLower();
-            }
-            else
-            {
-                ObjectName = string.Empty;
-            }
+            ObjectName = reference < 0 ? stringHash[-reference].Replace("_ACTORDEF", "").ToLower() : string.Empty;
 
-            int flags = reader.ReadInt32();
-
-            if (flags == 0x2E)
-            {
-                // main zone wld
-            }
-            else if (flags == 0x32E)
-            {
-                // object wld
-            }
+            // Main zone: 0x2E, Objects: 0x32E
+            int flags = Reader.ReadInt32();
 
             // Fragment reference
             // In main zone, it points to a 0x16 fragment
             // In objects.wld, it is 0
-            int unknown2 = reader.ReadInt32();
+            int unknown2 = Reader.ReadInt32();
 
-            if (unknown2 != 0)
-            {
-                
-            }
-            
-            // TODO: Are these safe coords in the main zone file? they come from server
-            Position = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle());
+            Position = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 
-            if (ObjectName.Contains("TEMP"))
-            {
-                
-            }
-            
             // Rotation is strange. There is never any x rotation (roll)
             // The z rotation is negated
-            float value0 = reader.ReadSingle();
-            float value1 = reader.ReadSingle();
-            float value2 = reader.ReadSingle();
+            float value0 = Reader.ReadSingle();
+            float value1 = Reader.ReadSingle();
+            float value2 = Reader.ReadSingle();
 
             float modifier = 1.0f / 512.0f * 360.0f;
             
-            Rotation = new vec3(0f, ( value1 * modifier ), -(value0 * modifier));      
+            Rotation = new vec3(0f, value1 * modifier, -(value0 * modifier));      
 
             // Only scale y is used
             float scaleX, scaleY, scaleZ;
-            scaleX = reader.ReadSingle();    
-            scaleY = reader.ReadSingle();
-            scaleZ = reader.ReadSingle();
-
-            if (scaleX != 0f)
-            {
-                
-            }
+            scaleX = Reader.ReadSingle();    
+            scaleY = Reader.ReadSingle();
+            scaleZ = Reader.ReadSingle();
             
             Scale = new vec3(scaleY, scaleY, scaleY);
             
-            int colorFragment = reader.ReadInt32();
+            int colorFragment = Reader.ReadInt32();
 
             if (colorFragment != 0)
             {
-                Colors = (fragments[colorFragment - 1 ] as VertexColorReference)?.VertexColors;
-                
-                int something = reader.ReadInt32();
-
-                if (something != 0)
-                {
-                    
-                }
-            }
-            
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
+                Colors = (fragments[colorFragment - 1 ] as VertexColorsReference)?.VertexColors;
             }
         }
 

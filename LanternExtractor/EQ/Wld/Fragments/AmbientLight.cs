@@ -1,12 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Ambient Light (0x2A)
-    /// Defines the ambient light for a group of regions. This fragment exists, but is unused in the Trilogy client. 
+    /// AmbientLight (0x2A)
+    /// Internal name: _AMBIENTLIGHT
+    /// Defines the ambient light for a group of regions. This fragment is found in the Trilogy client but is UNUSED.
     /// </summary>
     class AmbientLight : WldFragment
     {
@@ -25,20 +25,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-            int reference = reader.ReadInt32();
-            LightReference = fragments[reference - 1] as LightSourceReference;
-            int flags = reader.ReadInt32();
-            int regionCount = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int reference = Reader.ReadInt32() - 1;
+            LightReference = fragments[reference] as LightSourceReference;
+            int flags = Reader.ReadInt32();
+            int regionCount = Reader.ReadInt32();
 
             Regions = new List<int>();
-            
             for (int i = 0; i < regionCount; ++i)
             {
-                int regionId = reader.ReadInt32();
+                int regionId = Reader.ReadInt32();
                 Regions.Add(regionId);
             }
         }

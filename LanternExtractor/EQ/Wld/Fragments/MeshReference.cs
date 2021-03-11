@@ -1,21 +1,19 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x2D - Mesh Reference
-    /// Contains a reference to a mesh fragment (0x36)
+    /// MeshReference (0x2D)
+    /// Internal name: None
+    /// Contains a reference to either a Mesh and LegacyMesh fragment.
+    /// This fragment is referenced from a Skeleton fragment.
     /// </summary>
     public class MeshReference : WldFragment
     {
-        /// <summary>
-        /// The mesh reference
-        /// </summary>
         public Mesh Mesh { get; private set; }
         
-        public AlternateMesh AlternateMesh { get; private set; }
+        public LegacyMesh LegacyMesh { get; private set; }
         
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
             List<WldFragment> fragments,
@@ -24,30 +22,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
             int reference = Reader.ReadInt32() - 1;
-            
             Mesh = fragments[reference] as Mesh;
 
             if (Mesh != null)
             {
-                
-                if(Mesh.Name.Contains("IT66"))
-                {}
                 return;
             }
             
-            AlternateMesh = fragments[reference] as AlternateMesh;
+            LegacyMesh = fragments[reference] as LegacyMesh;
 
-            if (AlternateMesh != null)
+            if (LegacyMesh != null)
             {
-                if(AlternateMesh.Name.Contains("IT66"))
-                {}
-                
                 return;
             }
             
-
-            
-            logger.LogError("MeshReference: NO MESH: " + reference);
+            logger.LogError("No mesh reference found for id: " + reference);
         }
 
         public override void OutputInfo(ILogger logger)

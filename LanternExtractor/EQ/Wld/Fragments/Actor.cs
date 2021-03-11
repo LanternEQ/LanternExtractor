@@ -1,24 +1,15 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
-    public enum ActorType
-    {
-        Camera,
-        Static,
-        Skeletal,
-        Particle,
-        Sprite
-    }
-
     /// <summary>
     /// Actor (0x14)
-    /// Internal name: ACTORDEF
+    /// Internal name: _ACTORDEF
     /// Information about an actor that can be spawned into the world.
+    /// An actor will have one of five types and will reference another fragment.
     /// </summary>
     class Actor : WldFragment
     {
@@ -42,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public ParticleSpriteReference ParticleSpriteReference { get; private set; }
 
-        public Fragment07 Frag07;
+        public Fragment07 Fragment07;
 
         public ActorType ActorType;
         
@@ -53,12 +44,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-            
-            int flags = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
 
             BitAnalyzer ba = new BitAnalyzer(flags);
             
@@ -67,44 +54,44 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool fragment2MustContainZero = ba.IsBitSet(7);
             
             // Is an index in the string hash
-            int fragment1 = reader.ReadInt32();
+            int fragment1 = Reader.ReadInt32();
 
             // For objects, SPRITECALLBACK - and it's the same reference value
             string stringValue = stringHash[-fragment1];
             
             // 1 for both static and animated objects
-            int size1 = reader.ReadInt32();
+            int size1 = Reader.ReadInt32();
 
             // The number of components (meshes, skeletons, camera references) the actor has
             // In all Trilogy files, there is only ever 1
-            int componentCount = reader.ReadInt32();
+            int componentCount = Reader.ReadInt32();
 
             // 0 for both static and animated objects
-            int fragment2 = reader.ReadInt32();
+            int fragment2 = Reader.ReadInt32();
 
             if (params1Exist)
             {
-                int params1 = reader.ReadInt32();
+                int params1 = Reader.ReadInt32();
             }
 
             if (params2Exist)
             {
-                reader.BaseStream.Position += 7 * sizeof(int);
+                Reader.BaseStream.Position += 7 * sizeof(int);
             }
             
             // Size 1 entries
             for (int i = 0; i < size1; ++i)
             {
                 // Always 1
-                int dataPairCount = reader.ReadInt32();
+                int dataPairCount = Reader.ReadInt32();
 
                 // Unknown purpose
                 // Always 0 and 1.00000002E+30 
                 for (int j = 0; j < dataPairCount; ++j)
                 {
-                    int value = reader.ReadInt32();
-                    int value2 = reader.ReadInt16();
-                    int value3 = reader.ReadInt16();
+                    int value = Reader.ReadInt32();
+                    int value2 = Reader.ReadInt16();
+                    int value3 = Reader.ReadInt16();
                 }
             }
 
@@ -116,35 +103,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Can contain either a skeleton reference (animated), mesh reference (static) or a camera reference
             for (int i = 0; i < componentCount; ++i)
             {
-                int fragmentIndex = reader.ReadInt32();
+                int fragmentIndex = Reader.ReadInt32() - 1;
                 
-                SkeletonReference = fragments[fragmentIndex - 1] as SkeletonHierarchyReference;
+                SkeletonReference = fragments[fragmentIndex] as SkeletonHierarchyReference;
 
                 if (SkeletonReference != null)
                 {
                     SkeletonReference.SkeletonHierarchy.IsAssigned = true;
-
-                    if (SkeletonReference.SkeletonHierarchy.Name.ToLower().Contains("146"))
-                    {
-                        
-                    }
-                    
                     break;
                 }
 
-                MeshReference = fragments[fragmentIndex - 1] as MeshReference;
+                MeshReference = fragments[fragmentIndex] as MeshReference;
 
                 if (MeshReference != null)
                 {
-                    if (MeshReference.Mesh != null)
-                    {
-                        if (MeshReference.Mesh.Name.ToLower().Contains("146"))
-                        {
-                        
-                        }
-                    }
-
-                    
+                    MeshReference.Mesh.IsHandled = true;
                     break;
                 }
                 
@@ -163,9 +136,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     break;
                 }
                 
-                Frag07 = fragments[fragmentIndex - 1] as Fragment07;
+                Fragment07 = fragments[fragmentIndex - 1] as Fragment07;
 
-                if (Frag07 != null)
+                if (Fragment07 != null)
                 {
                     break;
                 }
@@ -174,13 +147,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             // Always 0 in qeynos2 objects
-            int name3Bytes = reader.ReadInt32();
-            
-            if (reader.BaseStream.Position != reader.BaseStream.Length)
-            {
-                
-            }
-            
+            int name3Bytes = Reader.ReadInt32();
+
             CalculateActorType(logger);
         }
 
@@ -209,10 +177,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 ActorType = ActorType.Particle;
                 ReferenceName = ParticleSpriteReference.Name;
             }
-            else if (Frag07 != null)
+            else if (Fragment07 != null)
             {
                 ActorType = ActorType.Sprite;
-                ReferenceName = Frag07.Name;
+                ReferenceName = Fragment07.Name;
             }
             else
             {
@@ -223,12 +191,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
-
-            if (SkeletonReference == null && MeshReference == null)
-            {
-                return;
-            }
-
             logger.LogInfo("-----");
         }
 
@@ -238,23 +200,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 SkeletonHierarchy = skeleton
             };
+            
             CalculateActorType(logger);
             skeleton.IsAssigned = true;
-        }
-
-        public Mesh GetMainMesh()
-        {
-            if (MeshReference != null)
-            {
-                return MeshReference.Mesh;
-            }
-
-            if (SkeletonReference != null)
-            {
-                return SkeletonReference.SkeletonHierarchy.Meshes.FirstOrDefault();
-            }
-
-            return null;
         }
     }
 }
