@@ -20,27 +20,27 @@ namespace LanternExtractor.EQ.Wld
 
         private void LinkBspReferences()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.BspTree)
-            || !_fragmentTypeDictionary.ContainsKey(FragmentType.BspRegion)
-            || !_fragmentTypeDictionary.ContainsKey(FragmentType.BspRegionType))
+            var bspTree = GetFragmentsOfType2<BspTree>();
+
+            if (bspTree.Count == 0)
+            {
+                return;
+            }
+
+            var bspRegions = GetFragmentsOfType2<BspRegion>();
+
+            if (bspRegions.Count == 0)
             {
                 return;
             }
             
-            BspTree tree = _fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree;
+            bspTree[0].LinkBspRegions(_bspRegions);
 
-            if (tree == null)
-            {
-                return;
-            }
+            var regionTypes = GetFragmentsOfType2<BspRegionType>();
             
-            tree.LinkBspRegions(_bspRegions);
-            
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.BspRegionType])
+            foreach (var regionType in regionTypes)
             {
-                BspRegionType bspRegion = fragment as BspRegionType;
-
-                bspRegion?.LinkRegionType(_bspRegions);
+                regionType.LinkRegionType(_bspRegions);
             }
         }
         
@@ -58,28 +58,29 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAmbientLightColor()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.AmbientLightColor))
+            var ambientLight = GetFragmentsOfType2<GlobalAmbientLight>();
+            
+            if (ambientLight.Count == 0)
             {
-                _logger.LogWarning("Cannot export ambient light color. No fragment found.");
                 return;
             }
             
             AmbientLightColorWriter writer = new AmbientLightColorWriter();
-
-            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.AmbientLightColor][0] as AmbientLightColor);
+            writer.AddFragmentData(ambientLight[0]);
             writer.WriteAssetToFile(_zoneName + "/ambient_light.txt");        
         }
 
         private void ExportBspTree()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.BspTree))
+            var bspTree = GetFragmentsOfType2<BspTree>();
+            
+            if (bspTree.Count == 0)
             {
-                _logger.LogWarning("Cannot export BSP tree. No tree found.");
                 return;
             }
+            
             BspTreeWriter writer = new BspTreeWriter();
-
-            writer.AddFragmentData(_fragmentTypeDictionary[FragmentType.BspTree][0] as BspTree);
+            writer.AddFragmentData(bspTree[0]);
             writer.WriteAssetToFile(_zoneName + "/bsp_tree.txt");
         }
     }

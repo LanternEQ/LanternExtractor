@@ -11,7 +11,6 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public int RegionId { get; set; }
         public int LeftNode { get; set; }
         public int RightNode { get; set; }
-        
         public BspRegion Region { get; set; }
     }
 }

@@ -16,22 +16,11 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             DoAllSkeletons();
-            CheckOrphanedMeshes();
             FindUnhandledSkeletons();
             FindAdditionalAnimations();
             base.ExportData();
-            //ExportMeshList();
             ExportParticleSystems();
             ExportSkeletonsNew();
-            //ExportActorsNew();
-
-            foreach (var fragment in _fragments)
-            {
-                if (fragment.Name.ToLower().Contains("it66"))
-                {
-                    
-                }
-            }
         }
 
         private void DoAllSkeletons()
@@ -67,18 +56,6 @@ namespace LanternExtractor.EQ.Wld
                 writer.WriteAssetToFile(GetRootExportFolder() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
             }
         }
-        
-        private void ExportActorsNew()
-        {
-            var actors = GetFragmentsOfType2<Actor>();
-
-            foreach (var actor in actors)
-            {
-                var writer = new ActorWriterNew();
-                writer.AddFragmentData(actor);
-                writer.WriteAssetToFile(GetRootExportFolder() + "/Actor/" + FragmentNameCleaner.CleanName(actor) + ".txt");
-            }
-        }
 
         private void FindUnhandledSkeletons()
         {
@@ -110,7 +87,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                (_fragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton);
+                (_fragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton, _logger);
             }
         }
 
@@ -140,17 +117,11 @@ namespace LanternExtractor.EQ.Wld
                 
                 foreach (var skeleton in skeletons)
                 {
-                    if (track.Name == "O01IT154BONE2_TRACK" && skeleton.Name.ToLower().Contains("154"))
-                    {
-                    
-                    }
-                    
                     string boneName = string.Empty;
                     if (skeleton.IsValidSkeleton(FragmentNameCleaner.CleanName(track), out boneName))
                     {
                         _logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
                         track.IsProcessed = true;
-                        
                         skeleton.AddTrackDataEquipment(track, boneName.ToLower());
                     }
                 }
@@ -177,35 +148,6 @@ namespace LanternExtractor.EQ.Wld
 
                 _logger.LogError("WldFileCharacters: Track not assigned: " + track.Name);
             }
-        }
-
-        private void CheckOrphanedMeshes()
-        {
-            if(_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
-            {
-                foreach (var meshReferenceFragment in _fragmentTypeDictionary[FragmentType.Mesh])
-                {
-                    Mesh mesh = meshReferenceFragment as Mesh;
-
-                    if (mesh == null)
-                    {
-                        continue;
-                    }
-
-                    if (mesh.IsHandled)
-                    {
-                        continue;
-                    }
-
-                    string cleanedName = FragmentNameCleaner.CleanName(mesh);
-                    //_logger.LogError("ORPHANED: " + cleanedName);
-                }
-            }
-        }
-
-        private void ExportModels()
-        {
-            return;
         }
     }
 }

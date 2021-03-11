@@ -19,7 +19,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Actor (0x14)
     /// Internal name: ACTORDEF
     /// Information about an actor that can be spawned into the world.
-    /// Actors can be either static or animated.
     /// </summary>
     class Actor : WldFragment
     {
@@ -32,21 +31,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// Skeleton track reference (optional)
         /// </summary>
         public SkeletonHierarchyReference SkeletonReference { get; private set; }
-
-        /// <summary>
-        /// Skeleton track reference (optional)
-        /// </summary>
-        public SkeletonHierarchy SecondSkeleton { get; private set; }
         
         /// <summary>
         /// Camera reference (optional)
         /// </summary>
         public CameraReference CameraReference { get; private set; }
+        
+        /// <summary>
+        /// Camera reference (optional)
+        /// </summary>
         public ParticleSpriteReference ParticleSpriteReference { get; private set; }
 
         public Fragment07 Frag07;
 
         public ActorType ActorType;
+        
         public string ReferenceName;
         
         public override void Initialize(int index, FragmentType id, int size, byte[] data,
@@ -59,8 +58,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             Name = stringHash[-reader.ReadInt32()];
             
-            //logger.LogError($"Actor: {Name} - {size}");
-
             int flags = reader.ReadInt32();
 
             BitAnalyzer ba = new BitAnalyzer(flags);
@@ -184,15 +181,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
             }
             
-            CalculateActorType();
-
-            if (Name.ToLower() == ("it2_actordef"))
-            {
-                
-            }
+            CalculateActorType(logger);
         }
 
-        private void CalculateActorType()
+        private void CalculateActorType(ILogger logger)
         {
             if (CameraReference != null)
             {
@@ -205,7 +197,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else if (MeshReference != null)
             {
-                // If the MeshReference is null, both the SkeletonReference and the SecondSkeleton are null
                 ActorType = ActorType.Static;
 
                 if (MeshReference != null)
@@ -225,7 +216,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else
             {
-                throw new System.NotImplementedException();
+                logger.LogError("Cannot determine actor type!");
             }
         }
         
@@ -241,13 +232,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             logger.LogInfo("-----");
         }
 
-        public void AssignSkeletonReference(SkeletonHierarchy skeleton)
+        public void AssignSkeletonReference(SkeletonHierarchy skeleton, ILogger logger)
         {
             SkeletonReference = new SkeletonHierarchyReference
             {
                 SkeletonHierarchy = skeleton
             };
-            CalculateActorType();
+            CalculateActorType(logger);
             skeleton.IsAssigned = true;
         }
 
@@ -261,11 +252,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             if (SkeletonReference != null)
             {
                 return SkeletonReference.SkeletonHierarchy.Meshes.FirstOrDefault();
-            }
-
-            if (SecondSkeleton != null)
-            {
-                return SecondSkeleton.Meshes.FirstOrDefault();
             }
 
             return null;

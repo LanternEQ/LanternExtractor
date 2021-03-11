@@ -13,12 +13,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public CharacterListGlobalWriter(int modelCount)
         {
-            if (!File.Exists("characters/characters.txt"))
+            if (!File.Exists("all/characters.txt"))
             {
                 return;
             }
             
-            var text = File.ReadAllLines("characters/characters.txt");
+            var text = File.ReadAllLines("all/characters.txt");
 
             foreach (var line in text)
             {

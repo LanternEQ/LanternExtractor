@@ -1,52 +1,12 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
-    public enum MaterialType
-    {
-        // Used for boundaries that are not rendered. TextInfoReference can be null or have reference.
-        Boundary = 0x0,
-
-        // Standard diffuse shader
-        Diffuse = 0x01,
-
-        // Diffuse variant
-        Diffuse2 = 0x02,
-
-        // Transparent with 0.5 blend strength
-        Transparent50 = 0x05,
-
-        // Transparent with 0.25 blend strength
-        Transparent25 = 0x09,
-
-        // Transparent with 0.75 blend strength
-        Transparent75 = 0x0A,
-
-        // Non solid surfaces that shouldn't really be masked
-        TransparentMaskedPassable = 0x07,
-        TransparentAdditiveUnlit = 0x0B,
-        TransparentMasked = 0x13,
-        Diffuse3 = 0x14,
-        Diffuse4 = 0x15,
-        TransparentAdditive = 0x17,
-        Diffuse5 = 0x19,
-        InvisibleUnknown = 0x53,
-        Diffuse6 = 0x553,
-        CompleteUnknown = 0x1A, // TODO: Analyze this
-        Diffuse7 = 0x12,
-        Diffuse8 = 0x31,
-        InvisibleUnknown2 = 0x4B,
-        DiffuseSkydome = 0x0D, // Need to confirm
-        TransparentSkydome = 0x0F, // Need to confirm
-        TransparentAdditiveUnlitSkydome = 0x10,
-        InvisibleUnknown3 = 0x03,
-    }
-
     /// <summary>
     /// Material (0x30)
+    /// Internal name: _MDF
     /// Contains information about a material's shader and textures
     /// </summary>
     public class Material : WldFragment
@@ -72,27 +32,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-            int flags = reader.ReadInt32();
-            int parameters = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
+            int parameters = Reader.ReadInt32();
 
             // Unsure what this color is used for
-            byte colorR = reader.ReadByte();
-            byte colorG = reader.ReadByte();
-            byte colorB = reader.ReadByte();
-            byte colorA = reader.ReadByte();
+            byte colorR = Reader.ReadByte();
+            byte colorG = Reader.ReadByte();
+            byte colorB = Reader.ReadByte();
+            byte colorA = Reader.ReadByte();
 
-            float unknownFloat1 = reader.ReadSingle();
-            float unknownFloat2 = reader.ReadSingle();
+            float unknownFloat1 = Reader.ReadSingle();
+            float unknownFloat2 = Reader.ReadSingle();
 
-            int reference6 = reader.ReadInt32();
+            int fragmentReference = Reader.ReadInt32();
 
-            if (reference6 != 0)
+            if (fragmentReference != 0)
             {
-                BitmapInfoReference = fragments[reference6 - 1] as BitmapInfoReference;
+                BitmapInfoReference = fragments[fragmentReference - 1] as BitmapInfoReference;
             }
 
             // Thanks to PixelBound for figuring this out
@@ -115,8 +72,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 case MaterialType.Diffuse7:
                 case MaterialType.Diffuse8:
                 case MaterialType.Diffuse2:
-                case MaterialType.CompleteUnknown: // TODO: Figure out where this is used
-                case MaterialType.TransparentMaskedPassable: // TODO: Add special handling
+                case MaterialType.CompleteUnknown:
+                case MaterialType.TransparentMaskedPassable:
                     ShaderType = ShaderType.Diffuse;
                     break;
                 case MaterialType.Transparent25:
@@ -151,17 +108,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
                     break;
             }
-
-            if (materialType == MaterialType.Diffuse5)
-            {
-                logger.LogError("DIFFUSE 5: " + Name);
-            }
             
             CheckForSpecialCaseMasked();
         }
 
         /// <summary>
-        /// These materials use an incorrectly flagged shader and should be marked as masked
+        /// These materials use an incorrectly flagged shader and should be marked as masked.
         /// </summary>
         private void CheckForSpecialCaseMasked()
         {

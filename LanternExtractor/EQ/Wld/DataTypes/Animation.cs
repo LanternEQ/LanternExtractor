@@ -9,6 +9,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public string AnimModelBase;
         public Dictionary<string, TrackFragment> Tracks;
         public Dictionary<string, TrackFragment> TracksCleaned;
+        public Dictionary<string, TrackFragment> TracksCleanedStripped;
         public int FrameCount;
         public int AnimationTimeMs { get; set; }
 
@@ -16,10 +17,16 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         {
             Tracks = new Dictionary<string, TrackFragment>();
             TracksCleaned = new Dictionary<string, TrackFragment>();
+            TracksCleanedStripped = new Dictionary<string, TrackFragment>();
         }
         
         public static string CleanBoneName(string boneName)
         {
+            if (string.IsNullOrEmpty(boneName))
+            {
+                return boneName;
+            }
+            
             var cleanedName = boneName.Replace("_DAG", string.Empty).ToLower();
             return cleanedName.Length == 0 ? "root" : cleanedName;
         }
@@ -45,7 +52,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             return name;
         }
         
-        public void AddTrack(TrackFragment track, string pieceName, string cleanName)
+        public void AddTrack(TrackFragment track, string pieceName, string cleanedName, string cleanStrippedName)
         {
             // Prevent overwriting tracks
             // Drachnid edge case
@@ -54,8 +61,9 @@ namespace LanternExtractor.EQ.Wld.DataTypes
                 return;
             }
             
-            Tracks[pieceName.ToLower()] = track;
-            TracksCleaned[cleanName.ToLower()] = track;
+            Tracks[pieceName] = track;
+            TracksCleaned[cleanedName] = track;
+            TracksCleanedStripped[cleanStrippedName] = track;
 
             if (string.IsNullOrEmpty(AnimModelBase) &&
                 !string.IsNullOrEmpty(track.ModelName))

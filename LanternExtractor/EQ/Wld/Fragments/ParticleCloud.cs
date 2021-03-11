@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -17,6 +18,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             Name = stringHash[-Reader.ReadInt32()];
+            
+            //File.WriteAllBytes("ParticleClouds/" + Name, data);
 
             int flags = Reader.ReadInt32(); // always 4
             int value_08 = Reader.ReadInt32(); // always 3

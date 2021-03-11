@@ -45,6 +45,10 @@
     <Reference Include="GlmSharp, Version=0.9.8.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GlmSharp.0.9.8\lib\Net45\GlmSharp.dll</HintPath>
     </Reference>
+    <Reference Include="Pfim, Version=0.10.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\packages\Pfim.0.10.0\lib\netstandard2.0\Pfim.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -113,11 +117,12 @@
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\AmbientLightColor.cs" />
+    <Compile Include="EQ\Wld\Fragments\GlobalAmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment06.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment07.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
+    <Compile Include="EQ\Wld\Fragments\MaterialType.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleSprite.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleSpriteReference.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleCloud.cs" />

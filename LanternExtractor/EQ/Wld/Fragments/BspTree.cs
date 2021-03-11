@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -7,7 +6,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
     /// BSP Tree (0x21)
-    /// Binary tree with each leaf node containing a BspRegion fragment
+    /// Binary tree with each leaf node containing a BspRegion fragment.
     /// </summary>
     class BspTree : WldFragment
     {
@@ -21,32 +20,30 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int nodeCount = reader.ReadInt32();
-
+            Name = stringHash[-Reader.ReadInt32()];
+            int nodeCount = Reader.ReadInt32();
             Nodes = new List<BspNode>();
 
             for (int i = 0; i < nodeCount; ++i)
             {
-                var node = new BspNode()
+                Nodes.Add(new BspNode
                 {
-                    NormalX = reader.ReadSingle(),
-                    NormalY = reader.ReadSingle(),
-                    NormalZ = reader.ReadSingle(),
-                    SplitDistance = reader.ReadSingle(),
-                    RegionId = reader.ReadInt32(),
-                    LeftNode = reader.ReadInt32() - 1,
-                    RightNode = reader.ReadInt32() - 1
-                };
-
-                Nodes.Add(node);
+                    NormalX = Reader.ReadSingle(),
+                    NormalY = Reader.ReadSingle(),
+                    NormalZ = Reader.ReadSingle(),
+                    SplitDistance = Reader.ReadSingle(),
+                    RegionId = Reader.ReadInt32(),
+                    LeftNode = Reader.ReadInt32() - 1,
+                    RightNode = Reader.ReadInt32() - 1
+                });
             }
         }
 
+        /// <summary>
+        /// Links BSP nodes to their corresponding BSP Regions
+        /// The RegionId is not a fragment index but instead an index in a list of BSP Regions
+        /// </summary>
+        /// <param name="fragments">BSP region fragments</param>
         public void LinkBspRegions(List<BspRegion> fragments)
         {
             foreach (var node in Nodes)

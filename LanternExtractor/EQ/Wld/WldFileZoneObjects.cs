@@ -17,6 +17,9 @@ namespace LanternExtractor.EQ.Wld
             ExportObjectInstanceAndVertexColorList();
         }
         
+        /// <summary>
+        /// Exports the objects instance list (one file per zone) and vertex color lists (one file per object)
+        /// </summary>
         private void ExportObjectInstanceAndVertexColorList()
         {
             var instanceList = GetFragmentsOfType2<ObjectInstance>();

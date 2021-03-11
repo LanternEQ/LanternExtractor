@@ -47,81 +47,52 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 string boneName = _isCharacterAnimation
                     ? Animation.CleanBoneAndStripBase(skeleton.BoneMapping[i], skeleton.ModelBase)
                     : Animation.CleanBoneName(skeleton.BoneMapping[i]);
-                
+
                 string fullPath = _isCharacterAnimation
                     ? skeleton.Tree[i].CleanedFullPath
                     : Animation.CleanBoneName(skeleton.Tree[i].FullPath);
 
-                if (!anim.Tracks.ContainsKey(boneName))
+
+                var trackArray = _isCharacterAnimation
+                    ? anim.TracksCleanedStripped
+                    : anim.TracksCleaned;
+                var poseArray = _isCharacterAnimation
+                    ? skeleton.Animations["pos"].TracksCleanedStripped
+                    : skeleton.Animations["pos"].TracksCleaned;
+
+                if (!trackArray.ContainsKey(boneName))
                 {
-                    if (_isCharacterAnimation)
+                    if (poseArray == null || !poseArray.ContainsKey(boneName))
                     {
-                        var newBoneName = string.Empty;
-
-                        if (!skeleton.Animations["pos"].TracksCleaned.ContainsKey(boneName))
-                        {
-                            return;
-                        }
-
-                        var bt = skeleton.Animations["pos"]?.TracksCleaned[boneName]?.TrackDefFragment.Frames[0];
-
-                        if (bt == null)
-                        {
-                            return;
-                        }
-
-                        CreateTrackString(fullPath, 0, bt, anim.AnimationTimeMs);
-                        continue;
+                        return;
                     }
-                    else
+
+                    var bt = poseArray[boneName].TrackDefFragment.Frames[0];
+
+                    if (bt == null)
                     {
-                        if (!skeleton.Animations["pos"].Tracks.ContainsKey(boneName))
-                        {
-                            return;
-                        }
-
-                        var bt = skeleton.Animations["pos"]?.Tracks[boneName]?.TrackDefFragment.Frames[0];
-
-                        if (bt == null)
-                        {
-                            return;
-                        }
-
-                        CreateTrackString(fullPath, 0, bt, anim.AnimationTimeMs);
-                        continue;
+                        return;
                     }
+
+                    CreateTrackString(fullPath, 0, bt, anim.AnimationTimeMs);
                 }
-
-                for (int j = 0; j < anim.FrameCount; ++j)
+                else
                 {
-                    if (j >= anim.Tracks[boneName].TrackDefFragment.Frames.Count)
+                    for (int j = 0; j < anim.FrameCount; ++j)
                     {
-                        break;
+                        if (j >= trackArray[boneName].TrackDefFragment.Frames.Count)
+                        {
+                            break;
+                        }
+
+                        BoneTransform boneTransform = trackArray[boneName].TrackDefFragment.Frames[j];
+                        int delay = _isCharacterAnimation
+                            ? anim.AnimationTimeMs / anim.FrameCount
+                            : skeleton.Tree[i].Track.FrameMs;
+                        CreateTrackString(fullPath, j, boneTransform, delay);
                     }
-
-                    BoneTransform boneTransform = anim.Tracks[boneName].TrackDefFragment.Frames[j];
-
-                    int delay = 0;
-
-                    if (_isCharacterAnimation)
-                    {
-                        delay = anim.AnimationTimeMs / anim.FrameCount;
-                    }
-                    else
-                    {
-                        delay = skeleton.Tree[i].Track.FrameMs;
-                    }
-
-                    delay = anim.AnimationTimeMs / anim.FrameCount;
-
-                    CreateTrackString(fullPath, j, boneTransform, delay);
                 }
             }
-        }
-
-        private string GetFullNodePath()
-        {
-            return string.Empty;
         }
 
         private void CreateTrackString(string fullPath, int frame, BoneTransform boneTransform, int delay)

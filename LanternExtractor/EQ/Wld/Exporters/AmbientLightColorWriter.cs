@@ -12,18 +12,18 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         public override void AddFragmentData(WldFragment data)
         {
-            AmbientLightColor ambientLight = data as AmbientLightColor;
+            GlobalAmbientLight globalAmbientLight = data as GlobalAmbientLight;
 
-            if (ambientLight == null)
+            if (globalAmbientLight == null)
             {
                 return;
             }
 
-            _export.Append(ambientLight.Color.R.ToString());
+            _export.Append(globalAmbientLight.Color.R.ToString());
             _export.Append(",");
-            _export.Append(ambientLight.Color.G.ToString());
+            _export.Append(globalAmbientLight.Color.G.ToString());
             _export.Append(",");
-            _export.Append(ambientLight.Color.B.ToString());
+            _export.Append(globalAmbientLight.Color.B.ToString());
         }
     }
 }

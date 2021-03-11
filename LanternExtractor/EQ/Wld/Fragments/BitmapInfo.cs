@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -8,7 +7,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// <summary>
     /// Bitmap Info (0x04)
     /// Internal name: SPRITE
-    /// This fragment contains a reference to a 0x03 fragment and information about animation
+    /// This fragment contains a reference to a 0x03 fragment and information about animation.
     /// </summary>
     public class BitmapInfo : WldFragment
     {
@@ -34,27 +33,22 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             BitmapNames = new List<BitmapName>();
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
 
             var bitAnalyzer = new BitAnalyzer(flags);
-
             IsAnimated = bitAnalyzer.IsBitSet(3);
 
-            int bitmapCount = reader.ReadInt32();
+            int bitmapCount = Reader.ReadInt32();
 
             if (IsAnimated)
             {
-                AnimationDelayMs = reader.ReadInt32();
+                AnimationDelayMs = Reader.ReadInt32();
             }
 
             for (int i = 0; i < bitmapCount; ++i)
             {
-                int fragmentIndex = reader.ReadInt32() - 1;
+                int fragmentIndex = Reader.ReadInt32() - 1;
                 BitmapNames.Add(fragments[fragmentIndex] as BitmapName);
             }
         }
