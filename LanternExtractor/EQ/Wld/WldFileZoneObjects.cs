@@ -14,55 +14,39 @@ namespace LanternExtractor.EQ.Wld
         
         protected override void ExportData()
         {
-            ExportObjectInstanceList();
-            ExportObjectVertexColors();
+            ExportObjectInstanceAndVertexColorList();
         }
         
-        private void ExportObjectInstanceList()
+        private void ExportObjectInstanceAndVertexColorList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ObjectInstance))
+            var instanceList = GetFragmentsOfType2<ObjectInstance>();
+            
+            if (instanceList.Count == 0)
             {
                 _logger.LogWarning("Cannot export object instance list. No object instances found.");
                 return;
             }
-
-            string zoneExportFolder = _zoneName + "/";
-
-            ObjectInstanceWriter writer = new ObjectInstanceWriter();
-
-            foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
-            {
-                writer.AddFragmentData(objectInstanceFragment);
-            }
             
-            writer.WriteAssetToFile(zoneExportFolder + "object_instances.txt");
-        }
-        
-        private void ExportObjectVertexColors()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.ObjectInstance))
+            ObjectInstanceWriter instanceWriter = new ObjectInstanceWriter();
+            VertexColorsWriter colorWriter = new VertexColorsWriter();
+            
+            string colorsExportFolder = GetRootExportFolder() + "Objects/VertexColors/";
+
+            foreach (var instance in instanceList)
             {
-                _logger.LogWarning("Cannot export vertex colors. No object instances found.");
-                return;
-            }
-
-            string zoneExportFolder = _zoneName + "/Objects/VertexColors/";
-
-            VertexColorsWriter writer = new VertexColorsWriter();
-
-            foreach (WldFragment objectInstanceFragment in _fragmentTypeDictionary[FragmentType.ObjectInstance])
-            {
-                VertexColors vertexColors = (objectInstanceFragment as ObjectInstance)?.Colors;
-
-                if (vertexColors == null)
+                instanceWriter.AddFragmentData(instance);
+                
+                if (instance.Colors == null)
                 {
                     continue;
                 }
                 
-                writer.AddFragmentData(vertexColors);
-                writer.WriteAssetToFile(zoneExportFolder + "vc_" + vertexColors.Index + ".txt");
-                writer.ClearExportData();
+                colorWriter.AddFragmentData(instance.Colors);
+                colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Index + ".txt");
+                colorWriter.ClearExportData();
             }
+            
+            colorWriter.WriteAssetToFile(GetRootExportFolder() + "object_instances.txt");
         }
     }
 }
