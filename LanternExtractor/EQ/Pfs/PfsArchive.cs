@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using Ionic.Zlib;
-using LanternExtractor.EQ.Wld;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
-using Pfim;
-using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace LanternExtractor.EQ.Pfs
 {
@@ -20,85 +12,41 @@ namespace LanternExtractor.EQ.Pfs
     /// </summary>
     public class PfsArchive
     {
-        /// <summary>
-        /// The OS path to the file
-        /// </summary>
         private readonly string _filePath;
-
-        /// <summary>
-        /// The OS path to which the files will be extracted if we are doing a raw export
-        /// </summary>
-        private readonly string _rawExportPath;
-
-        /// <summary>
-        /// The name of the PFS file we have loaded
-        /// </summary>
         private readonly string _fileName;
-
-        /// <summary>
-        /// A list containing all files
-        /// </summary>
-        private readonly List<PfsFile> _files = new List<PfsFile>();
-
-        /// <summary>
-        /// A dictionary of all files allowing direct name access
-        /// </summary>
-        private readonly Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
-
-        /// <summary>
-        /// The logger for debug output
-        /// </summary>
-        private readonly ILogger _logger;
+        
+        private List<PfsFile> _files = new List<PfsFile>();
+        private Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
+        private ILogger _logger;
 
         public bool IsWldArchive { get; set; }
 
         public Dictionary<string, string> FilenameChanges;
-
-        /// <summary>
-        /// Constructor that initializes the file path and logger
-        /// </summary>
-        /// <param name="filePath">The OS path to the file</param>
-        /// <param name="logger">The logger for debug output</param>
+        
         public PfsArchive(string filePath, ILogger logger)
         {
             _filePath = filePath;
             _fileName = Path.GetFileName(filePath);
             _logger = logger;
-
-            _rawExportPath = Path.GetFileNameWithoutExtension(filePath);
-
-            if (string.IsNullOrEmpty(_rawExportPath))
-            {
-                logger.LogError("Invalid PFS path");
-            }
         }
 
-        /// <summary>
-        /// Initializes the archive from the disk
-        /// </summary>
-        /// <returns>Whether or not the PFS archive load was successful</returns>
         public bool Initialize()
         {
-            _logger.LogInfo("Started initialization of archive: " + _fileName);
+            _logger.LogInfo("PfsArchive: Started initialization of archive: " + _fileName);
 
             if (!File.Exists(_filePath))
             {
-                _logger.LogError("File does not exist at: " + _filePath);
+                _logger.LogError("PfsArchive: File does not exist at: " + _filePath);
                 return false;
             }
 
-            BinaryReader reader;
-
             using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read))
             {
-                reader = new BinaryReader(fileStream);
-
+                var reader = new BinaryReader(fileStream);
                 int directoryOffset = reader.ReadInt32();
-
                 reader.BaseStream.Position = directoryOffset;
 
                 int fileCount = reader.ReadInt32();
-
                 var fileNames = new List<string>();
 
                 for (int i = 0; i < fileCount; i++)
@@ -107,15 +55,13 @@ namespace LanternExtractor.EQ.Pfs
                     uint offset = reader.ReadUInt32();
                     uint size = reader.ReadUInt32();
 
-                    // Check for corrupt S3Ds
                     if (offset > reader.BaseStream.Length)
                     {
-                        _logger.LogError("Corrupted file detected!");
+                        _logger.LogError("PfsArchive: Corrupted PFS length detected!");
                         return false;
                     }
 
-                    var cachedOffset = reader.BaseStream.Position;
-
+                    long cachedOffset = reader.BaseStream.Position;
                     var fileBytes = new byte[size];
 
                     reader.BaseStream.Position = offset;
@@ -127,26 +73,22 @@ namespace LanternExtractor.EQ.Pfs
                         uint deflatedLength = reader.ReadUInt32();
                         uint inflatedLength = reader.ReadUInt32();
 
-                        // Sometimes there can be incorrect values 
                         if (deflatedLength >= reader.BaseStream.Length)
                         {
-                            _logger.LogError("Corrupted file detected!");
+                            _logger.LogError("PfsArchive: Corrupted file length detected!");
                             return false;
                         }
 
                         byte[] compressedBytes = reader.ReadBytes((int) deflatedLength);
-
                         byte[] inflatedBytes;
 
                         if (!InflateBlock(compressedBytes, (int) inflatedLength, out inflatedBytes, _logger))
                         {
-                            _logger.LogError("An error occured while inflating data");
+                            _logger.LogError("PfsArchive: Error occured inflating data");
                             return false;
                         }
 
                         inflatedBytes.CopyTo(fileBytes, inflatedSize);
-
-                        //reader.BaseStream.Position += deflatedLength;
                         inflatedSize += inflatedLength;
                     }
 
@@ -173,37 +115,27 @@ namespace LanternExtractor.EQ.Pfs
                     reader.BaseStream.Position = cachedOffset;
                 }
 
-                // Sort by offset
+                // Sort files by offset so we can assign names
                 _files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
+                // Assign file names
                 for (int i = 0; i < _files.Count; ++i)
                 {
-                    _files[i].SetFileName(fileNames[i]);
-                    _fileNameReference.Add(fileNames[i], _files[i]);
+                    _files[i].Name = fileNames[i];
+                    _fileNameReference[fileNames[i]] = _files[i];
 
-                    if (!IsWldArchive)
+                    if (!IsWldArchive && fileNames[i].EndsWith(".wld"))
                     {
-                        if (fileNames[i].EndsWith(".wld"))
-                        {
-                            IsWldArchive = true;
-                        }
+                        IsWldArchive = true;
                     }
                 }
 
-                _logger.LogInfo("Finished initialization of archive: " + _fileName);
+                _logger.LogInfo("PfsArchive: Finished initialization of archive: " + _fileName);
             }
 
             return true;
         }
-
-        /// <summary>
-        /// Inflates (decompressed) a single block of data
-        /// </summary>
-        /// <param name="deflatedBytes">The deflated (compressed) data bytes</param>
-        /// <param name="inflatedSize">The size of the bytes once inflated</param>
-        /// <param name="inflatedBytes">The inflated (decompressed) data bytes</param>
-        /// <param name="logger">The logger for debug output</param>
-        /// <returns>Whether or not the inflation was successful</returns>
+        
         private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes,
             ILogger logger)
         {
@@ -234,14 +166,15 @@ namespace LanternExtractor.EQ.Pfs
                         catch (Exception e)
                         {
                             inflatedBytes = null;
-                            logger.LogError("Exception caught while inflating bytes: " + e);
+                            logger.LogError("PfsArchive: Exception caught while inflating bytes: " + e);
                             return false;
                         }
 
                         bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
                         if (bytesToWrite > 0)
                             memoryStream.Write(output, 0, bytesToWrite);
-                    } while (f == FlushType.None &&
+                    } 
+                    while (f == FlushType.None &&
                              (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0) ||
                              f == FlushType.Finish && bytesToWrite != 0);
                 }
@@ -252,190 +185,33 @@ namespace LanternExtractor.EQ.Pfs
                 return true;
             }
         }
-
-        /// <summary>
-        /// Writes all files to disk
-        /// </summary>
-        /// <param name="rawExport">Are we processing any of the files?</param>
-        /// <param name="subfolderName">If specified, exports are put in a subfolder with this name</param>
-        public void WriteAllFiles(bool rawExport, string subfolderName = "")
-        {
-            for (int i = 0; i < _files.Count; ++i)
-            {
-                var i1 = i;
-                Thread thread = new Thread(() => WriteFile(i1, rawExport, subfolderName));
-            }
-        }
-
-        /// <summary>
-        /// Writes all files using the texture types information.
-        /// This allows us to add the correct filename prefix for the different shader types.
-        /// </summary>
-        /// <param name="textureTypes">The types (shader) of all textures</param>
-        /// <param name="folderName">An optional folder name to put the files into</param>
-        /// <param name="onlyTextures">Are we exporting only textures?</param>
-        public void WriteAllFiles(List<string> maskedTextures, string folderName,
-            bool onlyTextures = false)
-        {
-            for (int i = 0; i < _files.Count; ++i)
-            {
-                string filename = _files[i].Name;
-                
-                if (FilenameChanges != null)
-                {
-                    string filenameWithoutExtension = filename.Substring(0, filename.Length - 4);
-                    
-                    if (FilenameChanges.ContainsKey(filenameWithoutExtension))
-                    {
-                        _files[i].Name = FilenameChanges[filenameWithoutExtension] + ".bmp";
-                        filename = _files[i].Name;
-                    }
-                }
-
-                if (filename.EndsWith(".bmp"))
-                {
-                    if (maskedTextures == null || !maskedTextures.Contains(filename))
-                    {
-                        WriteImageAsPng(i, false, folderName);
-                        continue;
-                    }
-                    
-                    WriteImageAsPng(i, true, folderName);
-                }
-                else if (filename.EndsWith(".dds"))
-                {
-                    WriteDdsAsPng(i, true, folderName, filename, _files[i].Bytes);
-                }
-                else
-                {
-                    if (onlyTextures)
-                    {
-                        continue;
-                    }
-
-                    WriteFile(i, false, folderName);
-                }
-            }
-        }
-
-        private void WriteDdsAsPng(int i, bool b, string folderName, string filename, byte[] bytes)
-        {
-            using (IImage image = Pfim.Pfim.FromStream(new MemoryStream(bytes)))
-            {
-                PixelFormat format;
-
-                // Convert from Pfim's backend agnostic image format into GDI+'s image format
-                switch (image.Format)
-                {
-                    case Pfim.ImageFormat.Rgba32:
-                        format = PixelFormat.Format32bppArgb;
-                        break;
-                    default:
-                        // see the sample for more details
-                        throw new NotImplementedException(); 
-                }
-
-                // Pin pfim's data array so that it doesn't get reaped by GC, unnecessary
-                // in this snippet but useful technique if the data was going to be used in
-                // control like a picture box
-                var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
-                try
-                {
-                    var data = Marshal.UnsafeAddrOfPinnedArrayElement(image.Data, 0);
-                    var bitmap = new Bitmap(image.Width, image.Height, image.Stride, format, data);
-                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
-                    Directory.CreateDirectory(folderName);
-                    bitmap.Save(Path.ChangeExtension(folderName + Path.GetFileNameWithoutExtension(filename), ".png"), System.Drawing.Imaging.ImageFormat.Png);
-                }
-                finally
-                {
-                    handle.Free();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Writes a file based on the index in the file list
-        /// </summary>
-        /// <param name="index">The index of the file to write</param>
-        /// <param name="rawExport">Dictates which folder the output goes into</param>
-        /// <param name="subfolderName">An optional folder name to put the files into</param>
-        private void WriteFile(int index, bool rawExport, string folderName)
-        {
-            if (index < 0 || _files.Count <= index || _files[index].Bytes == null)
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(folderName);
-
-            var binaryWriter =
-                new BinaryWriter(
-                    File.OpenWrite(folderName + "/" + _files[index].Name));
-            binaryWriter.Write(_files[index].Bytes);
-            binaryWriter.Close();
-        }
-
-        /// <summary>
-        /// Writes a specific file by name
-        /// </summary>
-        /// <param name="index"></param>
-        /// <param name="fileName">The name of the file to be written</param>
-        /// <param name="folderName">An optional folder name to put the files into</param>
-        public void WriteFile(int index, string fileName, bool rawExport, string folderName)
-        {
-            for (var i = 0; i < _files.Count; i++)
-            {
-                PfsFile file = _files[i];
-
-                if (file.Name != fileName)
-                {
-                    continue;
-                }
-
-                WriteFile(i, rawExport, folderName);
-                break;
-            }
-        }
-
-        /// <summary>
-        /// Writes an image to disk taking the shader type into account
-        /// </summary>
-        /// <param name="index">The index in the file list</param>
-        /// <param name="type">The shader type</param>
-        /// <param name="folderName">An optional folder name to put the files into</param>
-        private void WriteImageAsPng(int index, bool isMasked, string folderName = "")
-        {
-            if (index < 0 || index >= _files.Count)
-            {
-                return;
-            }
-
-            if (!_files[index].Name.EndsWith(".bmp"))
-            {
-                return;
-            }
-
-            if (_files[index].Bytes == null)
-            {
-                return;
-            }
-
-            string bitmapName = _files[index].Name.Substring(0, _files[index].Name.Length - 4);
-
-            string pngName = bitmapName + ".png";
-            var byteStream = new MemoryStream(_files[index].Bytes);
-            ImageWriter.WriteImage(byteStream, folderName, pngName, isMasked, !IsWldArchive, _logger);
-        }
-
-        /// <summary>
-        /// Returns a reference to a PFS file in the archive.
-        /// </summary>
-        /// <param name="fileName">The name of the file requested</param>
-        /// <returns>A reference to the file, or null if it was not found</returns>
+        
         public PfsFile GetFile(string fileName)
         {
             return !_fileNameReference.ContainsKey(fileName) ? null : _fileNameReference[fileName];
+        }
+        
+        public PfsFile GetFile(int index)
+        {
+            if (index < 0 || index >= _files.Count)
+            {
+                return null;
+            }
+            
+            return _files[index];
+        }
+
+        public PfsFile[] GetAllFiles()
+        {
+            return _files.ToArray();
+        }
+
+        public void WriteAllFiles(string folder)
+        {
+            foreach (var file in _files)
+            {
+                FileWriter.WriteToDisk(file.Bytes, folder, file.Name);
+            }
         }
     }
 }

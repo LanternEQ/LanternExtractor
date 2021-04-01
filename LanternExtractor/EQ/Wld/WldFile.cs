@@ -396,7 +396,7 @@ namespace LanternExtractor.EQ.Wld
         /// Used in exporting the bitmaps from the PFS archive
         /// </summary>
         /// <returns>Dictionary with material to shader mapping</returns>
-        public List<string> GetMaskedTextures()
+        public List<string> GetMaskedBitmaps()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
             {
@@ -707,6 +707,18 @@ namespace LanternExtractor.EQ.Wld
                     animationWriter.ClearExportData();
                 }
             }
+        }
+
+        public List<string> GetAllBitmapNames()
+        {
+            List<string> bitmaps = new List<string>();
+            var bitmapFragments = GetFragmentsOfType2<BitmapName>();
+            foreach (var fragment in bitmapFragments)
+            {
+                bitmaps.Add(fragment.Filename);
+            }
+
+            return bitmaps;
         }
     }
 }

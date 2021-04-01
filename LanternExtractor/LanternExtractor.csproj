@@ -164,6 +164,7 @@
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />
     <Compile Include="EQ\Wld\WldType.cs" />
     <Compile Include="Infrastructure\BitAnalyzer.cs" />
+    <Compile Include="Infrastructure\FileWriter.cs" />
     <Compile Include="Infrastructure\ImageWriter.cs" />
     <Compile Include="Infrastructure\Logger\ConsoleLogger.cs" />
     <Compile Include="Infrastructure\Logger\EmptyLogger.cs" />

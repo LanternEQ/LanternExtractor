@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
+using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor
@@ -13,10 +14,6 @@ namespace LanternExtractor
     {
         private static Settings _settings;
         private static ILogger _logger;
-
-        /// <summary>
-        /// Threaded extraction utilizes tasks
-        /// </summary>
         private static bool _useThreading = false;
 
         private static void Main(string[] args)
@@ -29,17 +26,14 @@ namespace LanternExtractor
             string archiveName;
 
             DateTime start = DateTime.Now;
-#if DEBUG
-            archiveName = "arena";
-#else
+
             if (args.Length != 1)
             {
-                Console.WriteLine("Format: lantern.exe <filename/shortname/all>");
+                Console.WriteLine("Usage: lantern.exe <filename/shortname/all>");
                 return;
             }
             
             archiveName = args[0];
-#endif
 
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
 
@@ -79,34 +73,35 @@ namespace LanternExtractor
 
         private static void ExtractArchive(string path)
         {
-            var s3dArchive = new PfsArchive(path, _logger);
-
-            if (!s3dArchive.Initialize())
-            {
-                _logger.LogError("Failed to initialize PFS archive at path: " + path);
-                return;
-            }
-
-            if (_settings.RawS3dExtract)
-            {
-                s3dArchive.WriteAllFiles(true);
-                return;
-            }
-
             string archiveName = Path.GetFileNameWithoutExtension(path);
-
+            
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
-
+            
             string shortName = archiveName.Split('_')[0];
+            
+            var s3dArchive = new PfsArchive(path, _logger);
+
+            if (!s3dArchive.Initialize())
+            {
+                _logger.LogError("LanternExtractor: Failed to initialize PFS archive at path: " + path);
+                return;
+            }
+            
+            if (_settings.RawS3dExtract)
+            {
+                s3dArchive.WriteAllFiles(Path.Combine(shortName, archiveName));
+                return;
+            }
 
             // For non WLD files, we can just extract their contents
             // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
+            // The difference between this and the raw export is that it will convert images to .png
             if (!s3dArchive.IsWldArchive)
             {
-                s3dArchive.WriteAllFiles(null, shortName + "/");
+                WriteS3dTextures(s3dArchive, shortName);
                 return;
             }
 
@@ -124,13 +119,13 @@ namespace LanternExtractor
             {
                 var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(),"equipment/Textures/", true);
+                WriteWldTextures(s3dArchive, wldFile, shortName + "/equipment/Textures/");
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {
                 var wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), "sky/Textures/", true);
+                WriteWldTextures(s3dArchive, wldFile, shortName + "/sky/Textures/");
             }
             else if (EqFileHelper.IsCharactersArchive(archiveName))
             {
@@ -162,20 +157,20 @@ namespace LanternExtractor
                     : shortName + "/Characters/Textures/";
 
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), exportPath, true);
+                WriteWldTextures(s3dArchive, wldFile, exportPath);
             }
             else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
                 var wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Objects/Textures/", true);
+                WriteWldTextures(s3dArchive, wldFile, shortName + "/Objects/Textures/");
             }
             else
             {
                 var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, _logger, _settings);
                 wldFile.Initialize();
-                s3dArchive.WriteAllFiles(wldFile.GetMaskedTextures(), shortName + "/Zone/Textures/", true);
-
+                WriteWldTextures(s3dArchive, wldFile, shortName + "/Zone/Textures/");
+                
                 PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 
                 if (lightsFileInArchive != null)
@@ -194,6 +189,48 @@ namespace LanternExtractor
                 }
 
                 ExtractSoundData(shortName);
+            }
+        }
+
+        /// <summary>
+        /// Writes textures from the PFS archive to disk, converting them to PNG
+        /// </summary>
+        /// <param name="s3dArchive"></param>
+        /// <param name="zoneName"></param>
+        private static void WriteS3dTextures(PfsArchive s3dArchive, string zoneName)
+        {
+            var allFiles = s3dArchive.GetAllFiles();
+
+            foreach (var file in allFiles)
+            {
+                if (file.Name.EndsWith(".bmp") || file.Name.EndsWith(".dds"))
+                {
+                    ImageWriter.WriteImageAsPng(file.Bytes, zoneName, file.Name, false, _logger);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Writes textures from the PFS archive to disk, handling masked materials from the WLD
+        /// </summary>
+        /// <param name="s3dArchive"></param>
+        /// <param name="wldFile"></param>
+        /// <param name="zoneName"></param>
+        private static void WriteWldTextures(PfsArchive s3dArchive, WldFile wldFile, string zoneName)
+        {
+            var allBitmaps = wldFile.GetAllBitmapNames();
+            var maskedBitmaps = wldFile.GetMaskedBitmaps();
+
+            foreach (var bitmap in allBitmaps)
+            {
+                var pfsFile = s3dArchive.GetFile(bitmap);
+
+                if (pfsFile == null)
+                {
+                    continue;
+                }
+                
+                ImageWriter.WriteImageAsPng(pfsFile.Bytes, zoneName, bitmap, maskedBitmaps.Contains(bitmap), _logger);
             }
         }
 

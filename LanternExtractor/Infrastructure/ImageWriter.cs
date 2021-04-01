@@ -3,44 +3,42 @@ using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
+using Pfim;
+using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace LanternExtractor.Infrastructure
 {
-    /// <summary>
-    /// Class which writes images to disk based on the shader type
-    /// </summary>
     public static class ImageWriter
     {
-        /// <summary>
-        /// Writes bitmap data from memory to disk based on shader type
-        /// </summary>
-        /// <param name="bytes">The decompressed bitmap bytes</param>
-        /// <param name="filePath">The output file path</param>
-        /// <param name="fileName">The output file name</param>
-        /// <param name="type">The type of shader (affects the output process)</param>
-        /// <param name="logger">Logger for debug output</param>
-        /// <param name="isMasked"></param>
-        public static void WriteImage(Stream bytes, string filePath, string fileName, bool isMasked, bool rotate,
-            ILogger logger)
+        public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, ILogger logger)
         {
+            if (fileName.EndsWith(".bmp"))
+            {
+                WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false, logger);
+            }
+            else
+            {
+                WriteDdsAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png");
+            }
+        }
+
+        private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate, ILogger logger)
+        {
+            var byteStream = new MemoryStream(bytes);
+
             if (string.IsNullOrEmpty(filePath))
             {
                 return;
             }
 
-            // Create the directory if it doesn't already exist
             Directory.CreateDirectory(filePath);
-
-            if (bytes == null)
-            {
-                return;
-            }
-
+            
             Bitmap image;
 
             try
             {
-                image = new Bitmap(bytes);
+                image = new Bitmap(byteStream);
             }
             catch (Exception e)
             {
@@ -50,14 +48,10 @@ namespace LanternExtractor.Infrastructure
 
             // The filename is misspelled in the archive
             // It only works because there is a matching canwall1.png in the objects archive
+            // If we find more like this, we can create a function to fix them.
             if (fileName == "canwall1a.png")
             {
                 fileName = "canwall1.png";
-            }
-
-            if (fileName == "it154trans.png")
-            {
-                
             }
 
             Bitmap cloneBitmap;
@@ -76,7 +70,7 @@ namespace LanternExtractor.Infrastructure
 
                 // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
                 // transparent does not work. The workaround is to ensure that the first palette value (the transparent
-                // key) is unique and then use MakeTransparent(). 
+                // key) is unique and then use MakeTransparent()
                 while (!isUnique)
                 {
                     isUnique = true;
@@ -103,13 +97,43 @@ namespace LanternExtractor.Infrastructure
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
             }
-
-            if (rotate)
+            
+            cloneBitmap.Save(Path.Combine(filePath, fileName), ImageFormat.Png);
+        }
+        
+        private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName)
+        {
+            using (IImage image = Pfim.Pfim.FromStream(new MemoryStream(bytes)))
             {
-                cloneBitmap.RotateFlip(RotateFlipType.Rotate180FlipX);
-            }
+                PixelFormat format;
 
-            cloneBitmap.Save(filePath + fileName, ImageFormat.Png);
+                // Convert from Pfim's backend agnostic image format into GDI+'s image format
+                switch (image.Format)
+                {
+                    case Pfim.ImageFormat.Rgba32:
+                        format = PixelFormat.Format32bppArgb;
+                        break;
+                    default:
+                        return; 
+                }
+
+                // Pin pfim's data array so that it doesn't get reaped by GC, unnecessary
+                // in this snippet but useful technique if the data was going to be used in
+                // control like a picture box
+                var handle = GCHandle.Alloc(image.Data, GCHandleType.Pinned);
+                try
+                {
+                    var data = Marshal.UnsafeAddrOfPinnedArrayElement(image.Data, 0);
+                    var bitmap = new Bitmap(image.Width, image.Height, image.Stride, format, data);
+                    bitmap.RotateFlip(RotateFlipType.RotateNoneFlipY);
+                    Directory.CreateDirectory(filePath);
+                    bitmap.Save(Path.Combine(filePath, fileName), ImageFormat.Png);
+                }
+                finally
+                {
+                    handle.Free();
+                }
+            }
         }
 
         private static int GetPaletteIndex(string fileName)
