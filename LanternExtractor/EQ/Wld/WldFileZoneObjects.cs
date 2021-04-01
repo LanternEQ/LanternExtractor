@@ -49,7 +49,7 @@ namespace LanternExtractor.EQ.Wld
                 colorWriter.ClearExportData();
             }
             
-            colorWriter.WriteAssetToFile(GetRootExportFolder() + "object_instances.txt");
+            instanceWriter.WriteAssetToFile(GetRootExportFolder() + "object_instances.txt");
         }
     }
 }

@@ -2,10 +2,10 @@
 {
     public enum ActorType
     {
-        Camera,
-        Static,
-        Skeletal,
-        Particle,
-        Sprite
+        Camera = 0,
+        Static = 1,
+        Skeletal = 2,
+        Particle = 3,
+        Sprite = 4
     }
 }

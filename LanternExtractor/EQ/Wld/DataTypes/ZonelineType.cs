@@ -2,7 +2,7 @@
 {
     public enum ZonelineType
     {
-        Reference,
-        Absolute
+        Reference = 0,
+        Absolute = 1
     }
 }

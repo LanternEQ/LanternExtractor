@@ -48,7 +48,7 @@ namespace LanternExtractor.EQ.Wld
                 writer.AddFragmentData(fragment);
             }
             
-            writer.WriteAssetToFile(zoneExportFolder + "lights.txt");
+            writer.WriteAssetToFile(zoneExportFolder + "light_instances.txt");
         }
     }
 }

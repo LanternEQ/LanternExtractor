@@ -70,6 +70,7 @@
     <Compile Include="EQ\Sound\SoundType.cs" />
     <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
+    <Compile Include="EQ\Wld\DataTypes\BoneTransform.cs" />
     <Compile Include="EQ\Wld\DataTypes\BspNode.cs" />
     <Compile Include="EQ\Wld\DataTypes\Color.cs" />
     <Compile Include="EQ\Wld\DataTypes\MaterialType.cs" />

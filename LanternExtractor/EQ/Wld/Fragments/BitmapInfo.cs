@@ -31,15 +31,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
-
-            BitmapNames = new List<BitmapName>();
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
-
             var bitAnalyzer = new BitAnalyzer(flags);
             IsAnimated = bitAnalyzer.IsBitSet(3);
-
             int bitmapCount = Reader.ReadInt32();
+            
+            BitmapNames = new List<BitmapName>();
 
             if (IsAnimated)
             {
@@ -48,8 +46,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < bitmapCount; ++i)
             {
-                int fragmentIndex = Reader.ReadInt32() - 1;
-                BitmapNames.Add(fragments[fragmentIndex] as BitmapName);
+                BitmapNames.Add(fragments[Reader.ReadInt32() - 1] as BitmapName);
             }
         }
 

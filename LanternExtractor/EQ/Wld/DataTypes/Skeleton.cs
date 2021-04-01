@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using GlmSharp;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.DataTypes
@@ -28,12 +27,5 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         
         public List<int> ConnectedPieces { get; set; }
         public Dictionary<string, TrackFragment> AnimationTracks { get; set; }
-    }
-
-    public class BoneTransform
-    {
-        public vec3 Translation;
-        public quat Rotation;
-        public float Scale;
     }
 }

@@ -136,7 +136,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (!exportEachPass)
             {
-                var filePath = exportFolder + wldFile.ZoneShortname + "_materials" + GetExtensionForMaterialList(settings.ModelExportFormat);
+                var filePath = wldFile.GetExportFolderForWldType() + "/MaterialLists/" + wldFile.ZoneShortname + GetExtensionForMaterialList(settings.ModelExportFormat);
                 materialListWriter.WriteAssetToFile(filePath);
             }
 

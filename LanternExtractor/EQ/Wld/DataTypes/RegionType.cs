@@ -2,11 +2,11 @@
 {
     public enum RegionType
     {
-        Normal,
-        Water,
-        Lava,
-        Pvp,
-        Zoneline,
-        Slime
+        Normal = 0,
+        Water = 1,
+        Lava = 2,
+        Pvp = 3,
+        Zoneline = 4,
+        Slime = 5
     }
 }

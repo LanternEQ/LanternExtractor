@@ -21,8 +21,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
-            int fragmentReference = Reader.ReadInt32() - 1;
-            BitmapInfo = fragments[fragmentReference] as BitmapInfo;
+            BitmapInfo = fragments[Reader.ReadInt32() - 1] as BitmapInfo;
 
             // Either 0 or 80 - unknown
             int flags = Reader.ReadInt32();
