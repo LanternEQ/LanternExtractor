@@ -14,7 +14,6 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             base.ExportData();
-            ExportMeshList();
         }
     }
 }

@@ -437,110 +437,13 @@ namespace LanternExtractor.EQ.Wld
         protected virtual void ExportData()
         {
             ExportActors();
-            ExportMaterialLists();
             ExportMeshes();
             ExportSkeletonAndAnimations();
         }
 
-        /// <summary>
-        /// Exports the list of all textures
-        /// This is not the same as the material definition files associated with each model
-        /// </summary>
-        private void ExportMaterialLists()
-        {
-            var materialLists = GetFragmentsOfType2<MaterialList>();
-
-            if (materialLists.Count == 0)
-            {
-                _logger.LogError("Cannot get material types. No texture list found.");
-                return;
-            }
-
-            TextAssetWriter export = null;
-            string exportFilename = string.Empty;
-
-            if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
-            {
-                export = new MaterialListGlobalWriter("all/materials_characters.txt");
-                exportFilename = "all/materials";
-            }
-            else if (_wldType == WldType.Equipment)
-            {
-                export = new MaterialListGlobalWriter("equipment/materials_equipment.txt");
-                exportFilename = "equipment/materials";
-            }
-            else
-            {
-                // TODO: Replace this with the root path
-                export = new MaterialListWriter();
-                exportFilename = _zoneName + "/materials";
-            }
-
-            foreach (var list in materialLists)
-            {
-                export.AddFragmentData(list);
-            }
-            
-            if (_wldType == WldType.Zone)
-            {
-                exportFilename += "_zone";
-            }
-            else if (_wldType == WldType.Objects)
-            {
-                exportFilename += "_objects";
-            }
-            else if (_wldType == WldType.Characters)
-            {
-                exportFilename += "_characters";
-            }
-            else if (_wldType == WldType.Sky)
-            {
-                exportFilename += "_sky";
-            }
-            else if (_wldType == WldType.Equipment)
-            {
-                exportFilename += "_equipment";
-            }
-
-            exportFilename += ".txt";
-
-            export.WriteAssetToFile(exportFilename);
-        }
-        
         private void ExportMeshes()
         {
             MeshExporter.ExportMeshes(this, _settings, _logger);
-        }
-
-        protected void ExportMeshList()
-        {
-            if (GetFragmentsOfType2<Mesh>().Count == 0)
-            {
-                return;
-            }
-            
-            int objectCount = GetFragmentsOfType2<Mesh>().Count;
-
-            TextAssetWriter objectWriter = null;
-            string exportPath = string.Empty;
-
-            if (_wldType == WldType.Characters && _settings.ExportAllCharacterToSingleFolder)
-            {
-                objectWriter = new ObjectListGlobalWriter(objectCount);
-                exportPath = "all/meshes_characters.txt";
-            }
-            else
-            {
-                objectWriter = new ObjectListWriter(objectCount);
-                exportPath = GetRootExportFolder() + "meshes_" + _wldType.ToString().ToLower() + ".txt";
-            }
-            
-            foreach (WldFragment fragment in GetFragmentsOfType2<Mesh>())
-            {
-                objectWriter.AddFragmentData(fragment);
-            }
-            
-            objectWriter.WriteAssetToFile(exportPath);
         }
 
         public string GetExportFolderForWldType()

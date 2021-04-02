@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
