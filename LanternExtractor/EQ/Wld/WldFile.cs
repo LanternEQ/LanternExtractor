@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// The link between fragment types and fragment classes
         /// </summary>
-        private Dictionary<FragmentType, Func<WldFragment>> _fragmentBuilder;
+        private Dictionary<int, Func<WldFragment>> _fragmentBuilder;
 
         /// <summary>
         /// A link of indices to fragments
@@ -38,7 +38,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// A collection of fragment lists that can be referenced by a fragment type
         /// </summary>
-        protected Dictionary<FragmentType, List<WldFragment>> _fragmentTypeDictionary;
+        //protected Dictionary<FragmentType, List<WldFragment>> _fragmentTypeDictionary;
         
         protected Dictionary<Type, List<WldFragment>> _fragmentTypeDictionary2;
 
@@ -117,7 +117,7 @@ namespace LanternExtractor.EQ.Wld
             InstantiateFragmentBuilder();
 
             _fragments = new List<WldFragment>();
-            _fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
+            //_fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
             _fragmentTypeDictionary2 = new Dictionary<Type, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
@@ -152,14 +152,10 @@ namespace LanternExtractor.EQ.Wld
             }
 
             uint fragmentCount = reader.ReadUInt32();
-
             uint bspRegionCount = reader.ReadUInt32();
-
             // Should contain 0x000680D4
             int unknown = reader.ReadInt32();
-
             uint stringHashSize = reader.ReadUInt32();
-
             int unknown2 = reader.ReadInt32();
 
             byte[] stringHash = reader.ReadBytes((int) stringHashSize);
@@ -171,7 +167,7 @@ namespace LanternExtractor.EQ.Wld
             for (int i = 0; i < fragmentCount; ++i)
             {
                 uint fragSize = reader.ReadUInt32();
-                FragmentType fragId = (FragmentType)reader.ReadInt32();
+                int fragId = reader.ReadInt32();
                 
                 // Create the fragments
                 var newFragment = !_fragmentBuilder.ContainsKey(fragId) ? new Generic() : _fragmentBuilder[fragId]();
@@ -183,20 +179,16 @@ namespace LanternExtractor.EQ.Wld
 
                 readPosition = reader.BaseStream.Position;
 
-                if (fragId == FragmentType.SkeletonHierarchy && i == 125)
-                {
-                }
-
-                newFragment.Initialize(i, fragId, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
+                newFragment.Initialize(i, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
                     _isNewWldFormat,
                     _logger);
                 newFragment.OutputInfo(_logger);
 
                 _fragments.Add(newFragment);
 
-                if (!_fragmentTypeDictionary.ContainsKey(fragId))
+                if (!_fragmentTypeDictionary2.ContainsKey(newFragment.GetType()))
                 {
-                    _fragmentTypeDictionary[fragId] = new List<WldFragment>();
+                    //_fragmentTypeDictionary[fragId] = new List<WldFragment>();
                     _fragmentTypeDictionary2[newFragment.GetType()] = new List<WldFragment>();
                 }
 
@@ -205,10 +197,10 @@ namespace LanternExtractor.EQ.Wld
                     _fragmentNameDictionary[newFragment.Name] = newFragment;
                 }
 
-                if (fragId == FragmentType.BspRegion)
+                /*if (fragId == FragmentType.BspRegion)
                 {
                     _bspRegions.Add(newFragment as BspRegion);
-                }
+                }*/
 /*
                 long cachedPosition = reader.BaseStream.Position;
                 // Create data mods class
@@ -240,7 +232,7 @@ namespace LanternExtractor.EQ.Wld
 
                 reader.BaseStream.Position = cachedPosition;*/
 
-                _fragmentTypeDictionary[fragId].Add(newFragment);
+                //_fragmentTypeDictionary[fragId].Add(newFragment);
                 _fragmentTypeDictionary2[newFragment.GetType()].Add(newFragment);
 
                 if (newFragment is SkeletonHierarchy fragment)
@@ -276,7 +268,7 @@ namespace LanternExtractor.EQ.Wld
         }
         
 
-        public List<WldFragment> GetFragmentsOfType(FragmentType type)
+        /*public List<WldFragment> GetFragmentsOfType(FragmentType type)
         {
             if (!_fragmentTypeDictionary.ContainsKey(type))
             {
@@ -284,7 +276,7 @@ namespace LanternExtractor.EQ.Wld
             }
 
             return _fragmentTypeDictionary[type];
-        }
+        }*/
         
         public List<T> GetFragmentsOfType2<T>() where T : WldFragment
         {
@@ -296,7 +288,7 @@ namespace LanternExtractor.EQ.Wld
             return _fragmentTypeDictionary2[typeof(T)].Cast<T>().ToList();
         }
 
-        protected T GetFragmentByName<T>(string fragmentName) where T : WldFragment
+        public T GetFragmentByName<T>(string fragmentName) where T : WldFragment
         {
             if (!_fragmentNameDictionary.ContainsKey(fragmentName))
             {
@@ -316,59 +308,61 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void InstantiateFragmentBuilder()
         {
-            _fragmentBuilder = new Dictionary<FragmentType, Func<WldFragment>>
+            _fragmentBuilder = new Dictionary<int, Func<WldFragment>>
             {
                 // Materials
-                {FragmentType.Bitmap, () => new BitmapName()},
-                {FragmentType.BitmapInfo, () => new BitmapInfo()},
-                {FragmentType.BitmapInfoReference, () => new BitmapInfoReference()},
-                {FragmentType.Material, () => new Material()},
-                {FragmentType.MaterialList, () => new MaterialList()},
+                {0x03, () => new BitmapName()},
+                {0x04, () => new BitmapInfo()},
+                {0x05, () => new BitmapInfoReference()},
+                {0x30, () => new Material()},
+                {0x31, () => new MaterialList()},
 
                 // BSP Tree
-                {FragmentType.BspTree, () => new BspTree()},
-                {FragmentType.BspRegion, () => new BspRegion()},
-                {FragmentType.BspRegionType, () => new BspRegionType()},
+                {0x21, () => new BspTree()},
+                {0x22, () => new BspRegion()},
+                {0x29, () => new BspRegionType()},
 
                 // Meshes
-                {FragmentType.Mesh, () => new Mesh()},
-                {FragmentType.MeshVertexAnimation, () => new MeshAnimatedVertices()},
-                {FragmentType.MeshReference, () => new MeshReference()},
-                {FragmentType.AlternateMesh, () => new LegacyMesh()},
+                {0x36, () => new Mesh()},
+                {0x37, () => new MeshAnimatedVertices()},
+                {0x2F, () => new MeshAnimatedVerticesReference()},
+                {0x2D, () => new MeshReference()},
+                {0x2C, () => new LegacyMesh()},
 
                 // Animation
-                {FragmentType.Actor, () => new Actor()},
-                {FragmentType.SkeletonHierarchy, () => new SkeletonHierarchy()},
-                {FragmentType.SkeletonHierarchyReference, () => new SkeletonHierarchyReference()},
-                {FragmentType.TrackDefFragment, () => new TrackDefFragment()},
-                {FragmentType.TrackFragment, () => new TrackFragment()},
+                {0x10, () => new SkeletonHierarchy()},
+                {0x11, () => new SkeletonHierarchyReference()},
+                {0x12, () => new TrackDefFragment()},
+                {0x13, () => new TrackFragment()},
+                {0x14, () => new Actor()},
 
                 // Lights
-                {FragmentType.Light, () => new LightSource()},
-                {FragmentType.LightReference, () => new LightSourceReference()},
-                {FragmentType.LightInstance, () => new LightInstance()},
-                {FragmentType.AmbientLight, () => new AmbientLight()},
-                {FragmentType.AmbientLightColor, () => new GlobalAmbientLight()},
+                {0x1B, () => new LightSource()},
+                {0x1C, () => new LightSourceReference()},
+                {0x28, () => new LightInstance()},
+                {0x2A, () => new AmbientLight()},
+                {0x35, () => new GlobalAmbientLight()},
 
                 // Vertex colors
-                {FragmentType.VertexColor, () => new VertexColors()},
-                {FragmentType.VertexColorReference, () => new VertexColorsReference()},
+                {0x32, () => new VertexColors()},
+                {0x33, () => new VertexColorsReference()},
 
+                // Particle Cloud
+                {0x26, () => new ParticleSprite()},
+                {0x27, () => new ParticleSpriteReference()},
+                {0x34, () => new ParticleCloud()},
+                
                 // General
-                {FragmentType.ObjectInstance, () => new ObjectInstance()},
+                {0x15, () => new ObjectInstance()},
 
                 // Not used/unknown
-                {FragmentType.Camera, () => new Camera()},
-                {FragmentType.CameraReference, () => new CameraReference()},
-                {FragmentType.Fragment16, () => new Fragment16()},
-                {FragmentType.Fragment17, () => new Fragment17()},
-                {FragmentType.Fragment18, () => new Fragment18()},
-                {FragmentType.Fragment2F, () => new MeshAnimatedVerticesReference()},
-                {FragmentType.Fragment26, () => new ParticleSprite()},
-                {FragmentType.Fragment27, () => new ParticleSpriteReference()},
-                {FragmentType.ParticleCloud, () => new ParticleCloud()},
-                {FragmentType.Fragment06, () => new Fragment06()},
-                {FragmentType.Fragment07, () => new Fragment07()},
+                {0x08, () => new Camera()},
+                {0x09, () => new CameraReference()},
+                {0x16, () => new Fragment16()},
+                {0x17, () => new Fragment17()},
+                {0x18, () => new Fragment18()},
+                {0x06, () => new Fragment06()},
+                {0x07, () => new Fragment07()},
             };
         }
         
@@ -398,24 +392,19 @@ namespace LanternExtractor.EQ.Wld
         /// <returns>Dictionary with material to shader mapping</returns>
         public List<string> GetMaskedBitmaps()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
+            var materialLists = GetFragmentsOfType2<MaterialList>();
+
+            if (materialLists.Count == 0)
             {
                 _logger.LogWarning("Cannot get material types. No texture list found.");
                 return null;
             }
-
+            
             List<string> maskedTextures = new List<string>();
 
-            foreach (WldFragment materialListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
-            {
-                MaterialList materialList = materialListFragment as MaterialList;
-
-                if (materialList == null)
-                {
-                    continue;
-                }
-
-                foreach (var material in materialList.Materials)
+            foreach (var list in materialLists)
+            { 
+                foreach (var material in list.Materials)
                 {
                     if (material.ShaderType != ShaderType.TransparentMasked)
                     {
@@ -425,9 +414,9 @@ namespace LanternExtractor.EQ.Wld
                     maskedTextures.AddRange(material.GetAllBitmapNames(true));
                 }
 
-                if (materialList.AdditionalMaterials != null)
+                if (list.AdditionalMaterials != null)
                 {
-                    foreach (var material in materialList.AdditionalMaterials)
+                    foreach (var material in list.AdditionalMaterials)
                     {
                         if (material.ShaderType != ShaderType.TransparentMasked)
                         {
@@ -448,7 +437,7 @@ namespace LanternExtractor.EQ.Wld
         protected virtual void ExportData()
         {
             ExportActors();
-            ExportMaterialList();
+            ExportMaterialLists();
             ExportMeshes();
             ExportSkeletonAndAnimations();
         }
@@ -457,11 +446,13 @@ namespace LanternExtractor.EQ.Wld
         /// Exports the list of all textures
         /// This is not the same as the material definition files associated with each model
         /// </summary>
-        private void ExportMaterialList()
+        private void ExportMaterialLists()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
+            var materialLists = GetFragmentsOfType2<MaterialList>();
+
+            if (materialLists.Count == 0)
             {
-                _logger.LogWarning("Cannot export texture lists. No materials found.");
+                _logger.LogError("Cannot get material types. No texture list found.");
                 return;
             }
 
@@ -485,9 +476,9 @@ namespace LanternExtractor.EQ.Wld
                 exportFilename = _zoneName + "/materials";
             }
 
-            foreach (WldFragment listFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            foreach (var list in materialLists)
             {
-                export.AddFragmentData(listFragment);
+                export.AddFragmentData(list);
             }
             
             if (_wldType == WldType.Zone)
@@ -523,12 +514,12 @@ namespace LanternExtractor.EQ.Wld
 
         protected void ExportMeshList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
+            if (GetFragmentsOfType2<Mesh>().Count == 0)
             {
                 return;
             }
             
-            int objectCount = _fragmentTypeDictionary[FragmentType.Mesh].Count;
+            int objectCount = GetFragmentsOfType2<Mesh>().Count;
 
             TextAssetWriter objectWriter = null;
             string exportPath = string.Empty;
@@ -544,7 +535,7 @@ namespace LanternExtractor.EQ.Wld
                 exportPath = GetRootExportFolder() + "meshes_" + _wldType.ToString().ToLower() + ".txt";
             }
             
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.Mesh])
+            foreach (WldFragment fragment in GetFragmentsOfType2<Mesh>())
             {
                 objectWriter.AddFragmentData(fragment);
             }
@@ -586,7 +577,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportActors()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
+            if (GetFragmentsOfType2<Actor>().Count == 0)
             {
                 return;
             }
@@ -608,7 +599,7 @@ namespace LanternExtractor.EQ.Wld
                 actorWriterSprite2d = new ActorWriter(ActorType.Sprite);
             }
 
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
+            foreach (var actorFragment in GetFragmentsOfType2<Actor>())
             {
                 actorWriterStatic.AddFragmentData(actorFragment);
                 actorWriterSkeletal.AddFragmentData(actorFragment);
@@ -630,7 +621,7 @@ namespace LanternExtractor.EQ.Wld
             string skeletonsFolder = GetExportFolderForWldType() + "Skeletons/";
             string animationsFolder = GetExportFolderForWldType() + "Animations/";
 
-            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
 
             if (skeletons == null)
             {
@@ -640,7 +631,7 @@ namespace LanternExtractor.EQ.Wld
                     return;
                 }
 
-                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+                skeletons = _wldToInject.GetFragmentsOfType2<SkeletonHierarchy>();
                 
                 if (skeletons == null)
                 {

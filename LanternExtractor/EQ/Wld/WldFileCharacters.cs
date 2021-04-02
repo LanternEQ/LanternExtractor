@@ -63,11 +63,11 @@ namespace LanternExtractor.EQ.Wld
 
             if (_settings.ExportAllCharacterToSingleFolder)
             {
-                PostProcessGlobal();
+                GlobalCharacterFixer characterFixer = new GlobalCharacterFixer();
+                characterFixer.Fix(this);
             }
             
             base.ExportData();
-            ExportMeshList();
             ExportAnimationList();
             ExportCharacterList();
             ExportSkeletonsNew();
@@ -100,463 +100,31 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        private void PostProcessGlobal()
-        {
-            FixShipNames();
-            FixGolemElemental();
-            FixDemiLich();
-            FixAkanonKingCrown();
-            FixKaladimKingCrown();
-            FixFayDrake();
-            FixTurtleTextures();
-            FixBlackAndWhiteDragon();
-            FixGhoulTextures();
-        }
-
-        private void FixGhoulTextures()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
-            {
-                return;
-            }
-
-            foreach (var meshFragment in _fragmentTypeDictionary[FragmentType.Mesh])
-            {
-                Mesh mesh = meshFragment as Mesh;
-
-                if (mesh == null)
-                {
-                    continue;
-                }
-                
-                // Fix head material assignment
-                if (mesh.Name.StartsWith("GHUHE00"))
-                {
-                    var materialGroups = mesh.MaterialGroups;
-                    materialGroups[1].MaterialIndex = 7;
-                }
-                else if(mesh.Name.StartsWith("GHU_"))
-                {
-                    var materialGroups = mesh.MaterialGroups;
-                    materialGroups[0].MaterialIndex = 0;
-                }
-            }
-        }
-
-        private void FixTurtleTextures()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (!actor.Name.StartsWith("STU"))
-                {
-                    continue;
-                }
-                
-                var materialList = actor.SkeletonReference.SkeletonHierarchy.Meshes.First().MaterialList;
-
-                materialList.Name = materialList.Name.Replace("SEA", "STU");
-
-                foreach (var material in materialList.Materials)
-                {
-                    material.Name = material.Name.Replace("SEA", "STU");
-                    var bitmapNames = material.GetAllBitmapNames();
-                    
-                    for (int i = 0; i < bitmapNames.Count; ++i)
-                    {
-                        string originalName = bitmapNames[i];
-                        string newName = originalName.Replace("sea", "stu");
-                        material.SetBitmapName(i, newName);
-                        FilenameChanges[originalName] = newName;
-                    }
-                }
-            }
-        }
-
-        private void FixFayDrake()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (!actor.Name.StartsWith("FDR"))
-                {
-                    continue;
-                }
-
-                if (actor.SkeletonReference.SkeletonHierarchy.Meshes.Count != 2)
-                {
-                    continue;
-                }
-
-                // Rename actor
-                actor.Name = actor.Name.Replace("FDR", "FDF");
-                
-                // Rename skeleton reference
-                var skeletonRef = actor.SkeletonReference;
-                skeletonRef.Name = skeletonRef.Name.Replace("FDR", "FDF");
-
-                // Rename skeleton
-                var skeleton = actor.SkeletonReference.SkeletonHierarchy;
-                skeleton.Name = skeleton.Name.Replace("FDR", "FDF");
-
-                skeleton.ModelBase = "fdf";
-                
-                // Rename all main meshes
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
-                {
-                    mesh.Name = mesh.Name.Replace("FDR", "FDF");
-                }
-                
-                // Rename all secondary meshes
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.HelmMeshes)
-                {
-                    mesh.Name = mesh.Name.Replace("FDR", "FDF");
-                }
-
-                // Rename all materials
-                var materialList = actor.SkeletonReference.SkeletonHierarchy.Meshes.First().MaterialList;
-
-                materialList.Name = materialList.Name.Replace("FDR", "FDF");
-
-                foreach (var material in materialList.Materials)
-                {
-                    material.Name = material.Name.Replace("FDR", "FDF");
-
-                    var bitmapNames = material.GetAllBitmapNames();
-                    
-                    for (int i = 0; i < bitmapNames.Count; ++i)
-                    {
-                        string originalName = bitmapNames[i];
-                        string newName = originalName.Replace("fdr", "fdf");
-                        material.SetBitmapName(i, newName);
-                        FilenameChanges[originalName] = newName;
-                    }
-                }
-            }
-        }
-
-        private void FixKaladimKingCrown()
-        {
-           if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-           {
-               return;
-           }
-
-           if (!_fragmentNameDictionary.ContainsKey("KAHE0001_MDF"))
-           {
-               return;
-           }
-
-           Material crownMaterial = _fragmentNameDictionary["KAHE0001_MDF"] as Material;
-
-           if (crownMaterial == null)
-           {
-               return;
-           }
-
-           crownMaterial.ShaderType = ShaderType.TransparentMasked;
-        }
-
-        private void FixAkanonKingCrown()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            if (!_fragmentNameDictionary.ContainsKey("CLHE0004_MDF"))
-            {
-                return;
-            }
-
-            Material crownMaterial = _fragmentNameDictionary["CLHE0004_MDF"] as Material;
-
-            if (crownMaterial == null)
-            {
-                return;
-            }
-
-            crownMaterial.ShaderType = ShaderType.TransparentMasked;
-        }
-
-        private void FixDemiLich()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (actor.SkeletonReference == null)
-                {
-                    continue;
-                }
-                
-                if (!actor.Name.StartsWith("SDE"))
-                {
-                    continue;
-                }
-                
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
-                {
-                    foreach (var material in mesh.MaterialList.Materials)
-                    {
-                        // This texture needs to be masked
-                        if (material.Name == "SDEUA0006_MDF")
-                        {
-                            material.ShaderType = ShaderType.TransparentMasked;
-                        }
-                        
-                        var bitmapNames = material.GetAllBitmapNames();
-                        
-                        for (var i = 0; i < bitmapNames.Count; i++)
-                        {
-                            if (!bitmapNames[i].StartsWith("dml"))
-                            {
-                                continue;
-                            }
-
-                            string originalName = bitmapNames[i];
-                            string newName = originalName.Replace("dml", "sde");
-                            material.SetBitmapName(i, newName);
-                            FilenameChanges[originalName] = newName;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void FixGolemElemental()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (!actor.Name.StartsWith("GOM"))
-                {
-                    continue;
-                }
-                
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
-                {
-                    foreach (var material in mesh.MaterialList.Materials)
-                    {
-                        material.Name = material.Name.Replace("GOL", "GOM");
-
-                        var bitmapNames = material.GetAllBitmapNames();
-
-                        for (var i = 0; i < bitmapNames.Count; i++)
-                        {
-                            string originalName = bitmapNames[i];
-                            string newName = originalName.Replace("gol", "gom");
-                            material.SetBitmapName(i, newName);
-                            FilenameChanges[originalName] = newName;
-                        }
-                    }
-                }
-            }
-        }
-
-        private void FixShipNames()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (actor.Name.StartsWith("GSP"))
-                {
-                    actor.MeshReference.Mesh.Name = actor.MeshReference.Mesh.Name.Replace("GHOSTSHIP", "GSP");
-                    actor.MeshReference.Mesh.MaterialList.Name =
-                        actor.MeshReference.Mesh.MaterialList.Name.Replace("GHOSTSHIP", "GSP");
-                }
-
-                if (actor.Name.StartsWith("LAUNCH"))
-                {
-                    actor.Name = actor.MeshReference.Mesh.Name.Replace("DMSPRITEDEF", "ACTORDEF");
-                }
-
-                if (actor.Name.StartsWith("PRE"))
-                {
-                    if (actor.SkeletonReference == null)
-                    {
-                        continue;
-                    }
-
-                    switch (actor.SkeletonReference.SkeletonHierarchy.Name)
-                    {
-                        // Bloated Belly in Iceclad
-                        case "OGS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("PRE", "OGS");
-                            break;
-                        }
-                        // Sea King, Golden Maiden, StormBreaker, SirensBane
-                        case "PRE_HS_DEF":
-                        {
-                            break;
-                        }
-                        default:
-                            throw new NotImplementedException();
-                            break;
-                    }
-                }
-
-
-                if (actor.Name.StartsWith("SHIP"))
-                {
-                    if (actor.SkeletonReference == null)
-                    {
-                        continue;
-                    }
-
-                    switch (actor.SkeletonReference.SkeletonHierarchy.Name)
-                    {
-                        // Icebreaker in Iceclad
-                        case "GNS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("SHIP", "GNS");
-                            break;
-                        }
-                        // Maidens Voyage in Firiona Vie
-                        case "ELS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("SHIP", "ELS");
-                            break;
-                        }
-                        default:
-                            throw new NotImplementedException();
-                            break;
-                    }
-                }
-            }
-        }
-        
-        private void FixBlackAndWhiteDragon()
-        {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
-            {
-                Actor actor = actorFragment as Actor;
-
-                if (actor == null)
-                {
-                    continue;
-                }
-
-                if (!actor.Name.StartsWith("BWD"))
-                {
-                    continue;
-                }
-                
-                if (_fragmentNameDictionary.ContainsKey("BWDCH0101_MDF"))
-                {
-                    Material material = _fragmentNameDictionary["BWDCH0101_MDF"] as Material;
-                    if (material != null)
-                    {
-                        material.ShaderType = ShaderType.Diffuse;
-                    }
-                }
-
-                if (_fragmentNameDictionary.ContainsKey("BWD_MP"))
-                {
-                    MaterialList bwdMaterialList = _fragmentNameDictionary["BWD_MP"] as MaterialList;
-
-                    if (bwdMaterialList != null)
-                    {
-                        var slot = bwdMaterialList.Slots["bwd_ch01"];
-                        slot[1] = "d_bwdch0101";
-                    }
-                }
-            }
-        }
 
         private void BuildSlotMapping()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
-            {
-                return;
-            }
+            var materialLists = GetFragmentsOfType2<MaterialList>();
 
-            foreach (var meshListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
+            foreach (var list in materialLists)
             {
-                MaterialList materialList = meshListFragment as MaterialList;
-                materialList?.BuildSlotMapping(_logger);
+                list.BuildSlotMapping(_logger);
             }
         }
 
         private void FindMaterialVariants()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.MaterialList))
-            {
-                return;
-            }
-            
-            foreach (var materialListFragment in _fragmentTypeDictionary[FragmentType.MaterialList])
-            {
-                MaterialList materialList = materialListFragment as MaterialList;
+            var materialLists = GetFragmentsOfType2<MaterialList>();
 
-                string materialListModelName = FragmentNameCleaner.CleanName(materialList);
+            foreach (var list in materialLists)
+            {
+                string materialListModelName = FragmentNameCleaner.CleanName(list);
                 
-                if (materialList == null)
+                if (list == null)
                 {
                     continue;
                 }
 
-                foreach (var materialFragment in _fragmentTypeDictionary[FragmentType.Material])
+                foreach (var materialFragment in GetFragmentsOfType2<Material>())
                 {
                     Material material = materialFragment as Material;
 
@@ -574,13 +142,13 @@ namespace LanternExtractor.EQ.Wld
 
                     if (materialName.StartsWith(materialListModelName))
                     {
-                        materialList.AddVariant(material, _logger);
+                        list.AddVariant(material, _logger);
                     }
                 }
             }
 
             // Check for debugging
-            foreach (var materialFragment in _fragmentTypeDictionary[FragmentType.Material])
+            foreach (var materialFragment in GetFragmentsOfType2<Material>())
             {
                 Material material = materialFragment as Material;
 
@@ -600,23 +168,20 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportCharacterList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Actor))
-            {
-                return;
-            }
-
+            var actors = GetFragmentsOfType2<Actor>();
+            
             TextAssetWriter characterListWriter = null;
 
             if (_settings.ExportAllCharacterToSingleFolder)
             {
-                characterListWriter = new CharacterListGlobalWriter(_fragmentTypeDictionary[FragmentType.Actor].Count);
+                characterListWriter = new CharacterListGlobalWriter(actors.Count);
             }
             else
             {
-                characterListWriter = new CharacterListWriter(_fragmentTypeDictionary[FragmentType.Actor].Count);
+                characterListWriter = new CharacterListWriter(actors.Count);
             }
             
-            foreach (var actorFragment in _fragmentTypeDictionary[FragmentType.Actor])
+            foreach (var actorFragment in actors)
             {
                 characterListWriter.AddFragmentData(actorFragment);
             }
@@ -633,7 +198,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAnimationList()
         {
-            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
 
             if (skeletons == null)
             {
@@ -642,7 +207,7 @@ namespace LanternExtractor.EQ.Wld
                     return;
                 }
 
-                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+                skeletons = _wldToInject.GetFragmentsOfType2<SkeletonHierarchy>();
 
                 if (skeletons == null)
                 {
@@ -671,12 +236,12 @@ namespace LanternExtractor.EQ.Wld
 
         private void FindAdditionalAnimationsAndMeshes()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.TrackFragment))
+            if (GetFragmentsOfType2<TrackFragment>().Count == 0)
             {
                 return;
             }
 
-            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
 
             if (skeletons == null)
             {
@@ -685,7 +250,7 @@ namespace LanternExtractor.EQ.Wld
                     return;
                 }
                 
-                skeletons = _wldToInject.GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+                skeletons = _wldToInject.GetFragmentsOfType2<SkeletonHierarchy>();
             }
 
             if (skeletons == null)
@@ -706,7 +271,7 @@ namespace LanternExtractor.EQ.Wld
                 string alternateModel = GetAnimationModelLink(modelBase);
                 
                 // TODO: Alternate model bases
-                foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
+                foreach (var trackFragment in GetFragmentsOfType2<TrackFragment>())
                 {
                     TrackFragment track = trackFragment as TrackFragment;
 
@@ -736,17 +301,10 @@ namespace LanternExtractor.EQ.Wld
                 }
                 
                 // TODO: Split to another function
-                if(_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
+                if(GetFragmentsOfType2<Mesh>().Count != 0)
                 {
-                    foreach (var meshReferenceFragment in _fragmentTypeDictionary[FragmentType.Mesh])
+                    foreach (var mesh in GetFragmentsOfType2<Mesh>())
                     {
-                        Mesh mesh = meshReferenceFragment as Mesh;
-
-                        if (mesh == null)
-                        {
-                            continue;
-                        }
-
                         if (mesh.IsHandled)
                         {
                             continue;
@@ -780,7 +338,7 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
+            foreach (var trackFragment in GetFragmentsOfType2<TrackFragment>())
             {
                 TrackFragment track = trackFragment as TrackFragment;
 

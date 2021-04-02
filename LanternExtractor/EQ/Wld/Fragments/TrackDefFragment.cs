@@ -9,8 +9,9 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x12 - Skeleton Piece
-    /// Describes how a part of a skeleton is rotated and shifted in relation to the parent
+    /// TrackDefFragment (0x12)
+    /// Internal name: _TRACKDEF
+    /// Describes how a bone of a skeleton is rotated and shifted in relation to the parent
     /// </summary>
     public class TrackDefFragment : WldFragment
     {
@@ -21,11 +22,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         
         public bool IsAssigned;
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             Reader = new BinaryReader(new MemoryStream(data));
             Name = stringHash[-Reader.ReadInt32()];
@@ -75,11 +76,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 
                 frameTransform.Rotation = new quat(rotX, rotY, rotZ, rotDenominator).Normalized;
                 Frames.Add(frameTransform);
-            }
-
-            if (Reader.BaseStream.Position != Reader.BaseStream.Length)
-            {
-                
             }
         }
 

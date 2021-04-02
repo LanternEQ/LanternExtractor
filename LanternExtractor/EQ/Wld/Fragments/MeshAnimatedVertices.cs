@@ -22,11 +22,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public int Delay { get; private set; }
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();

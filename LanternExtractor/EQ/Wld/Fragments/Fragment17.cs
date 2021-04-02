@@ -4,17 +4,17 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// Fragment17 (0x18) - PolygonAnimation?
+    /// Fragment17 (0x17) - PolygonAnimation?
     /// Internal Name: _POLYHDEF
     /// Need to figure this fragment out.
     /// </summary>
     public class Fragment17 : WldFragment
     {
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
             int size1 = Reader.ReadInt32();

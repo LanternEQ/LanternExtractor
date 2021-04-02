@@ -31,13 +31,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public vec3 Scale { get; private set; }
 
+        /// <summary>
+        /// The vertex colors lighting data for this instance
+        /// </summary>
         public VertexColors Colors;
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
 
             // in main zone, points to 0x16, in object wld, it contains the object name
@@ -77,18 +80,18 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (colorFragment != 0)
             {
-                Colors = (fragments[colorFragment - 1 ] as VertexColorsReference)?.VertexColors;
+                Colors = (fragments[colorFragment - 1] as VertexColorsReference)?.VertexColors;
             }
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("0x15: Name: " + ObjectName);
-            logger.LogInfo("0x15: Position: " + Position);
-            logger.LogInfo("0x15: Rotation: " + Rotation);
-            logger.LogInfo("0x15: Scale: " + Scale);
+            logger.LogInfo("----------");
+            logger.LogInfo($"{GetType()}: Name: " + ObjectName);
+            logger.LogInfo($"{GetType()}: Position: " + Position);
+            logger.LogInfo($"{GetType()}: Rotation: " + Rotation);
+            logger.LogInfo($"{GetType()}: Scale: " + Scale);
         }
     }
 }

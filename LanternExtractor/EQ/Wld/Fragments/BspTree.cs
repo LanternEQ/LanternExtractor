@@ -16,11 +16,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<BspNode> Nodes { get; private set; }
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
             int nodeCount = Reader.ReadInt32();
             Nodes = new List<BspNode>();

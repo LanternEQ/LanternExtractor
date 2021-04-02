@@ -11,11 +11,13 @@ namespace LanternExtractor.Infrastructure
 {
     public static class ImageWriter
     {
-        public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, ILogger logger)
+        public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked,
+            ILogger logger)
         {
             if (fileName.EndsWith(".bmp"))
             {
-                WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false, logger);
+                WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false,
+                    logger);
             }
             else
             {
@@ -23,7 +25,8 @@ namespace LanternExtractor.Infrastructure
             }
         }
 
-        private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate, ILogger logger)
+        private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate,
+            ILogger logger)
         {
             var byteStream = new MemoryStream(bytes);
 
@@ -33,7 +36,7 @@ namespace LanternExtractor.Infrastructure
             }
 
             Directory.CreateDirectory(filePath);
-            
+
             Bitmap image;
 
             try
@@ -97,10 +100,10 @@ namespace LanternExtractor.Infrastructure
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
             }
-            
+
             cloneBitmap.Save(Path.Combine(filePath, fileName), ImageFormat.Png);
         }
-        
+
         private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName)
         {
             using (IImage image = Pfim.Pfim.FromStream(new MemoryStream(bytes)))
@@ -114,7 +117,7 @@ namespace LanternExtractor.Infrastructure
                         format = PixelFormat.Format32bppArgb;
                         break;
                     default:
-                        return; 
+                        return;
                 }
 
                 // Pin pfim's data array so that it doesn't get reaped by GC, unnecessary

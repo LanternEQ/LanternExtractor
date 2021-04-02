@@ -18,14 +18,6 @@ namespace LanternExtractor.EQ.Wld
         protected override void ExportData()
         {
             ExportLightInstanceList();
-            
-            if (_fragmentTypeDictionary.ContainsKey(FragmentType.AmbientLight))
-            {
-                if (_fragmentTypeDictionary[FragmentType.AmbientLight].Count > 1)
-                {
-                    
-                }
-            }
         }
         
         /// <summary>
@@ -33,7 +25,9 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportLightInstanceList()
         {
-            if (!_fragmentTypeDictionary.ContainsKey(FragmentType.LightInstance))
+            var lightInstances = GetFragmentsOfType2<LightInstance>();
+
+            if (lightInstances.Count == 0)
             {
                 _logger.LogWarning("Unable to export light instance list. No instances found.");
                 return;
@@ -43,9 +37,9 @@ namespace LanternExtractor.EQ.Wld
             
             LightInstancesWriter writer = new LightInstancesWriter();
 
-            foreach (WldFragment fragment in _fragmentTypeDictionary[FragmentType.LightInstance])
+            foreach (var light in lightInstances)
             {
-                writer.AddFragmentData(fragment);
+                writer.AddFragmentData(light);
             }
             
             writer.WriteAssetToFile(zoneExportFolder + "light_instances.txt");

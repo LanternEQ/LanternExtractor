@@ -1,42 +1,34 @@
+using System;
+using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Helpers
 {
     public static class FragmentNameCleaner
     {
+        private static Dictionary<Type, string> _prefixes = new Dictionary<Type, string>
+        {
+            // Materials
+            {typeof(MaterialList), "_MP"},
+            {typeof(Material), "_MDF"},
+            {typeof(Mesh), "_DMSPRITEDEF"},
+            {typeof(LegacyMesh), "_DMSPRITEDEF"},
+            {typeof(Actor), "_ACTORDEF"},
+            {typeof(SkeletonHierarchy), "_HS_DEF"},
+            {typeof(TrackDefFragment), "_TRACKDEF"},
+            {typeof(TrackFragment), "_TRACK"},
+            {typeof(ParticleCloud), "_PCD"},
+        };
+
         public static string CleanName(WldFragment fragment, bool toLower = true)
         {
-            string cleanedName = string.Empty;
-            
-            switch(fragment.Type)
-            {
-                case FragmentType.MaterialList:
-                    cleanedName = fragment.Name.Replace("_MP", "");
-                    break;
-                case FragmentType.Material:
-                    cleanedName = fragment.Name.Replace("_MDF", "");
-                    break;
-                case FragmentType.Mesh:
-                case FragmentType.AlternateMesh:
-                    cleanedName = fragment.Name.Replace("_DMSPRITEDEF", "");                    
-                    break;
-                case FragmentType.Actor:
-                    cleanedName = fragment.Name.Replace("_ACTORDEF", "");
-                    break;
-                case FragmentType.SkeletonHierarchy:
-                    cleanedName = fragment.Name.Replace("_HS_DEF", "");
-                    break;
-                case FragmentType.TrackDefFragment:
-                    cleanedName = fragment.Name.Replace("_TRACKDEF", "");
-                    break;
-                case FragmentType.TrackFragment:
-                    cleanedName = fragment.Name.Replace("_TRACK", "");
-                    break;
-                case FragmentType.ParticleCloud:
-                    cleanedName = fragment.Name.Replace("_PCD", "");
-                    break;
-            }
+            string cleanedName = fragment.Name;
 
+            if(_prefixes.ContainsKey(fragment.GetType()))
+            {
+                cleanedName = cleanedName.Replace(_prefixes[fragment.GetType()], string.Empty);
+            }
+            
             if(toLower)
             {
                 cleanedName = cleanedName.ToLower();

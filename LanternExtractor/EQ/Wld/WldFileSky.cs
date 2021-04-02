@@ -21,10 +21,10 @@ namespace LanternExtractor.EQ.Wld
         {
 
             base.ExportData();
-            ExportSkyMeshList();
+            //ExportSkyMeshList();
         }
 
-        private void ExportSkyMeshList()
+        /*private void ExportSkyMeshList()
         {
             if (!_fragmentTypeDictionary.ContainsKey(FragmentType.Mesh))
             {
@@ -48,6 +48,6 @@ namespace LanternExtractor.EQ.Wld
             string meshListPath = GetExportFolderForWldType() + "meshes.txt";
             
             meshListWriter.WriteAssetToFile(meshListPath);
-        }
+        }*/
     }
 }

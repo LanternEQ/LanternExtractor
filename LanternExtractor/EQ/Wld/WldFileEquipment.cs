@@ -59,7 +59,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void FindUnhandledSkeletons()
         {
-            var skeletons = GetFragmentsOfType(FragmentType.SkeletonHierarchy);
+            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
             if (skeletons == null)
             {
                 return;
@@ -132,15 +132,8 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            foreach (var trackFragment in _fragmentTypeDictionary[FragmentType.TrackFragment])
+            foreach (var track in GetFragmentsOfType2<TrackFragment>())
             {
-                TrackFragment track = trackFragment as TrackFragment;
-
-                if (track == null)
-                {
-                    continue;
-                }
-                
                 if (track.IsPoseAnimation || track.IsProcessed)
                 {
                     continue;

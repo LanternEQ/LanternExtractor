@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EqFileHelper.cs" />
+    <Compile Include="EQ\ArchiveExtractor.cs" />
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
     <Compile Include="EQ\Sound\EffSndBnk.cs" />
@@ -129,7 +130,6 @@
     <Compile Include="EQ\Wld\Fragments\ParticleSpriteReference.cs" />
     <Compile Include="EQ\Wld\Fragments\ParticleCloud.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\FragmentType.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
     <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSourceReference.cs" />
@@ -153,6 +153,7 @@
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
     <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
+    <Compile Include="EQ\Wld\Helpers\GlobalCharacterFixer.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
     <Compile Include="EQ\Wld\WldFileCharacters.cs" />

@@ -24,8 +24,7 @@ namespace LanternExtractor.Infrastructure
             }
 
             string[] textLines = text.Split(new[] {Environment.NewLine, "\r\n", "\r", "\n"}, StringSplitOptions.None);
-            
-            
+
 
             return textLines.Where(line => !string.IsNullOrEmpty(line))
                 .Where(line => !line.StartsWith(commentChar.ToString())).ToList();
@@ -137,7 +136,7 @@ namespace LanternExtractor.Infrastructure
         public static List<string> ParseStringToList(string text)
         {
             List<string> returnList = new List<string>();
-            
+
             if (string.IsNullOrEmpty(text))
             {
                 return returnList;

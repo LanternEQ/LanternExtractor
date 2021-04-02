@@ -210,7 +210,7 @@ namespace LanternExtractor.EQ.Pfs
         {
             foreach (var file in _files)
             {
-                FileWriter.WriteToDisk(file.Bytes, folder, file.Name);
+                FileWriter.WriteBytesToDisk(file.Bytes, folder, file.Name);
             }
         }
     }

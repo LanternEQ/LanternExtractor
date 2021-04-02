@@ -23,10 +23,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public MaterialList MaterialList;
         public Dictionary<int, MobVertexPiece> MobPieces { get; private set; }
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data, List<WldFragment> fragments, Dictionary<int, string> stringHash,
+        public override void Initialize(int index, int size, byte[] data, List<WldFragment> fragments, Dictionary<int, string> stringHash,
             bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
             int vertexCount = Reader.ReadInt32();
@@ -99,11 +99,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     float offset = Reader.ReadSingle();
                     int something = Reader.ReadInt32();
-                    
-                    if ((int) offset == 7)
-                    {
-                        
-                    }
                 }
             }
             

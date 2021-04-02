@@ -5,18 +5,19 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x11 - Skeleton Track Reference
+    /// SkeletonHierarchyReference (0x11)
+    /// Internal name: None
     /// A reference to a skeleton track fragment (0x12)
     /// </summary>
     class SkeletonHierarchyReference : WldFragment
     {
         public SkeletonHierarchy SkeletonHierarchy { get; set; }
 
-        public override void Initialize(int index, FragmentType id, int size, byte[] data,
+        public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
 
             var reader = new BinaryReader(new MemoryStream(data));
             

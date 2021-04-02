@@ -12,11 +12,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public int Index { get; private set; }
 
         /// <summary>
-        /// The type of fragment this is - normally represented in hex
-        /// </summary>
-        public FragmentType Type { get; private set; }
-
-        /// <summary>
         /// The size of the fragment in bytes
         /// </summary>
         public int Size { get; private set; }
@@ -39,12 +34,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="stringHash">The string hash - for fragment name assignment</param>
         /// <param name="isNewWldFormat"></param>
         /// <param name="logger">Logger for debug output</param>
-        public virtual void Initialize(int index, FragmentType id, int size, byte[] data,
+        public virtual void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
             Index = index;
-            Type = id;
             Size = size;
             Reader = new BinaryReader(new MemoryStream(data));
         }
@@ -54,10 +48,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public virtual void OutputInfo(ILogger logger)
         {
-            string fragIdString = Type.ToString("x").ToUpper();
             logger.LogInfo("-----------------------------------");
-            logger.LogInfo("Fragment " + (Index + 1) + ": " + this.GetType().Name +
-                           " (0x" + (fragIdString.Length == 2 ? fragIdString : "0" + fragIdString) + ")");
+            logger.LogInfo("Fragment " + (Index + 1) + ": " + this.GetType().Name);
             logger.LogInfo("-----");
             logger.LogInfo("Size: " + Size + " bytes");
             logger.LogInfo("Name: " + (string.IsNullOrEmpty(Name) ? "(empty)" : Name));

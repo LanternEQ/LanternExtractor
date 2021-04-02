@@ -34,13 +34,13 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
             
-            bspTree[0].LinkBspRegions(_bspRegions);
+            bspTree[0].LinkBspRegions(bspRegions);
 
             var regionTypes = GetFragmentsOfType2<BspRegionType>();
             
             foreach (var regionType in regionTypes)
             {
-                regionType.LinkRegionType(_bspRegions);
+                regionType.LinkRegionType(bspRegions);
             }
         }
         
