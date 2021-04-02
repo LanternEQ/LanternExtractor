@@ -10,12 +10,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         public CharacterAnimationGlobalListWriter()
         {
-            if (!File.Exists("all/character_animations.txt"))
+            if (!File.Exists("characters/character_animations.txt"))
             {
                 return;
             }
             
-            var text = File.ReadAllLines("all/character_animations.txt");
+            var text = File.ReadAllLines("characters/character_animations.txt");
 
             foreach (var line in text)
             {

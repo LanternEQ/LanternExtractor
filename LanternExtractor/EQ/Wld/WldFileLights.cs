@@ -25,7 +25,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportLightInstanceList()
         {
-            var lightInstances = GetFragmentsOfType2<LightInstance>();
+            var lightInstances = GetFragmentsOfType<LightInstance>();
 
             if (lightInstances.Count == 0)
             {
@@ -42,7 +42,7 @@ namespace LanternExtractor.EQ.Wld
                 writer.AddFragmentData(light);
             }
             
-            writer.WriteAssetToFile(zoneExportFolder + "light_instances.txt");
+            writer.WriteAssetToFile(GetExportFolderForWldType() + "light_instances.txt");
         }
     }
 }

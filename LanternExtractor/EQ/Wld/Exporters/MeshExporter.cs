@@ -12,9 +12,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public static void ExportMeshes(WldFile wldFile, Settings settings, ILogger logger)
         {
-            List<Mesh> meshFragments = wldFile.GetFragmentsOfType2<Mesh>();
-            List<LegacyMesh> alternateMeshFragments = wldFile.GetFragmentsOfType2<LegacyMesh>();
-            List<MaterialList> materialListFragments = wldFile.GetFragmentsOfType2<MaterialList>();
+            List<Mesh> meshFragments = wldFile.GetFragmentsOfType<Mesh>();
+            List<LegacyMesh> alternateMeshFragments = wldFile.GetFragmentsOfType<LegacyMesh>();
+            List<MaterialList> materialListFragments = wldFile.GetFragmentsOfType<MaterialList>();
             
             if (meshFragments?.Count == 0 && alternateMeshFragments?.Count == 0)
             {
@@ -108,7 +108,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     if (exportEachPass)
                     {
-                        if (settings.ExportAllCharacterToSingleFolder && wldFile.WldType == WldType.Characters)
+                        if (settings.ExportCharactersToSingleFolder && wldFile.WldType == WldType.Characters)
                         {
                             if (File.Exists(filePath))
                             {
@@ -162,7 +162,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (exportEachPass)
                     {
                         // TODO: Fix this mess
-                        if (wldFile.WldType == WldType.Characters && settings.ExportAllCharacterToSingleFolder)
+                        if (wldFile.WldType == WldType.Characters && settings.ExportCharactersToSingleFolder)
                         {
                             if (!((Mesh) fragment).MaterialList.HasBeenExported)
                             {

@@ -60,21 +60,19 @@ namespace LanternExtractor.EQ.Wld
             BuildSlotMapping();
             FindMaterialVariants();
 
-            if (_settings.ExportAllCharacterToSingleFolder)
+            if (_settings.ExportCharactersToSingleFolder)
             {
                 GlobalCharacterFixer characterFixer = new GlobalCharacterFixer();
                 characterFixer.Fix(this);
             }
             
             base.ExportData();
-            ExportAnimationList();
-            ExportCharacterList();
             ExportSkeletonsNew();
         }
 
         private void ExportSkeletonsNew()
         {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             foreach (var skeleton in skeletons)
             {
@@ -86,7 +84,7 @@ namespace LanternExtractor.EQ.Wld
 
         public void DoAllSkeletons()
         {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             foreach (var skeleton in skeletons)
             {
@@ -102,7 +100,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void BuildSlotMapping()
         {
-            var materialLists = GetFragmentsOfType2<MaterialList>();
+            var materialLists = GetFragmentsOfType<MaterialList>();
 
             foreach (var list in materialLists)
             {
@@ -112,7 +110,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void FindMaterialVariants()
         {
-            var materialLists = GetFragmentsOfType2<MaterialList>();
+            var materialLists = GetFragmentsOfType<MaterialList>();
 
             foreach (var list in materialLists)
             {
@@ -123,7 +121,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                foreach (var materialFragment in GetFragmentsOfType2<Material>())
+                foreach (var materialFragment in GetFragmentsOfType<Material>())
                 {
                     Material material = materialFragment as Material;
 
@@ -147,7 +145,7 @@ namespace LanternExtractor.EQ.Wld
             }
 
             // Check for debugging
-            foreach (var materialFragment in GetFragmentsOfType2<Material>())
+            foreach (var materialFragment in GetFragmentsOfType<Material>())
             {
                 Material material = materialFragment as Material;
 
@@ -165,82 +163,14 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        private void ExportCharacterList()
-        {
-            var actors = GetFragmentsOfType2<Actor>();
-            
-            TextAssetWriter characterListWriter = null;
-
-            if (_settings.ExportAllCharacterToSingleFolder)
-            {
-                characterListWriter = new CharacterListGlobalWriter(actors.Count);
-            }
-            else
-            {
-                characterListWriter = new CharacterListWriter(actors.Count);
-            }
-            
-            foreach (var actorFragment in actors)
-            {
-                characterListWriter.AddFragmentData(actorFragment);
-            }
-
-            if (_settings.ExportAllCharacterToSingleFolder)
-            {
-                characterListWriter.WriteAssetToFile("all/characters.txt");
-            }
-            else
-            {
-                characterListWriter.WriteAssetToFile(GetRootExportFolder() + "characters.txt");
-            }
-        }
-
-        private void ExportAnimationList()
-        {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
-
-            if (skeletons == null)
-            {
-                if (_wldToInject == null)
-                {
-                    return;
-                }
-
-                skeletons = _wldToInject.GetFragmentsOfType2<SkeletonHierarchy>();
-
-                if (skeletons == null)
-                {
-                    return;
-                }
-            }
-
-            TextAssetWriter animationWriter = null;
-
-            if (!_settings.ExportAllCharacterToSingleFolder)
-            {
-                animationWriter = new CharacterAnimationListWriter();
-            }
-            else
-            {
-                animationWriter = new CharacterAnimationGlobalListWriter();
-            }
-
-            foreach (var skeletonFragment in skeletons)
-            {
-                animationWriter.AddFragmentData(skeletonFragment);
-            }
-            
-            animationWriter.WriteAssetToFile(GetRootExportFolder() + "character_animations.txt");
-        }
-
         private void FindAdditionalAnimationsAndMeshes()
         {
-            if (GetFragmentsOfType2<TrackFragment>().Count == 0)
+            if (GetFragmentsOfType<TrackFragment>().Count == 0)
             {
                 return;
             }
 
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             if (skeletons == null)
             {
@@ -249,7 +179,7 @@ namespace LanternExtractor.EQ.Wld
                     return;
                 }
                 
-                skeletons = _wldToInject.GetFragmentsOfType2<SkeletonHierarchy>();
+                skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
             }
 
             if (skeletons == null)
@@ -270,7 +200,7 @@ namespace LanternExtractor.EQ.Wld
                 string alternateModel = GetAnimationModelLink(modelBase);
                 
                 // TODO: Alternate model bases
-                foreach (var trackFragment in GetFragmentsOfType2<TrackFragment>())
+                foreach (var trackFragment in GetFragmentsOfType<TrackFragment>())
                 {
                     TrackFragment track = trackFragment as TrackFragment;
 
@@ -300,9 +230,9 @@ namespace LanternExtractor.EQ.Wld
                 }
                 
                 // TODO: Split to another function
-                if(GetFragmentsOfType2<Mesh>().Count != 0)
+                if(GetFragmentsOfType<Mesh>().Count != 0)
                 {
-                    foreach (var mesh in GetFragmentsOfType2<Mesh>())
+                    foreach (var mesh in GetFragmentsOfType<Mesh>())
                     {
                         if (mesh.IsHandled)
                         {
@@ -337,7 +267,7 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            foreach (var trackFragment in GetFragmentsOfType2<TrackFragment>())
+            foreach (var trackFragment in GetFragmentsOfType<TrackFragment>())
             {
                 TrackFragment track = trackFragment as TrackFragment;
 

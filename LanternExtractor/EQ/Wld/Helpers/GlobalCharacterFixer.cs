@@ -27,7 +27,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
         /// <param name="wldFileCharacters"></param>
         private void FixGhoulTextures(WldFileCharacters wldFileCharacters)
         {
-            var meshes = wldFileCharacters.GetFragmentsOfType2<Mesh>();
+            var meshes = wldFileCharacters.GetFragmentsOfType<Mesh>();
 
             if (meshes.Count == 0)
             {
@@ -56,7 +56,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
         /// </summary>
         private void FixTurtleTextures()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
            
             foreach (var actor in actors)
             {
@@ -87,7 +87,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
         private void FixFayDrake()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
 
             foreach (var actor in actors)
             {
@@ -176,7 +176,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
         private void FixDemiLich()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
 
             foreach (var actor in actors)
             {
@@ -221,7 +221,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
         private void FixGolemElemental()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
 
             foreach (var actor in actors)
             {
@@ -252,7 +252,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
         private void FixShipNames()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
 
             foreach (var actor in actors)
             {
@@ -320,7 +320,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
         
         private void FixBlackAndWhiteDragon()
         {
-            var actors = _wld.GetFragmentsOfType2<Actor>();
+            var actors = _wld.GetFragmentsOfType<Actor>();
             
             foreach (var actor in actors)
             {

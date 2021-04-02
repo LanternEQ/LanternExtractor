@@ -160,9 +160,11 @@
     <Compile Include="EQ\Wld\WldFileLights.cs" />
     <Compile Include="EQ\Wld\WldFileEquipment.cs" />
     <Compile Include="EQ\Wld\WldFileObjects.cs" />
-    <Compile Include="EQ\Wld\WldFileSky.cs" />
     <Compile Include="EQ\Wld\WldFileZone.cs" />
     <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
+    <Compile Include="EQ\Wld\WldFragmentBuilder.cs" />
+    <Compile Include="EQ\Wld\WldIdentifier.cs" />
+    <Compile Include="EQ\Wld\WldModifier.cs" />
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />
     <Compile Include="EQ\Wld\WldType.cs" />
     <Compile Include="Infrastructure\BitAnalyzer.cs" />

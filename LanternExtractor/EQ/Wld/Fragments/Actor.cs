@@ -115,7 +115,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 MeshReference = fragments[fragmentIndex] as MeshReference;
 
-                if (MeshReference != null)
+                // Why would the mesh reference be null?
+                if (MeshReference != null && MeshReference.Mesh != null)
                 {
                     MeshReference.Mesh.IsHandled = true;
                     break;

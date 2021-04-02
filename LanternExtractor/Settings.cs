@@ -57,7 +57,12 @@ namespace LanternExtractor
         /// <summary>
         /// Sets the desired model export format
         /// </summary>
-        public bool ExportAllCharacterToSingleFolder { get; private set; }
+        public bool ExportCharactersToSingleFolder { get; private set; }
+        
+        /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public bool ExportEquipmentToSingleFolder { get; private set; }
         
         /// <summary>
         /// The verbosity of the logger
@@ -133,7 +138,7 @@ namespace LanternExtractor
             
             if (parsedSettings.ContainsKey("ExportAllCharacterToSingleFolder"))
             {
-                ExportAllCharacterToSingleFolder = Convert.ToBoolean(parsedSettings["ExportAllCharacterToSingleFolder"]);
+                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportAllCharacterToSingleFolder"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

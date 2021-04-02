@@ -60,9 +60,9 @@ namespace LanternExtractor.EQ
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {
-                var wldFile = new WldFileSky(wldFileInArchive, shortName, WldType.Sky, logger, settings);
+                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Sky, logger, settings);
                 wldFile.Initialize();
-                WriteWldTextures(s3dArchive, wldFile, shortName + "/sky/Textures/", logger);
+                WriteWldTextures(s3dArchive, wldFile, shortName + "/Textures/", logger);
             }
             else if (EqFileHelper.IsCharactersArchive(archiveName))
             {
@@ -89,8 +89,8 @@ namespace LanternExtractor.EQ
                     logger, settings, wldFileToInject);
                 wldFile.Initialize();
 
-                string exportPath = settings.ExportAllCharacterToSingleFolder
-                    ? "all/Characters/Textures/"
+                string exportPath = settings.ExportCharactersToSingleFolder
+                    ? "characters/Characters/Textures/"
                     : shortName + "/Characters/Textures/";
 
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
@@ -168,7 +168,9 @@ namespace LanternExtractor.EQ
                     continue;
                 }
 
-                ImageWriter.WriteImageAsPng(pfsFile.Bytes, zoneName, bitmap, maskedBitmaps.Contains(bitmap), logger);
+                bool isMasked = maskedBitmaps != null && maskedBitmaps.Contains(bitmap);
+
+                ImageWriter.WriteImageAsPng(pfsFile.Bytes, zoneName, bitmap, isMasked, logger);
             }
         }
 

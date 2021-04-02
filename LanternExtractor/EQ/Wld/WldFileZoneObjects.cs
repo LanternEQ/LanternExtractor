@@ -22,7 +22,7 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private void ExportObjectInstanceAndVertexColorList()
         {
-            var instanceList = GetFragmentsOfType2<ObjectInstance>();
+            var instanceList = GetFragmentsOfType<ObjectInstance>();
             
             if (instanceList.Count == 0)
             {
@@ -49,7 +49,7 @@ namespace LanternExtractor.EQ.Wld
                 colorWriter.ClearExportData();
             }
             
-            instanceWriter.WriteAssetToFile(GetRootExportFolder() + "object_instances.txt");
+            instanceWriter.WriteAssetToFile(GetExportFolderForWldType() + "object_instances.txt");
         }
     }
 }

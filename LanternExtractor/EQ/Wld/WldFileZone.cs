@@ -20,14 +20,14 @@ namespace LanternExtractor.EQ.Wld
 
         private void LinkBspReferences()
         {
-            var bspTree = GetFragmentsOfType2<BspTree>();
+            var bspTree = GetFragmentsOfType<BspTree>();
 
             if (bspTree.Count == 0)
             {
                 return;
             }
 
-            var bspRegions = GetFragmentsOfType2<BspRegion>();
+            var bspRegions = GetFragmentsOfType<BspRegion>();
 
             if (bspRegions.Count == 0)
             {
@@ -36,7 +36,7 @@ namespace LanternExtractor.EQ.Wld
             
             bspTree[0].LinkBspRegions(bspRegions);
 
-            var regionTypes = GetFragmentsOfType2<BspRegionType>();
+            var regionTypes = GetFragmentsOfType<BspRegionType>();
             
             foreach (var regionType in regionTypes)
             {
@@ -53,7 +53,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAmbientLightColor()
         {
-            var ambientLight = GetFragmentsOfType2<GlobalAmbientLight>();
+            var ambientLight = GetFragmentsOfType<GlobalAmbientLight>();
             
             if (ambientLight.Count == 0)
             {
@@ -62,12 +62,13 @@ namespace LanternExtractor.EQ.Wld
             
             AmbientLightColorWriter writer = new AmbientLightColorWriter();
             writer.AddFragmentData(ambientLight[0]);
-            writer.WriteAssetToFile(_zoneName + "/ambient_light.txt");        
+            
+            writer.WriteAssetToFile(GetExportFolderForWldType() + "/ambient_light.txt");        
         }
 
         private void ExportBspTree()
         {
-            var bspTree = GetFragmentsOfType2<BspTree>();
+            var bspTree = GetFragmentsOfType<BspTree>();
             
             if (bspTree.Count == 0)
             {
@@ -76,7 +77,7 @@ namespace LanternExtractor.EQ.Wld
             
             BspTreeWriter writer = new BspTreeWriter();
             writer.AddFragmentData(bspTree[0]);
-            writer.WriteAssetToFile(_zoneName + "/bsp_tree.txt");
+            writer.WriteAssetToFile(GetExportFolderForWldType() + "/bsp_tree.txt");
         }
     }
 }

@@ -25,7 +25,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void DoAllSkeletons()
         {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             foreach (var skeleton in skeletons)
             {
@@ -35,7 +35,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportParticleSystems()
         {
-            var particles = GetFragmentsOfType2<ParticleCloud>();
+            var particles = GetFragmentsOfType<ParticleCloud>();
 
             foreach (var particle in particles)
             {
@@ -47,7 +47,7 @@ namespace LanternExtractor.EQ.Wld
         
         private void ExportSkeletonsNew()
         {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             foreach (var skeleton in skeletons)
             {
@@ -59,7 +59,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void FindUnhandledSkeletons()
         {
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
             if (skeletons == null)
             {
                 return;
@@ -93,8 +93,8 @@ namespace LanternExtractor.EQ.Wld
 
         private void FindAdditionalAnimations()
         {
-            var animations = GetFragmentsOfType2<TrackFragment>();
-            var skeletons = GetFragmentsOfType2<SkeletonHierarchy>();
+            var animations = GetFragmentsOfType<TrackFragment>();
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
             foreach (var track in animations)
             {
@@ -132,7 +132,7 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            foreach (var track in GetFragmentsOfType2<TrackFragment>())
+            foreach (var track in GetFragmentsOfType<TrackFragment>())
             {
                 if (track.IsPoseAnimation || track.IsProcessed)
                 {
