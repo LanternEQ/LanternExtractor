@@ -49,7 +49,7 @@ namespace LanternExtractor
                     string fileName = file;
                     Task task = Task.Factory.StartNew(() =>
                     {
-                        ArchiveExtractor.Extract(fileName, _logger, _settings);
+                        ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
                     });
                     tasks.Add(task);
                 }
@@ -60,7 +60,7 @@ namespace LanternExtractor
             {
                 foreach (var file in eqFiles)
                 {
-                    ArchiveExtractor.Extract(file, _logger, _settings);
+                    ArchiveExtractor.Extract(file, "Exports/", _logger, _settings);
                 }
             }
 

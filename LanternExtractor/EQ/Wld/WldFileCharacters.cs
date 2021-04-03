@@ -67,7 +67,7 @@ namespace LanternExtractor.EQ.Wld
             }
             
             base.ExportData();
-            ExportSkeletonsNew();
+            //ExportSkeletonsNew();
         }
 
         private void ExportSkeletonsNew()

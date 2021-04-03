@@ -22,11 +22,11 @@ ModelExportFormat = 0
 
 # If true, will export all characters to the 'characters' folder
 # This is useful when batch importing into Unity
-ExportAllCharacterToSingleFolder = true
+ExportAllCharacterToSingleFolder = false
 
 # If true, will export all equipment to the 'equipment' folder
 # This is useful when batch importing into Unity
-ExportAllEquipmentToSingleFolder = true
+ExportAllEquipmentToSingleFolder = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors

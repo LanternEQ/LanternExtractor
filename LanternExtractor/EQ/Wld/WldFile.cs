@@ -15,6 +15,7 @@ namespace LanternExtractor.EQ.Wld
     /// </summary>
     public abstract class WldFile
     {
+        public string RootExportFolder;
         public string ZoneShortname => _zoneName;
 
         public WldType WldType => _wldType;
@@ -100,8 +101,10 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Initializes and instantiates the WLD file
         /// </summary>
-        public virtual bool Initialize(bool exportData = true)
+        public virtual bool Initialize(string rootFolder, bool exportData = true)
         {
+            RootExportFolder = rootFolder;
+            
             _logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
             _logger.LogInfo("-----------------------------------");
             _logger.LogInfo("WLD type: " + _wldType);
@@ -327,11 +330,11 @@ namespace LanternExtractor.EQ.Wld
             switch (_wldType)
             {
                 case WldType.Equipment when _settings.ExportEquipmentToSingleFolder:
-                    return "equipment/";
+                    return RootExportFolder + "equipment/";
                 case WldType.Characters when _settings.ExportCharactersToSingleFolder:
-                    return "characters/";
+                    return RootExportFolder + "characters/";
                 default:
-                    return _zoneName + "/";
+                    return RootExportFolder + _zoneName + "/";
             }
         }
 
@@ -400,18 +403,11 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter();
+            SkeletonHierarchyNewWriter skeletonWriter = new SkeletonHierarchyNewWriter(_wldType == WldType.Characters);
             AnimationWriter animationWriter = new AnimationWriter(_wldType == WldType.Characters);
 
-            foreach (var skeletonFragment in skeletons)
+            foreach (var skeleton in skeletons)
             {
-                SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
-
-                if (skeleton == null)
-                {
-                    continue;
-                }
-
                 string filePath = skeletonsFolder + skeleton.ModelBase + ".txt";
 
                 skeletonWriter.AddFragmentData(skeleton);

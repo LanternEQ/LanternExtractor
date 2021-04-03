@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld
             FindAdditionalAnimations();
             base.ExportData();
             ExportParticleSystems();
-            ExportSkeletonsNew();
+            //ExportSkeletonsNew();
         }
 
         private void DoAllSkeletons()
