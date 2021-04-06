@@ -226,6 +226,7 @@ namespace LanternExtractor.EQ.Wld
 
         protected virtual void ProcessData()
         {
+            BuildSkeletonData();
         }
         
         /// <summary>
@@ -370,9 +371,7 @@ namespace LanternExtractor.EQ.Wld
                 actorWriterSprite2d.AddFragmentData(actorFragment);
             }
 
-            string exportPath = GetExportFolderForWldType();
-            exportPath += "actors_" + _wldType.ToString().ToLower();
-
+            string exportPath = GetExportFolderForWldType() + "actors";
             actorWriterStatic.WriteAssetToFile(exportPath + "_static.txt");
             actorWriterSkeletal.WriteAssetToFile(exportPath + "_skeletal.txt");
             actorWriterParticle.WriteAssetToFile(exportPath + "_particle.txt");
@@ -403,7 +402,7 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            SkeletonHierarchyNewWriter skeletonWriter = new SkeletonHierarchyNewWriter(_wldType == WldType.Characters);
+            SkeletonHierarchyWriter skeletonWriter = new SkeletonHierarchyWriter(_wldType == WldType.Characters);
             AnimationWriter animationWriter = new AnimationWriter(_wldType == WldType.Characters);
 
             foreach (var skeleton in skeletons)
@@ -465,6 +464,21 @@ namespace LanternExtractor.EQ.Wld
             }
 
             return bitmaps;
+        }
+
+        private void BuildSkeletonData()
+        {
+            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
+
+            foreach (var skeleton in skeletons)
+            {
+                skeleton.BuildSkeletonData(_wldType == WldType.Characters);
+            }
+
+            if (_wldToInject != null)
+            {
+                (_wldToInject as WldFileCharacters).BuildSkeletonData();
+            }
         }
     }
 }

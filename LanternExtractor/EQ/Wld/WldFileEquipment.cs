@@ -12,25 +12,18 @@ namespace LanternExtractor.EQ.Wld
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
-        
-        protected override void ExportData()
+
+        protected override void ProcessData()
         {
-            DoAllSkeletons();
+            base.ProcessData();
             FindUnhandledSkeletons();
             FindAdditionalAnimations();
-            base.ExportData();
-            ExportParticleSystems();
-            //ExportSkeletonsNew();
         }
 
-        private void DoAllSkeletons()
+        protected override void ExportData()
         {
-            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
-
-            foreach (var skeleton in skeletons)
-            {
-                skeleton.BuildSkeletonData(false);
-            }
+            base.ExportData();
+            ExportParticleSystems();
         }
 
         private void ExportParticleSystems()
@@ -51,7 +44,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (var skeleton in skeletons)
             {
-                var writer = new SkeletonHierarchyNewWriter(false);
+                var writer = new SkeletonHierarchyWriter(false);
                 writer.AddFragmentData(skeleton);
                 writer.WriteAssetToFile(GetRootExportFolder() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
             }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.EQ.Pfs;
-using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -50,12 +49,9 @@ namespace LanternExtractor.EQ.Wld
             return !AnimationSources.ContainsKey(modelName) ? modelName : AnimationSources[modelName];
         }
 
-        /// <summary>
-        /// Writes the files relevant to this WLD type to disk
-        /// </summary>
-        protected override void ExportData()
+        protected override void ProcessData()
         {
-            DoAllSkeletons();
+            base.ProcessData();
             FindAdditionalAnimationsAndMeshes();
             BuildSlotMapping();
             FindMaterialVariants();
@@ -65,39 +61,8 @@ namespace LanternExtractor.EQ.Wld
                 GlobalCharacterFixer characterFixer = new GlobalCharacterFixer();
                 characterFixer.Fix(this);
             }
-            
-            base.ExportData();
-            //ExportSkeletonsNew();
         }
-
-        private void ExportSkeletonsNew()
-        {
-            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
-
-            foreach (var skeleton in skeletons)
-            {
-                var writer = new SkeletonHierarchyNewWriter(true);
-                writer.AddFragmentData(skeleton);
-                writer.WriteAssetToFile(GetExportFolderForWldType() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
-            }
-        }
-
-        public void DoAllSkeletons()
-        {
-            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
-
-            foreach (var skeleton in skeletons)
-            {
-                skeleton.BuildSkeletonData(true);
-            }
-
-            if (_wldToInject != null)
-            {
-                (_wldToInject as WldFileCharacters).DoAllSkeletons();
-            }
-        }
-
-
+        
         private void BuildSlotMapping()
         {
             var materialLists = GetFragmentsOfType<MaterialList>();

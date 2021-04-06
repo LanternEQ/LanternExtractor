@@ -209,7 +209,6 @@
     <Compile Include="EQ\Wld\Exporters\ActorWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\ObjectListGlobalWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\ParticleSystemWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyNewWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextureListWriter.cs" />

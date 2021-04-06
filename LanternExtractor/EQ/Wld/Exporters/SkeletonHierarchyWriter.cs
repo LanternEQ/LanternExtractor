@@ -4,11 +4,11 @@ using LanternExtractor.EQ.Wld.Helpers;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class SkeletonHierarchyNewWriter : TextAssetWriter
+    public class SkeletonHierarchyWriter : TextAssetWriter
     {
         private bool _stripModelBase;
         
-        public SkeletonHierarchyNewWriter(bool stripModelBase)
+        public SkeletonHierarchyWriter(bool stripModelBase)
         {
             _stripModelBase = stripModelBase;
         }
@@ -27,12 +27,18 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
             {
-                _export.Append("meshes,");
+                _export.Append("meshes");
                 foreach (var mesh in skeleton.Meshes)
                 {
+                    _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
-                
+                foreach (var mesh in skeleton.HelmMeshes)
+                {
+                    _export.Append(",");
+                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                }
+
                 _export.AppendLine();
             }
             
