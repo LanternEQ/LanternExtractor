@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using LanternExtractor.Infrastructure.Logger;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -14,7 +15,9 @@ namespace LanternExtractor.Infrastructure
         public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked,
             ILogger logger)
         {
-            if (fileName.EndsWith(".bmp"))
+            // https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide#dds-file-layout
+            bool ddsMagic = Encoding.ASCII.GetString(bytes, 0, 4) == "DDS ";
+            if (fileName.EndsWith(".bmp") && !ddsMagic)
             {
                 WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false,
                     logger);
