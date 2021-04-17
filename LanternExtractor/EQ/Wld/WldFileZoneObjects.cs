@@ -45,7 +45,7 @@ namespace LanternExtractor.EQ.Wld
                 }
                 
                 colorWriter.AddFragmentData(instance.Colors);
-                colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Index + ".txt");
+                colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Colors.Index + ".txt");
                 colorWriter.ClearExportData();
             }
             

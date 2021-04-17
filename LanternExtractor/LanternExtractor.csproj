@@ -212,7 +212,6 @@
     <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshListWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\TextureListWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshFbxExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshIntermediateAssetWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshIntermediateMaterialsExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\MeshObjMtlWriter.cs" />

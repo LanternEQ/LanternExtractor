@@ -35,7 +35,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     meshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, false);
                     alternateMeshWriter = new AlternateMeshIntermediateAssetWriter();
                     collisionMeshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
-                    materialListWriter = new MeshIntermediateMaterialsExport();
+                    materialListWriter = new MeshIntermediateMaterialsWriter();
                     break;
                 }
                 case ModelExportFormat.Obj:

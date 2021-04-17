@@ -18,7 +18,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             _actorType = actorType;
             
-            string filePath = $"equipment/actors_equipment_{_actorType.ToString().ToLower()}.txt";
+            string filePath = $"Exports/equipment/actors_{_actorType.ToString().ToLower()}.txt";
             if (!File.Exists(filePath))
             {
                 return;

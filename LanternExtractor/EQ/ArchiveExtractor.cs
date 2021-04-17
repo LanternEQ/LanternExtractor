@@ -29,7 +29,7 @@ namespace LanternExtractor.EQ
 
             if (settings.RawS3dExtract)
             {
-                s3dArchive.WriteAllFiles(Path.Combine(shortName, archiveName));
+                s3dArchive.WriteAllFiles(Path.Combine(rootFolder + shortName, archiveName));
                 return;
             }
 
@@ -38,7 +38,7 @@ namespace LanternExtractor.EQ
             // The difference between this and the raw export is that it will convert images to .png
             if (!s3dArchive.IsWldArchive)
             {
-                WriteS3dTextures(s3dArchive, shortName, logger);
+                WriteS3dTextures(s3dArchive, rootFolder + shortName, logger);
                 return;
             }
 
@@ -52,11 +52,11 @@ namespace LanternExtractor.EQ
                 return;
             }
 
-            if (EqFileHelper.IsModelsArchive(archiveName))
+            if (EqFileHelper.IsEquipmentArchive(archiveName))
             {
                 var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
                 wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/equipment/Textures/", logger);
+                WriteWldTextures(s3dArchive, wldFile, rootFolder + "/equipment/Textures/", logger);
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {
@@ -135,7 +135,7 @@ namespace LanternExtractor.EQ
         /// </summary>
         /// <param name="s3dArchive"></param>
         /// <param name="zoneName"></param>
-        private static void WriteS3dTextures(PfsArchive s3dArchive, string zoneName, ILogger logger)
+        private static void WriteS3dTextures(PfsArchive s3dArchive, string filePath, ILogger logger)
         {
             var allFiles = s3dArchive.GetAllFiles();
 
@@ -143,7 +143,7 @@ namespace LanternExtractor.EQ
             {
                 if (file.Name.EndsWith(".bmp") || file.Name.EndsWith(".dds"))
                 {
-                    ImageWriter.WriteImageAsPng(file.Bytes, zoneName, file.Name, false, logger);
+                    ImageWriter.WriteImageAsPng(file.Bytes, filePath, file.Name, false, logger);
                 }
             }
         }

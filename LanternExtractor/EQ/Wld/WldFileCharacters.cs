@@ -80,21 +80,9 @@ namespace LanternExtractor.EQ.Wld
             foreach (var list in materialLists)
             {
                 string materialListModelName = FragmentNameCleaner.CleanName(list);
-                
-                if (list == null)
+
+                foreach (var material in GetFragmentsOfType<Material>())
                 {
-                    continue;
-                }
-
-                foreach (var materialFragment in GetFragmentsOfType<Material>())
-                {
-                    Material material = materialFragment as Material;
-
-                    if (material == null)
-                    {
-                        continue;
-                    }
-
                     if (material.IsHandled)
                     {
                         continue;
@@ -110,15 +98,8 @@ namespace LanternExtractor.EQ.Wld
             }
 
             // Check for debugging
-            foreach (var materialFragment in GetFragmentsOfType<Material>())
+            foreach (var material in GetFragmentsOfType<Material>())
             {
-                Material material = materialFragment as Material;
-
-                if (material == null)
-                {
-                    continue;
-                }
-
                 if (material.IsHandled)
                 {
                     continue;
@@ -165,15 +146,8 @@ namespace LanternExtractor.EQ.Wld
                 string alternateModel = GetAnimationModelLink(modelBase);
                 
                 // TODO: Alternate model bases
-                foreach (var trackFragment in GetFragmentsOfType<TrackFragment>())
+                foreach (var track in GetFragmentsOfType<TrackFragment>())
                 {
-                    TrackFragment track = trackFragment as TrackFragment;
-
-                    if (track == null)
-                    {
-                        continue;
-                    }
-
                     if (track.IsPoseAnimation)
                     {
                         continue;
@@ -232,15 +206,8 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            foreach (var trackFragment in GetFragmentsOfType<TrackFragment>())
+            foreach (var track in GetFragmentsOfType<TrackFragment>())
             {
-                TrackFragment track = trackFragment as TrackFragment;
-
-                if (track == null)
-                {
-                    continue;
-                }
-                
                 if (track.IsPoseAnimation || track.IsProcessed)
                 {
                     continue;

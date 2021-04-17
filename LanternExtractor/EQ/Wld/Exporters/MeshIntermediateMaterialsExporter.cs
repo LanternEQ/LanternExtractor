@@ -1,9 +1,11 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
-    public class MeshIntermediateMaterialsExport : TextAssetWriter
+    public class MeshIntermediateMaterialsWriter : TextAssetWriter
     {
         public override void AddFragmentData(WldFragment data)
         {
@@ -18,54 +20,47 @@ namespace LanternExtractor.EQ.Wld.Exporters
             for (int i = 0; i < list.Materials.Count; i++)
             {
                 Material material = list.Materials[i];
-
-                string materialName = material.GetFullMaterialName();
-
                 _export.Append(i);
                 _export.Append(",");
-                _export.Append(materialName);
-                _export.Append(",");
 
-                var bitmapNames = list.Materials[i].GetAllBitmapNames();
+                List<Material> allMaterials = new List<Material> {material};
+                allMaterials.AddRange(list.GetMaterialVariants(material, null));
 
-                if (bitmapNames.Count != 0)
+                foreach (var skinMaterial in allMaterials)
                 {
-                    for (int j = 0; j < bitmapNames.Count; j++)
+                    if (skinMaterial == null)
                     {
-                        if (j != 0)
-                        {
-                            _export.Append(";");
-                        }
+                        continue;
+                    }
 
-                        _export.Append(bitmapNames[j]);
+                    _export.Append(GetMaterialString(skinMaterial));
+                    
+                    if(allMaterials.Last() != skinMaterial)
+                    {
+                        _export.Append(";");
                     }
                 }
-
-                _export.Append(",");
-                _export.Append(material.BitmapInfoReference?.BitmapInfo.BitmapNames.Count ?? 0);
                 
                 _export.Append(",");
                 _export.Append(material.BitmapInfoReference?.BitmapInfo.AnimationDelayMs ?? 0);
-
-                _export.Append(",");
-
-                var skinVariants = list.GetMaterialVariants(material, new EmptyLogger());
-
-                if (skinVariants.Count != 0)
-                {
-                    for (int j = 0; j < skinVariants.Count; j++)
-                    {
-                        if (j != 0)
-                        {
-                            _export.Append(";");
-                        }
-
-                        _export.Append(skinVariants[j]);
-                    }
-                }
-                
                 _export.AppendLine();
             }
+        }
+        
+        private string GetMaterialString(Material material)
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(material.GetFullMaterialName());
+
+                var bitmapNames = material.GetAllBitmapNames();
+
+            foreach (var bitmap in bitmapNames)
+            {
+                sb.Append(":");
+                sb.Append(bitmap);
+            }
+
+            return sb.ToString();
         }
     }
 }

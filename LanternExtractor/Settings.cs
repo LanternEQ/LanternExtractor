@@ -136,9 +136,14 @@ namespace LanternExtractor
                 ModelExportFormat = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
             }
             
-            if (parsedSettings.ContainsKey("ExportAllCharacterToSingleFolder"))
+            if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
             {
-                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportAllCharacterToSingleFolder"]);
+                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportCharacterToSingleFolder"]);
+            }
+            
+            if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
+            {
+                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

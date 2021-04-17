@@ -6,7 +6,7 @@ namespace LanternExtractor
 {
     public static class EqFileHelper
     {
-        public static bool IsModelsArchive(string archiveName)
+        public static bool IsEquipmentArchive(string archiveName)
         {
             return archiveName.StartsWith("gequip");
         }

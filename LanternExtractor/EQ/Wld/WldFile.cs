@@ -314,7 +314,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.ZoneObjects:
                     return GetRootExportFolder() + "/Zone/";
                 case WldType.Equipment:
-                    return "equipment/";
+                    return GetRootExportFolder();
                 case WldType.Objects:
                     return GetRootExportFolder() + "Objects/";
                 case WldType.Sky:

@@ -340,7 +340,8 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 if (materialFragment != null)
                 {
                     var slot = materialFragment.Slots["bwd_ch01"];
-                    slot[1] = "d_bwdch0101";
+                    // TODO: Fix this
+                    //slot[1] = "d_bwdch0101";
                 }
             }
         }

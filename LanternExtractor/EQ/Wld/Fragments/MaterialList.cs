@@ -21,7 +21,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// A mapping of slot names to alternate skins
         /// </summary>
-        public Dictionary<string, Dictionary<int, string>> Slots { get; private set; }
+        public Dictionary<string, Dictionary<int, Material>> Slots { get; private set; }
 
         /// <summary>
         /// The number of alternate skins
@@ -68,7 +68,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void BuildSlotMapping(ILogger logger)
         {
-            Slots = new Dictionary<string, Dictionary<int, string>>();
+            Slots = new Dictionary<string, Dictionary<int, Material>>();
 
             if (Materials == null || Materials.Count == 0)
             {
@@ -85,7 +85,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     logger);
 
                 string key = character + "_" + partName;
-                Slots[key] = new Dictionary<int, string>();
+                Slots[key] = new Dictionary<int, Material>();
             }
 
             AdditionalMaterials = new List<Material>();
@@ -180,11 +180,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (!Slots.ContainsKey(key))
             {
-                Slots[key] = new Dictionary<int, string>();
+                Slots[key] = new Dictionary<int, Material>();
             }
 
             int skinIdNumber = Convert.ToInt32(skinId);
-            Slots[key][skinIdNumber] = material.GetFullMaterialName();
+            Slots[key][skinIdNumber] = material;
             material.IsHandled = true;
 
             if (skinIdNumber > VariantCount)
@@ -195,9 +195,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             AdditionalMaterials.Add(material);
         }
 
-        public List<string> GetMaterialVariants(Material material, ILogger logger)
+        public List<Material> GetMaterialVariants(Material material, ILogger logger)
         {
-            List<string> additionalSkins = new List<string>();
+            List<Material> additionalSkins = new List<Material>();
 
             if (Slots == null)
             {
@@ -222,7 +222,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 if (!variants.ContainsKey(i + 1))
                 {
-                    additionalSkins.Add(string.Empty);
+                    additionalSkins.Add(null);
                     continue;
                 }
 
