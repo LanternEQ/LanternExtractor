@@ -66,12 +66,11 @@ namespace LanternExtractor.Infrastructure
 
                 int paletteIndex = GetPaletteIndex(fileName);
                 var palette = cloneBitmap.Palette;
-                Color transparencyColor = palette.Entries[paletteIndex];
 
                 if (Environment.OSVersion.Platform != PlatformID.MacOSX &&
                     Environment.OSVersion.Platform != PlatformID.Unix)
                 {
-                    palette.Entries[paletteIndex] = transparencyColor;
+                    palette.Entries[paletteIndex] = Color.FromArgb(0, 0, 0, 0);
                     cloneBitmap.Palette = palette;
                 }
                 else
@@ -79,6 +78,7 @@ namespace LanternExtractor.Infrastructure
                     // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
                     // transparent does not work. The workaround is to ensure that the first palette value (the transparent
                     // key) is unique and then use MakeTransparent()
+                    Color transparencyColor = palette.Entries[paletteIndex];
                     bool isUnique = false;
                     
                     while (!isUnique)
