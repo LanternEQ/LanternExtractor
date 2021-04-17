@@ -1,7 +1,9 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-EverQuestDirectory = C:/EQC/EverQuest/
+# Window example: C:/EverQuest
+# MacOS example: /Users/your.name/EQ/
+EverQuestDirectory = C:/EverQuest
 
 # Extract the contents of the S3D archive as is?
 # If true, this will export all contents as they exist in the archives to their original formats.

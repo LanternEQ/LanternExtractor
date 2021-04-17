@@ -116,8 +116,6 @@ namespace LanternExtractor.Infrastructure
                         }
                     }
                 }
-                
-
             }
             else
             {
