@@ -66,35 +66,58 @@ namespace LanternExtractor.Infrastructure
 
                 int paletteIndex = GetPaletteIndex(fileName);
                 var palette = cloneBitmap.Palette;
-
                 Color transparencyColor = palette.Entries[paletteIndex];
 
-                bool isUnique = false;
-
-                // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
-                // transparent does not work. The workaround is to ensure that the first palette value (the transparent
-                // key) is unique and then use MakeTransparent()
-                while (!isUnique)
+                if (Environment.OSVersion.Platform != PlatformID.MacOSX &&
+                    Environment.OSVersion.Platform != PlatformID.Unix)
                 {
-                    isUnique = true;
-
-                    for (var i = 1; i < cloneBitmap.Palette.Entries.Length; i++)
+                    palette.Entries[paletteIndex] = transparencyColor;
+                    cloneBitmap.Palette = palette;
+                }
+                else
+                {
+                    // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
+                    // transparent does not work. The workaround is to ensure that the first palette value (the transparent
+                    // key) is unique and then use MakeTransparent()
+                    bool isUnique = false;
+                    
+                    while (!isUnique)
                     {
-                        Color paletteValue = cloneBitmap.Palette.Entries[i];
+                        isUnique = true;
 
-                        if (paletteValue == transparencyColor)
+                        for (var i = 1; i < cloneBitmap.Palette.Entries.Length; i++)
                         {
-                            Random random = new Random();
-                            transparencyColor = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
-                            isUnique = false;
-                            break;
+                            Color paletteValue = cloneBitmap.Palette.Entries[i];
+
+                            if (paletteValue == transparencyColor)
+                            {
+                                Random random = new Random();
+                                transparencyColor = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
+                                isUnique = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    palette.Entries[paletteIndex] = transparencyColor;
+                    cloneBitmap.Palette = palette;
+                    cloneBitmap.MakeTransparent(transparencyColor);
+
+                    // For some reason, this now has to be done to ensure the pixels are actually set to transparent
+                    // Another head scratching MacOS bug
+                    for (int i = 0; i < cloneBitmap.Width; ++i)
+                    {
+                        for (int j = 0; j < cloneBitmap.Height; ++j)
+                        {
+                            if (cloneBitmap.GetPixel(i, j) == transparencyColor)
+                            {
+                                cloneBitmap.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
+                            }
                         }
                     }
                 }
+                
 
-                palette.Entries[paletteIndex] = transparencyColor;
-                cloneBitmap.Palette = palette;
-                cloneBitmap.MakeTransparent(transparencyColor);
             }
             else
             {
