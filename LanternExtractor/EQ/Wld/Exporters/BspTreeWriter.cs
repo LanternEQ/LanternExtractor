@@ -1,4 +1,3 @@
-using System.Drawing;
 using System.Linq;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
