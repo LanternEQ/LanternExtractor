@@ -265,7 +265,6 @@
     <Compile Include="EQ\Wld\WldFileCharacters.cs" />
     <Compile Include="EQ\Wld\WldFileLights.cs" />
     <Compile Include="EQ\Wld\WldFileEquipment.cs" />
-    <Compile Include="EQ\Wld\WldFileObjects.cs" />
     <Compile Include="EQ\Wld\WldFileZone.cs" />
     <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
     <Compile Include="EQ\Wld\WldFragmentBuilder.cs" />

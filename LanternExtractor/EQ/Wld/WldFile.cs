@@ -318,7 +318,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Objects:
                     return GetRootExportFolder() + "Objects/";
                 case WldType.Sky:
-                    return "sky/";
+                    return GetRootExportFolder();
                 case WldType.Characters:
                     return GetRootExportFolder() + "Characters/";
                 default:

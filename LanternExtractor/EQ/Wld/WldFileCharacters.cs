@@ -97,7 +97,6 @@ namespace LanternExtractor.EQ.Wld
                 }
             }
 
-            // Check for debugging
             foreach (var material in GetFragmentsOfType<Material>())
             {
                 if (material.IsHandled)

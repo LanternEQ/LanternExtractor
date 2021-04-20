@@ -21,22 +21,16 @@ namespace LanternExtractor.EQ.Wld
         private void LinkBspReferences()
         {
             var bspTree = GetFragmentsOfType<BspTree>();
-
-            if (bspTree.Count == 0)
-            {
-                return;
-            }
-
             var bspRegions = GetFragmentsOfType<BspRegion>();
+            var regionTypes = GetFragmentsOfType<BspRegionType>();
 
-            if (bspRegions.Count == 0)
+
+            if (bspTree.Count == 0 || bspRegions.Count == 0 || regionTypes.Count == 0)
             {
                 return;
             }
-            
-            bspTree[0].LinkBspRegions(bspRegions);
 
-            var regionTypes = GetFragmentsOfType<BspRegionType>();
+            bspTree[0].LinkBspRegions(bspRegions);
             
             foreach (var regionType in regionTypes)
             {
@@ -62,7 +56,6 @@ namespace LanternExtractor.EQ.Wld
             
             AmbientLightColorWriter writer = new AmbientLightColorWriter();
             writer.AddFragmentData(ambientLight[0]);
-            
             writer.WriteAssetToFile(GetExportFolderForWldType() + "/ambient_light.txt");        
         }
 

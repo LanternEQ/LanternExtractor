@@ -37,36 +37,18 @@ namespace LanternExtractor.EQ.Wld
                 writer.WriteAssetToFile(GetRootExportFolder() + "/Particles/" + FragmentNameCleaner.CleanName(particle) + ".txt");
             }
         }
-        
-        private void ExportSkeletonsNew()
-        {
-            var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
-
-            foreach (var skeleton in skeletons)
-            {
-                var writer = new SkeletonHierarchyWriter(false);
-                writer.AddFragmentData(skeleton);
-                writer.WriteAssetToFile(GetRootExportFolder() + "/SkeletonsNew/" + FragmentNameCleaner.CleanName(skeleton) + ".txt");
-            }
-        }
 
         private void FindUnhandledSkeletons()
         {
             var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
+            
             if (skeletons == null)
             {
                 return;
             }
 
-            foreach (WldFragment fragment in skeletons)
+            foreach (SkeletonHierarchy skeleton in skeletons)
             {
-                SkeletonHierarchy skeleton = (SkeletonHierarchy)fragment;
-
-                if (skeleton == null)
-                {
-                    continue;
-                }
-
                 if (skeleton.IsAssigned)
                 {
                     continue;
@@ -105,8 +87,6 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-
-                
                 
                 foreach (var skeleton in skeletons)
                 {
@@ -117,11 +97,6 @@ namespace LanternExtractor.EQ.Wld
                         track.IsProcessed = true;
                         skeleton.AddTrackDataEquipment(track, boneName.ToLower());
                     }
-                }
-
-                if (!track.IsNameParsed)
-                {
-                    //track.ParseTrackDataEquipment(skeleton, _logger);
                 }
             }
 

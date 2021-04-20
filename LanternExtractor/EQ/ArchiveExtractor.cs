@@ -98,7 +98,7 @@ namespace LanternExtractor.EQ
             }
             else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
-                var wldFile = new WldFileObjects(wldFileInArchive, shortName, WldType.Objects, logger, settings);
+                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
                 wldFile.Initialize(rootFolder);
                 WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Objects/Textures/", logger);
             }

@@ -33,8 +33,6 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            string zoneExportFolder = _zoneName + "/";
-            
             LightInstancesWriter writer = new LightInstancesWriter();
 
             foreach (var light in lightInstances)
