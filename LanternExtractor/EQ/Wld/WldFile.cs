@@ -234,9 +234,13 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         protected virtual void ExportData()
         {
-            ExportActors();
             ExportMeshes();
-            ExportSkeletonAndAnimations();
+
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+            {
+                ExportActors();
+                ExportSkeletonAndAnimations();
+            }
         }
 
         private void ParseStringHash(string decodedHash)

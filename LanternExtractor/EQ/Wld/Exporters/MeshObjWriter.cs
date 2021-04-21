@@ -70,7 +70,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             if (_isFirstMesh && _objExportType == ObjExportType.Textured)
             {
                 string name = LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
-                              "_materials.mtl";
+                              ".mtl";
 
                 if (!string.IsNullOrEmpty(_forcedMeshList))
                 {

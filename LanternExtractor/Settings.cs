@@ -10,7 +10,6 @@ namespace LanternExtractor
     {
         Intermediate = 0,
         Obj = 1,
-        Fbx = 2
     }
     
     /// <summary>

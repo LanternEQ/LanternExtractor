@@ -15,14 +15,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
             List<Mesh> meshFragments = wldFile.GetFragmentsOfType<Mesh>();
             List<LegacyMesh> alternateMeshFragments = wldFile.GetFragmentsOfType<LegacyMesh>();
             List<MaterialList> materialListFragments = wldFile.GetFragmentsOfType<MaterialList>();
-            
+
             if (meshFragments?.Count == 0 && alternateMeshFragments?.Count == 0)
             {
                 return;
             }
 
-            string exportFolder = GetExportFolderForExportFormat(wldFile.GetExportFolderForWldType(), settings.ModelExportFormat);
-            
+            string exportFolder =
+                GetExportFolderForExportFormat(wldFile.GetExportFolderForWldType(), settings.ModelExportFormat);
+
             TextAssetWriter meshWriter;
             TextAssetWriter alternateMeshWriter = null;
             TextAssetWriter collisionMeshWriter;
@@ -40,8 +41,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
                 case ModelExportFormat.Obj:
                 {
-                    meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry, settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
-                    collisionMeshWriter = new MeshObjWriter(ObjExportType.Collision, settings.ExportHiddenGeometry, settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                    meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
+                        settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                    collisionMeshWriter = new MeshObjWriter(ObjExportType.Collision, settings.ExportHiddenGeometry,
+                        settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
                     materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
                     break;
                 }
@@ -74,7 +77,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         {
                             continue;
                         }
-                    
+
                         exportCollisionMesh = true;
                         break;
                     }
@@ -88,13 +91,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         // {
                         //     continue;
                         // }
-                    
+
                         exportCollisionMesh = true;
                         break;
                     }
                 }
             }
-            
+
             // Export materials
             if (materialListFragments != null)
             {
@@ -102,7 +105,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     materialListWriter.AddFragmentData(fragment);
 
-                    var newExportFolder = wldFile.GetExportFolderForWldType() + "/MaterialLists/";
+                    var newExportFolder = wldFile.GetExportFolderForWldType() + (settings.ModelExportFormat == ModelExportFormat.Intermediate ?  "/MaterialLists/" : string.Empty);
                     var filePath = newExportFolder + FragmentNameCleaner.CleanName(fragment) +
                                    GetExtensionForMaterialList(settings.ModelExportFormat);
 
@@ -121,7 +124,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                                     materialListWriter.ClearExportData();
                                     continue;
                                 }
-
                             }
                         }
 
@@ -132,11 +134,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
             }
-            
+
 
             if (!exportEachPass)
             {
-                var filePath = wldFile.GetExportFolderForWldType() + "/MaterialLists/" + wldFile.ZoneShortname + GetExtensionForMaterialList(settings.ModelExportFormat);
+                var filePath = wldFile.GetExportFolderForWldType() +
+                               (settings.ModelExportFormat == ModelExportFormat.Intermediate
+                                   ? "/MaterialLists/"
+                                   : string.Empty) + wldFile.ZoneShortname +
+                               GetExtensionForMaterialList(settings.ModelExportFormat);
                 materialListWriter.WriteAssetToFile(filePath);
             }
 
@@ -187,8 +193,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
             }
-  
-            
+
+
             foreach (var alternateMesh in alternateMeshFragments)
             {
                 alternateMeshWriter.AddFragmentData(alternateMesh);
@@ -217,11 +223,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     //         continue;
                     //     }
                     // }
-                    
-                    
+
+
                     var newExportFolder = wldFile.GetExportFolderForWldType() + "/AlternateMeshes/";
                     Directory.CreateDirectory(newExportFolder);
-                    alternateMeshWriter.WriteAssetToFile(newExportFolder + FragmentNameCleaner.CleanName(alternateMesh) + GetExtensionForMesh(settings.ModelExportFormat));
+                    alternateMeshWriter.WriteAssetToFile(newExportFolder +
+                                                         FragmentNameCleaner.CleanName(alternateMesh) +
+                                                         GetExtensionForMesh(settings.ModelExportFormat));
                     alternateMeshWriter.ClearExportData();
 
                     if (exportCollisionMesh)
@@ -234,11 +242,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (!exportEachPass)
             {
-                meshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + GetExtensionForMesh(settings.ModelExportFormat));
+                meshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname +
+                                            GetExtensionForMesh(settings.ModelExportFormat));
 
                 if (exportCollisionMesh)
                 {
-                    collisionMeshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_collision" + GetExtensionForMesh(settings.ModelExportFormat));
+                    collisionMeshWriter.WriteAssetToFile(exportFolder + wldFile.ZoneShortname + "_collision" +
+                                                         GetExtensionForMesh(settings.ModelExportFormat));
                 }
             }
         }
@@ -248,7 +258,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             switch (format)
             {
                 case ModelExportFormat.Intermediate:
-                    return rootFolder + "/Meshes/";
+                    return rootFolder + "/";
                 case ModelExportFormat.Obj:
                     return rootFolder + "/";
                 default:
