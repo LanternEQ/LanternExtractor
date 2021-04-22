@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GlmSharp;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.DataTypes
@@ -11,21 +12,13 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public int Index;
         public string Name;
         public string FullPath;
-        
         public string CleanedName;
         public string CleanedFullPath;
-
-        // Track fragment (TrackFragment) 0x13
-        public TrackFragment Track;
-        
-        // MeshFragment (MeshFragment) 0x2D        Residential
-        public MeshReference MeshReference;
-
-        // The children indices in the tree
         public List<int> Children;
+        public TrackFragment Track;
+        public mat4 PoseMatrix;
+        public MeshReference MeshReference;
         public ParticleCloud ParticleCloud { get; set; }
-        
-        public List<int> ConnectedPieces { get; set; }
         public Dictionary<string, TrackFragment> AnimationTracks { get; set; }
     }
 }

@@ -89,7 +89,8 @@ namespace LanternExtractor.EQ
                     logger, settings, wldFileToInject);
                 wldFile.Initialize(rootFolder);
 
-                string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder
+                string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
+                                                  settings.ModelExportFormat == ModelExportFormat.Intermediate
                     ? "characters/Characters/Textures/"
                     : shortName + "/Characters/Textures/");
 

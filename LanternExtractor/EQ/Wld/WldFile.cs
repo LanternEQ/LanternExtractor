@@ -104,7 +104,7 @@ namespace LanternExtractor.EQ.Wld
         public virtual bool Initialize(string rootFolder, bool exportData = true)
         {
             RootExportFolder = rootFolder;
-            
+
             _logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
             _logger.LogInfo("-----------------------------------");
             _logger.LogInfo("WLD type: " + _wldType);
@@ -228,7 +228,7 @@ namespace LanternExtractor.EQ.Wld
         {
             BuildSkeletonData();
         }
-        
+
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
@@ -306,7 +306,17 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportMeshes()
         {
-            MeshExporter.ExportMeshes(this, _settings, _logger);
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+            {
+                MeshExporter.ExportMeshes(this, _settings, _logger);
+            }
+            else
+            {
+                if (_wldType == WldType.Characters)
+                {
+                    ActorObjExporter.ExportActors(this, _settings, _logger);
+                }
+            }
         }
 
         public string GetExportFolderForWldType()
@@ -334,9 +344,11 @@ namespace LanternExtractor.EQ.Wld
         {
             switch (_wldType)
             {
-                case WldType.Equipment when _settings.ExportEquipmentToSingleFolder:
+                case WldType.Equipment when _settings.ExportEquipmentToSingleFolder &&
+                                            _settings.ModelExportFormat == ModelExportFormat.Intermediate:
                     return RootExportFolder + "equipment/";
-                case WldType.Characters when _settings.ExportCharactersToSingleFolder:
+                case WldType.Characters when _settings.ExportCharactersToSingleFolder &&
+                                             _settings.ModelExportFormat == ModelExportFormat.Intermediate:
                     return RootExportFolder + "characters/";
                 default:
                     return RootExportFolder + _zoneName + "/";
@@ -477,12 +489,14 @@ namespace LanternExtractor.EQ.Wld
             foreach (var skeleton in skeletons)
             {
                 skeleton.BuildSkeletonData(_wldType == WldType.Characters);
+
+                if (_settings.ModelExportFormat != ModelExportFormat.Intermediate)
+                {
+                    skeleton.BuildSkeletonMatrices();
+                }
             }
 
-            if (_wldToInject != null)
-            {
-                (_wldToInject as WldFileCharacters).BuildSkeletonData();
-            }
+            (_wldToInject as WldFileCharacters)?.BuildSkeletonData();
         }
     }
 }

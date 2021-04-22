@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Numerics;
+using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -239,10 +242,36 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
             }
         }
+        
+        public void BuildSkeletonMatrices()
+        {
+            BuildSkeletonMatrices(0, Tree, vec3.Zero);
+        }
+
+        private void BuildSkeletonMatrices(int index, List<SkeletonNode> treeNodes, vec3 position)
+        {
+            // TODO: rename to bone
+            SkeletonNode node = treeNodes[index];
+
+            var newPosition = position;
+            newPosition += treeNodes[index].Track.TrackDefFragment.Frames[0].Translation;
+            node.PoseMatrix = mat4.Translate(newPosition);
+
+            if (node.Children.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var childNode in node.Children)
+            {
+                BuildSkeletonMatrices(childNode, treeNodes, newPosition);
+            }
+        }
 
         public void BuildSkeletonData(bool stripModelBase)
         {
-            BuildSkeletonTreeData(0, Tree, string.Empty, string.Empty, string.Empty, stripModelBase);
+            BuildSkeletonTreeData(0, Tree, string.Empty, 
+                string.Empty, string.Empty, stripModelBase);
         }
 
         public override void OutputInfo(ILogger logger)
@@ -259,7 +288,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 Animations["pos"] = new Animation();
             }
 
-            Animations["pos"].AddTrack(track, pieceName, Animation.CleanBoneName(pieceName), Animation.CleanBoneAndStripBase(pieceName, ModelBase));
+            Animations["pos"].AddTrack(track, pieceName, Animation.CleanBoneName(pieceName),
+                Animation.CleanBoneAndStripBase(pieceName, ModelBase));
             track.TrackDefFragment.IsAssigned = true;
             track.IsProcessed = true;
             track.IsPoseAnimation = true;
@@ -267,10 +297,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddTrackDataEquipment(TrackFragment track, string boneName, bool isDefault = false)
         {
-            if (track.Name.Contains("C05IT153") && track.TrackDefFragment.Frames.Count != 1)
-            {
-            }
-
             string animationName = string.Empty;
             string modelName = string.Empty;
             string pieceName = string.Empty;

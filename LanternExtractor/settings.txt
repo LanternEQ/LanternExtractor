@@ -12,8 +12,9 @@ RawS3DExtract = false
 
 # Extract the zone mesh with groups?
 # The zone model is made up of smaller BSP region meshes.
-# If enabled, these regions are exported. 
+# If enabled, each region mesh is exported. 
 # If disabled, the mesh is combined into a single mesh.
+# Unity importer only supports single mesh zone.
 ExportZoneMeshGroups = false
 
 # Include hidden geometry (invisible boundaries) in the zone collision export?
@@ -21,13 +22,13 @@ ExportHiddenGeometry = true
 
 # Sets the desired export format for models
 # 0 = Intermediate (Unity importer), 1 = OBJ
-ModelExportFormat = 0
+ModelExportFormat = 1
 
-# If true, will export all characters to the 'characters' folder
+# If true, will export all characters to the 'characters' folder (intermediate only)
 # This is useful when batch importing into Unity
 ExportCharacterToSingleFolder = true
 
-# If true, will export all equipment to the 'equipment' folder
+# If true, will export all equipment to the 'equipment' folder (intermediate only)
 # This is useful when batch importing into Unity
 ExportEquipmentToSingleFolder = true
 

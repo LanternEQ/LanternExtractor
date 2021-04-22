@@ -213,6 +213,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var vertexOutput = new StringBuilder();
 
             usedVertices.Sort();
+            
+            usedVertices.Clear();
+
+            for (int i = 0; i < mesh.Vertices.Count; ++i)
+            {
+                usedVertices.Add(i);
+            }
 
             int frameCount = 1;
 
@@ -289,6 +296,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             _baseVertex += usedVertices.Count;
+
+            if (mesh.Name.Contains("BAT"))
+            {
+                
+            }
         }
 
         private void AddIfNotContained(List<int> list, int element)

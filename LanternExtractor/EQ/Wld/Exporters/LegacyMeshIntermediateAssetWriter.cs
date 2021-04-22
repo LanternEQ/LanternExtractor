@@ -7,7 +7,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
     /// <summary>
     /// Exports an alternate mesh in the intermediate mesh format
     /// </summary>
-    public class AlternateMeshIntermediateAssetWriter : TextAssetWriter
+    public class LegacyMeshIntermediateAssetWriter : TextAssetWriter
     {
         public override void AddFragmentData(WldFragment data)
         {
