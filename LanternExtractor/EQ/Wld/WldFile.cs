@@ -312,10 +312,7 @@ namespace LanternExtractor.EQ.Wld
             }
             else
             {
-                if (_wldType == WldType.Characters)
-                {
-                    ActorObjExporter.ExportActors(this, _settings, _logger);
-                }
+                ActorObjExporter.ExportActors(this, _settings, _logger);
             }
         }
 

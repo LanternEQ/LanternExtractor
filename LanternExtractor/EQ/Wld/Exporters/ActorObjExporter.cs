@@ -131,6 +131,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     ShiftVertices(mesh, skeleton);
                     meshWriter.AddFragmentData(mesh);
                 }
+
+                /*foreach (var m2 in skeleton.HelmMeshes)
+                {
+                    ShiftVertices(m2, skeleton);
+                    meshWriter.AddFragmentData(m2);
+                }*/
             }
 
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton)));
