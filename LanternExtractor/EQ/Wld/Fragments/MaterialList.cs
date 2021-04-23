@@ -26,7 +26,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The number of alternate skins
         /// </summary>
-        private int VariantCount { get; set; }
+        public int VariantCount { get; set; }
 
         public List<Material> AdditionalMaterials { get; set; }
 

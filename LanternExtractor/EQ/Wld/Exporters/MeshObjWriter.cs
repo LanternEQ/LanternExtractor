@@ -54,7 +54,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             _forcedMeshList = forcedMeshList;
         }
 
+        private bool _isCharacterModel;
         private bool _hasCollisionModel = false;
+
+        public void SetIsCharacterModel(bool state)
+        {
+            _isCharacterModel = state;
+        }
 
         public override void AddFragmentData(WldFragment fragment)
         {
@@ -70,6 +76,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             if (_isFirstMesh && _objExportType == ObjExportType.Textured)
             {
                 string name = LanternStrings.ObjMaterialHeader + FragmentNameCleaner.CleanName(mesh.MaterialList) +
+                              (_isCharacterModel ? "_0" : string.Empty) +
                               ".mtl";
 
                 if (!string.IsNullOrEmpty(_forcedMeshList))

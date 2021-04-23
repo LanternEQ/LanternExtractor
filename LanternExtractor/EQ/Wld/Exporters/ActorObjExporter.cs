@@ -114,6 +114,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
             var materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
             
+            meshWriter.SetIsCharacterModel(wldFile.WldType == WldType.Characters);
+            
             foreach (var bone in skeleton.Skeleton)
             {
                 var mesh = bone?.MeshReference?.Mesh;
@@ -132,21 +134,48 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     meshWriter.AddFragmentData(mesh);
                 }
 
-                /*foreach (var m2 in skeleton.HelmMeshes)
+                for (var i = 0; i < skeleton.HelmMeshes.Count; i++)
                 {
+                    var m2 = skeleton.HelmMeshes[i];
+                    var meshWriter2 = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
+                        settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                    meshWriter2.AddFragmentData(skeleton.Meshes[0]);
                     ShiftVertices(m2, skeleton);
-                    meshWriter.AddFragmentData(m2);
-                }*/
+                    meshWriter2.AddFragmentData(m2);
+                    meshWriter2.SetIsCharacterModel(true);
+                    meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
+                }
             }
 
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton)));
 
             var materialList = skeleton.Meshes?[0].MaterialList;
 
+            
             if (materialList != null)
             {
                 materialListWriter.AddFragmentData(materialList);
-                materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList)));
+
+                string savePath;
+
+                if (wldFile.WldType == WldType.Characters)
+                {
+                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList), 0);
+                }
+                else
+                {
+                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList));
+                }
+                
+                materialListWriter.WriteAssetToFile(savePath);
+
+                for (int i = 0; i < materialList.VariantCount; ++i)
+                {
+                    materialListWriter.ClearExportData();
+                    materialListWriter.SetSkinId(i + 1);
+                    materialListWriter.AddFragmentData(materialList);
+                    materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList), i + 1));
+                }
             }
         }
 
@@ -154,6 +183,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             return wldFile.GetExportFolderForWldType() +
                    meshName + ".obj";
+        }
+        
+        private static string GetMeshPath(WldFile wldFile, string meshName, int variant)
+        {
+            return wldFile.GetExportFolderForWldType() +
+                   meshName + "_" + variant + ".obj";
         }
 
         private static string GetCollisionMeshPath(WldFile wldFile, string meshName)
@@ -166,6 +201,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             return wldFile.GetExportFolderForWldType() + "/" +
                    materialListName + ".mtl";
+        }
+        
+        private static string GetMaterialListPath(WldFile wldFile, string materialListName, int skinIndex)
+        {
+            return wldFile.GetExportFolderForWldType() + "/" +
+                   materialListName + "_" + skinIndex + ".mtl";
         }
 
         private static void ShiftVertices(Mesh mesh, SkeletonHierarchy skeleton)
