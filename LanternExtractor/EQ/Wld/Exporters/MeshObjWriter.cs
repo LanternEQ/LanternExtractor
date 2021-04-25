@@ -219,21 +219,19 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             var vertexOutput = new StringBuilder();
 
-            usedVertices.Sort();
-            
-            usedVertices.Clear();
-
-            for (int i = 0; i < mesh.Vertices.Count; ++i)
+            if (_isCharacterModel)
             {
-                usedVertices.Add(i);
+                usedVertices = Enumerable.Range(0, mesh.Vertices.Count).ToList();
+            }
+            else
+            {
+                usedVertices.Sort();
             }
 
             int frameCount = 1;
 
             if (mesh.AnimatedVerticesReference != null)
             {
-                MeshAnimatedVertices animatedVertices = mesh.AnimatedVerticesReference.MeshAnimatedVertices;
-                
                 frameCount += mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count;
             }
 
