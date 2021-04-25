@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
@@ -139,19 +140,18 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     var m2 = skeleton.HelmMeshes[i];
                     var meshWriter2 = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
                         settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                    meshWriter2.SetIsCharacterModel(true);
                     meshWriter2.AddFragmentData(skeleton.Meshes[0]);
                     ShiftVertices(m2, skeleton);
                     meshWriter2.AddFragmentData(m2);
-                    meshWriter2.SetIsCharacterModel(true);
                     meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
                 }
             }
 
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton)));
 
-            var materialList = skeleton.Meshes?[0].MaterialList;
+            var materialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
 
-            
             if (materialList != null)
             {
                 materialListWriter.AddFragmentData(materialList);
