@@ -486,11 +486,6 @@ namespace LanternExtractor.EQ.Wld
             foreach (var skeleton in skeletons)
             {
                 skeleton.BuildSkeletonData(_wldType == WldType.Characters);
-
-                if (_settings.ModelExportFormat != ModelExportFormat.Intermediate)
-                {
-                    skeleton.BuildSkeletonMatrices();
-                }
             }
 
             (_wldToInject as WldFileCharacters)?.BuildSkeletonData();

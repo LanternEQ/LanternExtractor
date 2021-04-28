@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using GlmSharp;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.DataTypes
@@ -7,7 +6,7 @@ namespace LanternExtractor.EQ.Wld.DataTypes
     /// <summary>
     /// A node in the skeleton tree
     /// </summary>
-    public class SkeletonNode
+    public class SkeletonBone
     {
         public int Index;
         public string Name;
@@ -16,9 +15,9 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public string CleanedFullPath;
         public List<int> Children;
         public TrackFragment Track;
-        public mat4 PoseMatrix;
         public MeshReference MeshReference;
         public ParticleCloud ParticleCloud { get; set; }
         public Dictionary<string, TrackFragment> AnimationTracks { get; set; }
+        public SkeletonBone Parent { get; set; }
     }
 }

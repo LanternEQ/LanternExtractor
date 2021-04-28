@@ -188,7 +188,7 @@
     <Compile Include="EQ\Wld\DataTypes\Polygon.cs" />
     <Compile Include="EQ\Wld\DataTypes\RegionType.cs" />
     <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
-    <Compile Include="EQ\Wld\DataTypes\Skeleton.cs" />
+    <Compile Include="EQ\Wld\DataTypes\SkeletonBone.cs" />
     <Compile Include="EQ\Wld\DataTypes\ZonelineInfo.cs" />
     <Compile Include="EQ\Wld\DataTypes\ZonelineType.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriterNew.cs" />

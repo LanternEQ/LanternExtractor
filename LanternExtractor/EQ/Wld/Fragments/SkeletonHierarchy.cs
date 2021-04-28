@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing.Drawing2D;
 using System.Linq;
-using System.Numerics;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -18,20 +16,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// </summary>
     public class SkeletonHierarchy : WldFragment
     {
-        public List<SkeletonNode> Skeleton { get; private set; }
-
         public List<Mesh> Meshes { get; private set; }
         public List<LegacyMesh> AlternateMeshes { get; private set; }
-
-        public List<SkeletonNode> Tree { get; set; }
+        public List<SkeletonBone> Skeleton { get; set; }
 
         public Fragment18 _fragment18Reference;
 
-        public string ModelBase;
-
+        public string ModelBase { get; set; }
         public bool IsAssigned { get; set; }
-
-        private Dictionary<string, SkeletonNode> SkeletonPieceDictionary { get; set; }
+        private Dictionary<string, SkeletonBone> SkeletonPieceDictionary { get; set; }
 
         public Dictionary<string, Animation> Animations = new Dictionary<string, Animation>();
 
@@ -48,11 +41,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
 
-            Tree = new List<SkeletonNode>();
+            Skeleton = new List<SkeletonBone>();
             Meshes = new List<Mesh>();
             AlternateMeshes = new List<LegacyMesh>();
-            Skeleton = new List<SkeletonNode>();
-            SkeletonPieceDictionary = new Dictionary<string, SkeletonNode>();
+            SkeletonPieceDictionary = new Dictionary<string, SkeletonBone>();
 
             Name = stringHash[-Reader.ReadInt32()];
             ModelBase = FragmentNameCleaner.CleanName(this, true);
@@ -63,10 +55,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Confirmed
             int flags = Reader.ReadInt32();
 
-            if (flags != 2)
-            {
-            }
-
             var ba = new BitAnalyzer(flags);
 
             bool hasUnknownParams = ba.IsBitSet(0);
@@ -74,29 +62,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             bool hasMeshReferences = ba.IsBitSet(9);
 
             // Number of bones in the skeleton
-            // Confirmed
             int boneCount = Reader.ReadInt32();
 
             // Fragment 18 reference
-            // Not used for the UFO, used for trees. Let's figure this out.
-            // Confirmed
-            int fragment18Reference = Reader.ReadInt32();
+            int fragment18Reference = Reader.ReadInt32() - 1;
 
             if (fragment18Reference > 0)
             {
-                _fragment18Reference = fragments[fragment18Reference - 1] as Fragment18;
+                _fragment18Reference = fragments[fragment18Reference] as Fragment18;
             }
 
             // Three sequential DWORDs
             // This will never be hit for object animations.
-            // Confirmed
             if (hasUnknownParams)
             {
                 Reader.BaseStream.Position += 3 * sizeof(int);
             }
 
             // This is the sphere radius checked against the frustum to cull this object
-            // Confirmed we can see this exact in game
             if (hasBoundingRadius)
             {
                 BoundingRadius = Reader.ReadSingle();
@@ -104,14 +87,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             for (int i = 0; i < boneCount; ++i)
             {
-                var pieceNew = new SkeletonNode
-                {
-                    Index = i
-                };
-
                 // An index into the string has to get this bone's name
                 int boneNameIndex = Reader.ReadInt32();
                 string boneName = string.Empty;
+                
                 if (stringHash.ContainsKey(-boneNameIndex))
                 {
                     boneName = stringHash[-boneNameIndex];
@@ -127,14 +106,20 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 TrackFragment track = fragments[trackReferenceIndex] as TrackFragment;
                 AddPoseTrack(track, boneName);
-                pieceNew.Track = track;
-                pieceNew.Name = boneName;
-                BoneMappingClean[i] = Animation.CleanBoneAndStripBase(boneName, ModelBase);
-                BoneMapping[i] = boneName;
 
+                var pieceNew = new SkeletonBone
+                {
+                    Index = i, 
+                    Track = track, 
+                    Name = boneName
+                };
+                
                 pieceNew.Track.IsPoseAnimation = true;
                 pieceNew.AnimationTracks = new Dictionary<string, TrackFragment>();
-
+                
+                BoneMappingClean[i] = Animation.CleanBoneAndStripBase(boneName, ModelBase);
+                BoneMapping[i] = boneName;
+                
                 if (pieceNew.Track == null)
                 {
                     logger.LogError("Unable to link track reference!");
@@ -150,13 +135,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     pieceNew.MeshReference = fragments[meshReferenceIndex] as MeshReference;
 
-                    if (pieceNew.MeshReference != null)
-                    {
-                        if (pieceNew.MeshReference.Mesh != null)
-                        {
-                        }
-                    }
-                    else
+                    if (pieceNew.MeshReference == null)
                     {
                         pieceNew.ParticleCloud = fragments[meshReferenceIndex] as ParticleCloud;
                     }
@@ -164,13 +143,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     if (pieceNew.Name == "root")
                     {
                         pieceNew.Name = FragmentNameCleaner.CleanName(pieceNew.MeshReference.Mesh);
-                    }
-
-                    // Never null
-                    // Confirmed
-                    if (pieceNew.MeshReference == null && pieceNew.ParticleCloud == null)
-                    {
-                        logger.LogError("Mesh reference null");
                     }
                 }
 
@@ -184,7 +156,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     pieceNew.Children.Add(childIndex);
                 }
 
-                Tree.Add(pieceNew);
                 Skeleton.Add(pieceNew);
 
                 if (pieceNew.Name != "")
@@ -222,55 +193,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
                         if (AlternateMeshes.All(x => x.Name != meshRef.LegacyMesh.Name))
                         {
                             AlternateMeshes.Add(meshRef.LegacyMesh);
-                            //meshRef.AlternateMesh.IsHandled = true;
                         }
                     }
                 }
 
                 Meshes = Meshes.OrderBy(x => x.Name).ToList();
 
-                List<int> things = new List<int>();
+                List<int> unknown = new List<int>();
 
                 for (int i = 0; i < size2; ++i)
                 {
-                    things.Add(Reader.ReadInt32());
+                    unknown.Add(Reader.ReadInt32());
                 }
-            }
-
-            // Confirmed end for objects
-            if (Reader.BaseStream.Position != Reader.BaseStream.Length)
-            {
-            }
-        }
-        
-        public void BuildSkeletonMatrices()
-        {
-            BuildSkeletonMatrices(0, Tree, vec3.Zero);
-        }
-
-        private void BuildSkeletonMatrices(int index, List<SkeletonNode> treeNodes, vec3 position)
-        {
-            // TODO: rename to bone
-            SkeletonNode node = treeNodes[index];
-
-            var newPosition = position;
-            newPosition += treeNodes[index].Track.TrackDefFragment.Frames[0].Translation;
-            node.PoseMatrix = mat4.Translate(newPosition);
-
-            if (node.Children.Count == 0)
-            {
-                return;
-            }
-
-            foreach (var childNode in node.Children)
-            {
-                BuildSkeletonMatrices(childNode, treeNodes, newPosition);
             }
         }
 
         public void BuildSkeletonData(bool stripModelBase)
         {
-            BuildSkeletonTreeData(0, Tree, string.Empty, 
+            BuildSkeletonTreeData(0, Skeleton, null, string.Empty, 
                 string.Empty, string.Empty, stripModelBase);
         }
 
@@ -421,33 +361,32 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             Animations[track.AnimationName]
-                .AddTrack(track, track.PieceName, Animation.CleanBoneName(track.PieceName),
+                .AddTrack(track, track.Name, Animation.CleanBoneName(track.PieceName),
                     Animation.CleanBoneAndStripBase(track.PieceName, ModelBase));
             track.TrackDefFragment.IsAssigned = true;
             track.IsProcessed = true;
         }
 
-        private void BuildSkeletonTreeData(int index, List<SkeletonNode> treeNodes, string runningName,
-            string runningNameCleaned,
-            string runningIndex, bool stripModelBase)
+        private void BuildSkeletonTreeData(int index, List<SkeletonBone> treeNodes, SkeletonBone parent, 
+            string runningName, string runningNameCleaned, string runningIndex, bool stripModelBase)
         {
-            // TODO: rename to bone
-            SkeletonNode node = treeNodes[index];
-            node.CleanedName = CleanBoneName(node.Name, stripModelBase);
-            BoneMappingClean[index] = node.CleanedName;
-
-            if (node.Name != string.Empty)
+            SkeletonBone bone = treeNodes[index];
+            bone.Parent = parent;
+            bone.CleanedName = CleanBoneName(bone.Name, stripModelBase);
+            BoneMappingClean[index] = bone.CleanedName;
+            
+            if (bone.Name != string.Empty)
             {
-                runningIndex += node.Index + "/";
+                runningIndex += bone.Index + "/";
             }
 
-            runningName += node.Name;
-            runningNameCleaned += node.CleanedName;
+            runningName += bone.Name;
+            runningNameCleaned += bone.CleanedName;
 
-            node.FullPath = runningName;
-            node.CleanedFullPath = runningNameCleaned;
+            bone.FullPath = runningName;
+            bone.CleanedFullPath = runningNameCleaned;
 
-            if (node.Children.Count == 0)
+            if (bone.Children.Count == 0)
             {
                 return;
             }
@@ -455,9 +394,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             runningName += "/";
             runningNameCleaned += "/";
 
-            foreach (var childNode in node.Children)
+            foreach (var childNode in bone.Children)
             {
-                BuildSkeletonTreeData(childNode, treeNodes, runningName, runningNameCleaned, runningIndex,
+                BuildSkeletonTreeData(childNode, treeNodes, bone, runningName, runningNameCleaned, runningIndex,
                     stripModelBase);
             }
         }
@@ -505,7 +444,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 return true;
             }
 
-            foreach (var bone in Tree)
+            foreach (var bone in Skeleton)
             {
                 string cleanBoneName = bone.Name.Replace("_DAG", string.Empty).ToLower();
                 if (cleanBoneName == track)
@@ -517,6 +456,54 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             boneName = string.Empty;
             return false;
+        }
+
+        public mat4 GetBoneMatrix(int boneIndex, string animName, int frame)
+        {
+            if (!Animations.ContainsKey(animName))
+            {
+                return mat4.Identity;
+            }
+
+            if (frame < 0 || frame >= Animations[animName].FrameCount)
+            {
+                return mat4.Identity;
+            }
+
+            var currentBone = Skeleton[boneIndex];
+            
+            mat4 boneMatrix = mat4.Identity;
+
+            while (currentBone != null)
+            {
+                if (!Animations[animName].TracksCleanedStripped.ContainsKey(currentBone.CleanedName))
+                {
+                    break;
+                }
+                
+                var track = Animations[animName].TracksCleanedStripped[currentBone.CleanedName].TrackDefFragment;
+                int realFrame = frame >= track.Frames.Count ? 0 : frame;
+                currentBone = Skeleton[boneIndex].Parent;
+                
+                float scaleValue = track.Frames[realFrame].Scale;
+                var scaleMat = mat4.Scale(scaleValue, scaleValue, scaleValue);
+        
+                var rotationMatrix = new mat4(track.Frames[realFrame].Rotation);
+        
+                var translation = track.Frames[realFrame].Translation;
+                var translateMat = mat4.Translate(translation);
+
+                var modelMatrix = translateMat * rotationMatrix * scaleMat;
+
+                boneMatrix = modelMatrix * boneMatrix;
+
+                if (currentBone != null)
+                {
+                    boneIndex = currentBone.Index;
+                }
+            }
+
+            return boneMatrix;
         }
     }
 }

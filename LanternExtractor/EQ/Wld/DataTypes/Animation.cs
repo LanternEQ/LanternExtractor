@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.DataTypes
@@ -42,15 +43,6 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             return cleanedName.Length == 0 ? "root" : cleanedName;
         }
 
-        public static string CleanBoneName(string name, string modelBase)
-        {
-            name = name.ToLower();
-            name = name.Replace("_dag", "");
-            name = name.Replace(modelBase, string.Empty);
-            name += name.Length == 0 ? "root" : string.Empty;
-            return name;
-        }
-        
         public void AddTrack(TrackFragment track, string pieceName, string cleanedName, string cleanStrippedName)
         {
             // Prevent overwriting tracks

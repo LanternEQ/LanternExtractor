@@ -53,7 +53,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export.AppendLine();
             }
             
-            foreach (var node in skeleton.Tree)
+            foreach (var node in skeleton.Skeleton)
             {
                 string childrenList = string.Empty;
                 

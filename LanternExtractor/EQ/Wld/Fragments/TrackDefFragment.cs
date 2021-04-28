@@ -18,7 +18,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// A list of bone positions for each frame
         /// </summary>
-        public List<BoneTransform> Frames { get; private set; }
+        public List<BoneTransform> Frames { get; set; }
         
         public bool IsAssigned;
 

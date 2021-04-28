@@ -204,44 +204,44 @@ namespace LanternExtractor.EQ.Sound
                 if (entry.SoundType == SoundType.Music)
                 {
                     musicExport.Append(entry.PosX);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.PosZ);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.PosY);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.Radius);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.SoundIdDay);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.SoundIdNight);
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.AsDistance); // Day loop count
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.UnkRange64); // Night loop count
-                    musicExport.Append(LanternStrings.TextExportSeparator);
+                    musicExport.Append(",");
                     musicExport.Append(entry.FadeOutMs);
                     musicExport.AppendLine();
                 }
                 else
                 {
                     soundExport.Append((int)entry.SoundType);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.PosX);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.PosZ);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.PosY);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.Radius);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.SoundIdDay);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.SoundIdNight);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.CooldownDay);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.CooldownNight);
-                    soundExport.Append(LanternStrings.TextExportSeparator);
+                    soundExport.Append(",");
                     soundExport.Append(entry.RandomDelay);
                     soundExport.AppendLine();
                 }

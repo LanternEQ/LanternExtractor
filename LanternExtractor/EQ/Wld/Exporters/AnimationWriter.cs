@@ -42,15 +42,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
             _export.AppendLine("framecount," + anim.FrameCount);
             _export.AppendLine("totalTimeMs," + anim.AnimationTimeMs);
 
-            for (int i = 0; i < skeleton.Tree.Count; ++i)
+            for (int i = 0; i < skeleton.Skeleton.Count; ++i)
             {
                 string boneName = _isCharacterAnimation
                     ? Animation.CleanBoneAndStripBase(skeleton.BoneMapping[i], skeleton.ModelBase)
                     : Animation.CleanBoneName(skeleton.BoneMapping[i]);
 
                 string fullPath = _isCharacterAnimation
-                    ? skeleton.Tree[i].CleanedFullPath
-                    : Animation.CleanBoneName(skeleton.Tree[i].FullPath);
+                    ? skeleton.Skeleton[i].CleanedFullPath
+                    : Animation.CleanBoneName(skeleton.Skeleton[i].FullPath);
 
 
                 var trackArray = _isCharacterAnimation
@@ -88,7 +88,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         BoneTransform boneTransform = trackArray[boneName].TrackDefFragment.Frames[j];
                         int delay = _isCharacterAnimation
                             ? anim.AnimationTimeMs / anim.FrameCount
-                            : skeleton.Tree[i].Track.FrameMs;
+                            : skeleton.Skeleton[i].Track.FrameMs;
                         CreateTrackString(fullPath, j, boneTransform, delay);
                     }
                 }

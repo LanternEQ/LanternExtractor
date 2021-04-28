@@ -64,6 +64,11 @@ namespace LanternExtractor
         public bool ExportEquipmentToSingleFolder { get; private set; }
         
         /// <summary>
+        /// Exports all OBJ frames for all animations
+        /// </summary>
+        public bool ExportAllAnimationFrames { get; private set; }
+        
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -143,6 +148,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
             {
                 ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
+            }
+            
+            if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
+            {
+                ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

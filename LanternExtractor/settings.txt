@@ -32,6 +32,10 @@ ExportCharacterToSingleFolder = true
 # This is useful when batch importing into Unity
 ExportEquipmentToSingleFolder = true
 
+# If true, this will dump an OBJ for each animation frame. (OBJ only)
+# This could use a high amount of disk space.
+ExportAllAnimationFrames = false
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
 LoggerVerbosity = 2

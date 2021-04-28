@@ -10,6 +10,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public static class ActorObjExporter
     {
+        public static Dictionary<Mesh, List<vec3>> _backupVertices = new Dictionary<Mesh, List<vec3>>();
+        
         public static void ExportActors(WldFile wldFile, Settings settings, ILogger logger)
         {
             // For a zone wld, we ignore actors and just export all meshes
@@ -111,44 +113,22 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            var meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
-                settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+            if (settings.ExportAllAnimationFrames)
+            {
+                foreach (var animation in skeleton.Animations)
+                {
+                    for (int i = 0; i < animation.Value.FrameCount; ++i)
+                    {
+                        WriteAnimationFrame(skeleton, animation.Key, i, settings, wldFile);
+                    }
+                }
+            }
+            else
+            {
+                WriteAnimationFrame(skeleton, "pos", 0, settings, wldFile);
+            }
+
             var materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
-            
-            meshWriter.SetIsCharacterModel(wldFile.WldType == WldType.Characters);
-            
-            foreach (var bone in skeleton.Skeleton)
-            {
-                var mesh = bone?.MeshReference?.Mesh;
-
-                if (mesh != null)
-                {
-                    meshWriter.AddFragmentData(mesh);
-                }
-            }
-            
-            if (skeleton.Meshes != null)
-            {
-                foreach (var mesh in skeleton.Meshes)
-                {
-                    ShiftVertices(mesh, skeleton);
-                    meshWriter.AddFragmentData(mesh);
-                }
-
-                for (var i = 0; i < skeleton.HelmMeshes.Count; i++)
-                {
-                    var m2 = skeleton.HelmMeshes[i];
-                    var meshWriter2 = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
-                        settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
-                    meshWriter2.SetIsCharacterModel(true);
-                    meshWriter2.AddFragmentData(skeleton.Meshes[0]);
-                    ShiftVertices(m2, skeleton);
-                    meshWriter2.AddFragmentData(m2);
-                    meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
-                }
-            }
-
-            meshWriter.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton)));
 
             var materialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
 
@@ -179,12 +159,111 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
         }
 
+        private static void WriteAnimationFrame(SkeletonHierarchy skeleton, string animation, int frameIndex, Settings settings, WldFile wldFile)
+        {
+            var meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
+                settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+            
+            meshWriter.SetIsCharacterModel(wldFile.WldType == WldType.Characters);
+            
+            foreach (var bone in skeleton.Skeleton)
+            {
+                var mesh = bone?.MeshReference?.Mesh;
+
+                if (mesh != null)
+                {
+                    meshWriter.AddFragmentData(mesh);
+                }
+            }
+            
+            if (skeleton.Meshes != null)
+            {
+                foreach (var mesh in skeleton.Meshes)
+                {
+                    ShiftVertices(mesh, skeleton, animation, frameIndex);
+                    meshWriter.AddFragmentData(mesh);
+                }
+
+                for (var i = 0; i < skeleton.HelmMeshes.Count; i++)
+                {
+                    var m2 = skeleton.HelmMeshes[i];
+                    var meshWriter2 = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
+                        settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                    meshWriter2.SetIsCharacterModel(true);
+                    meshWriter2.AddFragmentData(skeleton.Meshes[0]);
+                    ShiftVertices(m2, skeleton, animation, frameIndex);
+                    meshWriter2.AddFragmentData(m2);
+                    meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
+                }
+            }
+
+            string fileName = string.Empty;
+
+            if (settings.ExportAllAnimationFrames)
+            {
+                fileName = FragmentNameCleaner.CleanName(skeleton) + "_" + animation + "_" + frameIndex;
+            }
+            else
+            {
+                fileName = FragmentNameCleaner.CleanName(skeleton);
+            }
+            
+            meshWriter.WriteAssetToFile(GetMeshPath(wldFile, fileName));
+            RestoreVertices();
+        }
+
+        private static void RestoreVertices()
+        {
+            foreach (var shiftedMesh in _backupVertices)
+            {
+                shiftedMesh.Key.Vertices = shiftedMesh.Value;
+            }
+        }
+
+        private static void ShiftVertices(Mesh mesh, SkeletonHierarchy skeleton, string animName, int frame)
+        {
+            if (!skeleton.Animations.ContainsKey(animName))
+            {
+                return;
+            }
+
+            if (mesh.Vertices.Count == 0)
+            {
+                return;
+            }
+            
+            _backupVertices[mesh] = new List<vec3>();
+
+            var animation = skeleton.Animations[animName];
+            
+            foreach (var mobVertexPiece in mesh.MobPieces)
+            {
+                var boneIndex = mobVertexPiece.Key;
+                var bone = skeleton.Skeleton[boneIndex].CleanedName;
+
+                if (!animation.TracksCleanedStripped.ContainsKey(bone))
+                {
+                    continue;
+                }
+                
+                mat4 modelMatrix = skeleton.GetBoneMatrix(boneIndex, animName, frame);
+              
+                for (int i = 0; i < mobVertexPiece.Value.Count; ++i)
+                {
+                    var vertex = mesh.Vertices[i + mobVertexPiece.Value.Start];
+                    _backupVertices[mesh].Add(vertex);
+                    var newVertex = modelMatrix * new vec4(vertex, 1f);
+                    mesh.Vertices[i + mobVertexPiece.Value.Start] = newVertex.xyz;
+                }
+            }
+        }
+
         private static string GetMeshPath(WldFile wldFile, string meshName)
         {
             return wldFile.GetExportFolderForWldType() +
                    meshName + ".obj";
         }
-        
+
         private static string GetMeshPath(WldFile wldFile, string meshName, int variant)
         {
             return wldFile.GetExportFolderForWldType() +
@@ -202,28 +281,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
             return wldFile.GetExportFolderForWldType() + "/" +
                    materialListName + ".mtl";
         }
-        
+
         private static string GetMaterialListPath(WldFile wldFile, string materialListName, int skinIndex)
         {
             return wldFile.GetExportFolderForWldType() + "/" +
                    materialListName + "_" + skinIndex + ".mtl";
-        }
-
-        private static void ShiftVertices(Mesh mesh, SkeletonHierarchy skeleton)
-        {
-            foreach (var something in mesh.MobPieces)
-            {
-                var boneIndex = something.Key;
-                var bone = skeleton.Tree[boneIndex];
-                var matrix = bone.PoseMatrix;
-
-                for (int i = 0; i < something.Value.Count; ++i)
-                {
-                    var vertex = mesh.Vertices[i + something.Value.Start];
-                    var newVertex = matrix * new vec4(vertex, 1f);
-                    mesh.Vertices[i + something.Value.Start] = newVertex.xyz;
-                }
-            }
         }
     }
 }

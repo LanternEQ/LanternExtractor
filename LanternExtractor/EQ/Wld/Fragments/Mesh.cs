@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// The vertices of the mesh
         /// </summary>
-        public List<vec3> Vertices { get; private set; }
+        public List<vec3> Vertices { get; set; }
         
         /// <summary>
         /// The normals of the mesh

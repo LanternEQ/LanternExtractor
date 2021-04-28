@@ -61,6 +61,11 @@ namespace LanternExtractor.EQ.Wld
                 GlobalCharacterFixer characterFixer = new GlobalCharacterFixer();
                 characterFixer.Fix(this);
             }
+            
+            foreach (var skeleton in GetFragmentsOfType<SkeletonHierarchy>())
+            {
+                skeleton.BuildSkeletonData(_wldType == WldType.Characters);
+            }
         }
         
         private void BuildSlotMapping()
