@@ -38,6 +38,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int parameters = Reader.ReadInt32();
 
             // Unsure what this color is used for
+            // Referred to as the RGB pen
             byte colorR = Reader.ReadByte();
             byte colorG = Reader.ReadByte();
             byte colorB = Reader.ReadByte();

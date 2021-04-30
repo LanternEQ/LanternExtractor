@@ -70,13 +70,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                _export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + MaterialList.GetMaterialPrefix(material.ShaderType) + material.GetFirstBitmapNameWithoutExtension().Replace(".png", ".bmp"));
+                _export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + MaterialList.GetMaterialPrefix(material.ShaderType) + material.GetFirstBitmapNameWithoutExtension());
                 _export.AppendLine("Ka 1.000 1.000 1.000");
                 _export.AppendLine("Kd 1.000 1.000 1.000");
                 _export.AppendLine("Ks 0.000 0.000 0.000");
                 _export.AppendLine("d 1.0 ");
                 _export.AppendLine("illum 2");
-                _export.AppendLine("map_Kd " + "Textures/" + skinMaterial.GetFirstBitmapExportFilename().Replace(".dds", ".png"));
+                _export.AppendLine("map_Kd " + "Textures/" + skinMaterial.GetFirstBitmapExportFilename());
             }
         }
     }
