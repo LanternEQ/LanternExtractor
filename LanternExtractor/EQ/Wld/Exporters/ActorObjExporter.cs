@@ -250,7 +250,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
               
                 for (int i = 0; i < mobVertexPiece.Value.Count; ++i)
                 {
-                    var vertex = mesh.Vertices[i + mobVertexPiece.Value.Start];
+                    int shiftedIndex = i + mobVertexPiece.Value.Start;
+
+                    if (shiftedIndex >= mesh.Vertices.Count)
+                    {
+                        continue;
+                    }
+                    
+                    var vertex = mesh.Vertices[shiftedIndex];
                     _backupVertices[mesh].Add(vertex);
                     var newVertex = modelMatrix * new vec4(vertex, 1f);
                     mesh.Vertices[i + mobVertexPiece.Value.Start] = newVertex.xyz;
