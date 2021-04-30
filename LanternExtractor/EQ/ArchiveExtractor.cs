@@ -56,7 +56,12 @@ namespace LanternExtractor.EQ
             {
                 var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
                 wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + "/equipment/Textures/", logger);
+                WriteWldTextures(s3dArchive, wldFile,
+                    rootFolder +
+                    (settings.ExportEquipmentToSingleFolder &&
+                     settings.ModelExportFormat == ModelExportFormat.Intermediate
+                        ? "equipment/Textures/"
+                        : shortName + "/Textures/"), logger);
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {
