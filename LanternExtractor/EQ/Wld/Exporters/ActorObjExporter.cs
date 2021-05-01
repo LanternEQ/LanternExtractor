@@ -128,34 +128,56 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 WriteAnimationFrame(skeleton, "pos", 0, settings, wldFile);
             }
 
+            List<MaterialList> materialLists = new List<MaterialList>();
+            
             var materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
 
             var materialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
 
             if (materialList != null)
             {
-                materialListWriter.AddFragmentData(materialList);
+                materialLists.Add(materialList);
+            }
+            
+            foreach (var skeletonBones in skeleton.Skeleton)
+            {
+                var boneMaterialList = skeletonBones.MeshReference?.Mesh?.MaterialList;
+
+                if (boneMaterialList != null)
+                {
+                    if (!materialLists.Contains(boneMaterialList))
+                    {
+                        materialLists.Add(boneMaterialList);
+                    }
+                }
+            }
+
+            foreach(var ml in materialLists)
+            {
+                materialListWriter.AddFragmentData(ml);
 
                 string savePath;
 
                 if (wldFile.WldType == WldType.Characters)
                 {
-                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList), 0);
+                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(ml), 0);
                 }
                 else
                 {
-                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList));
+                    savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(ml));
                 }
                 
                 materialListWriter.WriteAssetToFile(savePath);
 
-                for (int i = 0; i < materialList.VariantCount; ++i)
+                for (int i = 0; i < ml.VariantCount; ++i)
                 {
                     materialListWriter.ClearExportData();
                     materialListWriter.SetSkinId(i + 1);
-                    materialListWriter.AddFragmentData(materialList);
-                    materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList), i + 1));
+                    materialListWriter.AddFragmentData(ml);
+                    materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(ml), i + 1));
                 }
+                
+                materialListWriter.ClearExportData();
             }
         }
 
