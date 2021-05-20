@@ -96,7 +96,7 @@ namespace LanternExtractor.EQ
 
                 string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
                                                   settings.ModelExportFormat == ModelExportFormat.Intermediate
-                    ? "characters/Characters/Textures/"
+                    ? "characters/Textures/"
                     : shortName + "/Characters/Textures/");
 
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
