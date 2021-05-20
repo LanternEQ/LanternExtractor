@@ -331,7 +331,14 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return GetRootExportFolder();
                 case WldType.Characters:
-                    return GetRootExportFolder() + "Characters/";
+                    if (_settings.ExportEquipmentToSingleFolder)
+                    {
+                        return GetRootExportFolder();
+                    }
+                    else
+                    {
+                        return GetRootExportFolder() + "Characters/";
+                    }
                 default:
                     return string.Empty;
             }
@@ -361,12 +368,13 @@ namespace LanternExtractor.EQ.Wld
 
             TextAssetWriter actorWriterStatic, actorWriterSkeletal, actorWriterParticle, actorWriterSprite2d;
 
-            if (_wldType == WldType.Equipment)
+            if (_wldType == WldType.Equipment && _settings.ExportEquipmentToSingleFolder || _wldType == WldType.Characters && _settings.ExportCharactersToSingleFolder)
             {
-                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static);
-                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal);
-                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle);
-                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite);
+                bool isCharacters = _wldType == WldType.Characters;
+                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static, isCharacters);
+                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal, isCharacters);
+                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle, isCharacters);
+                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite, isCharacters);
             }
             else
             {
@@ -398,7 +406,7 @@ namespace LanternExtractor.EQ.Wld
 
             var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
-            if (skeletons == null)
+            if (skeletons.Count == 0)
             {
                 if (_wldToInject == null)
                 {

@@ -122,7 +122,7 @@ namespace LanternExtractor.EQ.Wld
 
             var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
-            if (skeletons == null)
+            if (skeletons.Count == 0)
             {
                 if (_wldToInject == null)
                 {
@@ -131,8 +131,8 @@ namespace LanternExtractor.EQ.Wld
                 
                 skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
             }
-
-            if (skeletons == null)
+            
+            if (skeletons.Count == 0)
             {
                 return;
             }
