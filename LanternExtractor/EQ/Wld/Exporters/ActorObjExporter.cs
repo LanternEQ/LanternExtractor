@@ -206,9 +206,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     meshWriter.AddFragmentData(mesh);
                 }
 
-                for (var i = 0; i < skeleton.HelmMeshes.Count; i++)
+                for (var i = 0; i < skeleton.SecondaryMeshes.Count; i++)
                 {
-                    var m2 = skeleton.HelmMeshes[i];
+                    var m2 = skeleton.SecondaryMeshes[i];
                     var meshWriter2 = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
                         settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
                     meshWriter2.SetIsCharacterModel(true);

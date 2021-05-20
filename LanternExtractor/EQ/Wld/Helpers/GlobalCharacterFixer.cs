@@ -121,7 +121,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 }
                 
                 // Rename all secondary meshes
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.HelmMeshes)
+                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.SecondaryMeshes)
                 {
                     mesh.Name = mesh.Name.Replace("FDR", "FDF");
                 }

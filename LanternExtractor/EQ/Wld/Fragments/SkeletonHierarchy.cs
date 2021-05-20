@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public List<LegacyMesh> AlternateMeshes { get; private set; }
         public List<SkeletonBone> Skeleton { get; set; }
 
-        public Fragment18 _fragment18Reference;
+        private Fragment18 _fragment18Reference;
 
         public string ModelBase { get; set; }
         public bool IsAssigned { get; set; }
@@ -33,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public float BoundingRadius;
 
-        public List<Mesh> HelmMeshes = new List<Mesh>();
+        public List<Mesh> SecondaryMeshes = new List<Mesh>();
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
@@ -416,22 +416,19 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddAdditionalMesh(Mesh mesh)
         {
-            if (Meshes.Any(x => x.Name == mesh.Name))
+            if (Meshes.Any(x => x.Name == mesh.Name) 
+                || SecondaryMeshes.Any(x => x.Name == mesh.Name))
             {
                 return;
             }
-
-            if (HelmMeshes.Any(x => x.Name == mesh.Name))
-            {
-                return;
-            }
-
+            
             if (mesh.MobPieces.Count == 0)
             {
                 return;
             }
 
-            HelmMeshes.Add(mesh);
+            SecondaryMeshes.Add(mesh);
+            SecondaryMeshes = SecondaryMeshes.OrderBy(x => x.Name).ToList();
         }
 
         public bool IsValidSkeleton(string trackName, out string boneName)

@@ -33,7 +33,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
-                foreach (var mesh in skeleton.HelmMeshes)
+                foreach (var mesh in skeleton.SecondaryMeshes)
                 {
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(mesh));
