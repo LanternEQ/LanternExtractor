@@ -42,7 +42,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int regionStringSize = Reader.ReadInt32();
 
             string regionTypeString = regionStringSize == 0 ? Name.ToLower() : 
-                WldStringDecoder.DecodeString(Reader.ReadBytes(regionStringSize));
+                WldStringDecoder.DecodeString(Reader.ReadBytes(regionStringSize)).ToLower();
 
             RegionTypes = new List<RegionType>();
             
