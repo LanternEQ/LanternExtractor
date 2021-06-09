@@ -176,7 +176,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (!exportEachPass)
             {
-                meshWriter.WriteAssetToFile(exportFolder + "Meshes/ " + wldFile.ZoneShortname +
+                meshWriter.WriteAssetToFile(exportFolder + "Meshes/" + wldFile.ZoneShortname +
                                             ".txt");
 
                 if (exportCollisionMesh)
