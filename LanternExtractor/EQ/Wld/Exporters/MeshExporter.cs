@@ -181,7 +181,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 if (exportCollisionMesh)
                 {
-                    collisionMeshWriter.WriteAssetToFile(exportFolder + "Meshes/ " + wldFile.ZoneShortname + "_collision" +
+                    collisionMeshWriter.WriteAssetToFile(exportFolder + "Meshes/" + wldFile.ZoneShortname + "_collision" +
                                                                       ".txt");
                 }
             }
