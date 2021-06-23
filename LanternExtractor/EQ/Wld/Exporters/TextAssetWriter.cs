@@ -20,6 +20,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
+
+            if (_export.Length == 0)
+            {
+                return;
+            }
             
             Directory.CreateDirectory(directory);
             
