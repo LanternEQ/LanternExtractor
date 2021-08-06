@@ -12,8 +12,6 @@ namespace LanternExtractor.EQ.Wld
     public class WldFileCharacters : WldFile
     {
         public Dictionary<string, string> AnimationSources = new Dictionary<string, string>();
-
-        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
         
         public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
@@ -58,7 +56,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (_settings.ExportCharactersToSingleFolder)
             {
-                GlobalCharacterFixer characterFixer = new GlobalCharacterFixer();
+                var characterFixer = new CharacterFixer();
                 characterFixer.Fix(this);
             }
             

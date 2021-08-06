@@ -12,8 +12,8 @@ namespace LanternExtractor.EQ.Pfs
     /// </summary>
     public class PfsArchive
     {
-        private readonly string _filePath;
-        private readonly string _fileName;
+        public string FilePath { get; }
+        public string FileName { get; }
         
         private List<PfsFile> _files = new List<PfsFile>();
         private Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
@@ -21,26 +21,26 @@ namespace LanternExtractor.EQ.Pfs
 
         public bool IsWldArchive { get; set; }
 
-        public Dictionary<string, string> FilenameChanges;
+        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
         
         public PfsArchive(string filePath, ILogger logger)
         {
-            _filePath = filePath;
-            _fileName = Path.GetFileName(filePath);
+            FilePath = filePath;
+            FileName = Path.GetFileName(filePath);
             _logger = logger;
         }
 
         public bool Initialize()
         {
-            _logger.LogInfo("PfsArchive: Started initialization of archive: " + _fileName);
+            _logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
 
-            if (!File.Exists(_filePath))
+            if (!File.Exists(FilePath))
             {
-                _logger.LogError("PfsArchive: File does not exist at: " + _filePath);
+                _logger.LogError("PfsArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
-            using (var fileStream = new FileStream(_filePath, FileMode.Open, FileAccess.Read))
+            using (var fileStream = new FileStream(FilePath, FileMode.Open, FileAccess.Read))
             {
                 var reader = new BinaryReader(fileStream);
                 int directoryOffset = reader.ReadInt32();
@@ -130,9 +130,9 @@ namespace LanternExtractor.EQ.Pfs
                     }
                 }
 
-                _logger.LogInfo("PfsArchive: Finished initialization of archive: " + _fileName);
+                _logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
             }
-
+            
             return true;
         }
         
@@ -212,6 +212,19 @@ namespace LanternExtractor.EQ.Pfs
             {
                 FileWriter.WriteBytesToDisk(file.Bytes, folder, file.Name);
             }
+        }
+
+        public void RenameFile(string originalName, string newName)
+        {
+            if (!_fileNameReference.ContainsKey(originalName))
+            {
+                return;
+            }
+
+            var file = _fileNameReference[originalName];
+            _fileNameReference.Remove(originalName);
+            file.Name = newName;
+            _fileNameReference[newName] = file;
         }
     }
 }

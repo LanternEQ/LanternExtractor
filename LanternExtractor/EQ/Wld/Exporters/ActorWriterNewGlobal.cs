@@ -14,12 +14,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
         
         private List<string> _objects = new List<string>();
 
-        public ActorWriterNewGlobal(ActorType actorType, bool isCharacters)
+        public ActorWriterNewGlobal(ActorType actorType, string getRootExportFolder)
         {
             _actorType = actorType;
 
-            string folderType = isCharacters ? "characters" : "equipment";
-            string filePath = $"Exports/{folderType}/actors_{_actorType.ToString().ToLower()}.txt";
+            string filePath = getRootExportFolder + $"/actors_{_actorType.ToString().ToLower()}.txt";
             if (!File.Exists(filePath))
             {
                 return;

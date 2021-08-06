@@ -80,6 +80,9 @@ namespace LanternExtractor.EQ.Wld
 
         protected readonly WldFile _wldToInject;
 
+        
+        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
+
         /// <summary>
         /// Constructor setting data references used during the initialization process
         /// </summary>
@@ -110,7 +113,6 @@ namespace LanternExtractor.EQ.Wld
             _logger.LogInfo("WLD type: " + _wldType);
 
             _fragments = new List<WldFragment>();
-            //_fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
             _fragmentTypeDictionary = new Dictionary<Type, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
@@ -332,7 +334,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return GetRootExportFolder();
                 case WldType.Characters:
-                    if (_settings.ExportEquipmentToSingleFolder)
+                    if (_settings.ExportCharactersToSingleFolder)
                     {
                         return GetRootExportFolder();
                     }
@@ -352,11 +354,11 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Equipment when _settings.ExportEquipmentToSingleFolder &&
                                             _settings.ModelExportFormat == ModelExportFormat.Intermediate:
                     return RootExportFolder + "equipment/";
-                case WldType.Characters when _settings.ExportCharactersToSingleFolder &&
-                                             _settings.ModelExportFormat == ModelExportFormat.Intermediate:
+                case WldType.Characters when (_settings.ExportCharactersToSingleFolder &&
+                        _settings.ModelExportFormat == ModelExportFormat.Intermediate):
                     return RootExportFolder + "characters/";
                 default:
-                    return RootExportFolder + _zoneName + "/";
+                    return RootExportFolder + ShortnameHelper.GetCorrectZoneShortname(_zoneName) + "/";
             }
         }
 
@@ -369,13 +371,13 @@ namespace LanternExtractor.EQ.Wld
 
             TextAssetWriter actorWriterStatic, actorWriterSkeletal, actorWriterParticle, actorWriterSprite2d;
 
-            if (_wldType == WldType.Equipment && _settings.ExportEquipmentToSingleFolder || _wldType == WldType.Characters && _settings.ExportCharactersToSingleFolder)
+            if (_wldType == WldType.Equipment && _settings.ExportEquipmentToSingleFolder || _wldType == WldType.Characters)
             {
                 bool isCharacters = _wldType == WldType.Characters;
-                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static, isCharacters);
-                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal, isCharacters);
-                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle, isCharacters);
-                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite, isCharacters);
+                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static, GetExportFolderForWldType());
+                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal, GetExportFolderForWldType());
+                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle, GetExportFolderForWldType());
+                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite, GetExportFolderForWldType());
             }
             else
             {

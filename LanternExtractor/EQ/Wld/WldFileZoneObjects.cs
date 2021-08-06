@@ -23,7 +23,7 @@ namespace LanternExtractor.EQ.Wld
         private void ExportObjectInstanceAndVertexColorList()
         {
             var instanceList = GetFragmentsOfType<ObjectInstance>();
-            
+
             if (instanceList.Count == 0)
             {
                 _logger.LogWarning("Cannot export object instance list. No object instances found.");
@@ -38,7 +38,7 @@ namespace LanternExtractor.EQ.Wld
             foreach (var instance in instanceList)
             {
                 instanceWriter.AddFragmentData(instance);
-                
+
                 if (instance.Colors == null)
                 {
                     continue;
@@ -47,6 +47,25 @@ namespace LanternExtractor.EQ.Wld
                 colorWriter.AddFragmentData(instance.Colors);
                 colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Colors.Index + ".txt");
                 colorWriter.ClearExportData();
+            }
+            
+            if (_wldToInject != null)
+            {
+                instanceList = _wldToInject.GetFragmentsOfType<ObjectInstance>();
+
+                foreach (var instance in instanceList)
+                {
+                    instanceWriter.AddFragmentData(instance);
+
+                    if (instance.Colors == null)
+                    {
+                        continue;
+                    }
+                
+                    colorWriter.AddFragmentData(instance.Colors);
+                    colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Colors.Index + ".txt");
+                    colorWriter.ClearExportData();
+                }
             }
             
             instanceWriter.WriteAssetToFile(GetExportFolderForWldType() + "object_instances.txt");

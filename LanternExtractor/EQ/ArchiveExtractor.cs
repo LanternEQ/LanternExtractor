@@ -2,6 +2,7 @@
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -12,7 +13,7 @@ namespace LanternExtractor.EQ
         public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
-
+            
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
@@ -89,6 +90,15 @@ namespace LanternExtractor.EQ
                 wldFileLit = new WldFileZone(litWldFileInArchive, shortName, WldType.Zone,
                     logger, settings);
                 wldFileLit.Initialize(rootFolder, false);
+                
+                var litWldLightsFileInArchive = s3dArchiveLit.GetFile(shortName + "_lit.wld");
+
+                if (litWldLightsFileInArchive != null)
+                {
+                    var lightsWldFile =
+                        new WldFileLights(litWldLightsFileInArchive, shortName, WldType.Lights, logger, settings, wldFileLit);
+                    lightsWldFile.Initialize(rootFolder);
+                }
             }
 
             var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, logger, settings, wldFileLit);
@@ -100,7 +110,7 @@ namespace LanternExtractor.EQ
             if (lightsFileInArchive != null)
             {
                 var lightsWldFile =
-                    new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, logger, settings);
+                    new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, logger, settings, wldFileLit);
                 lightsWldFile.Initialize(rootFolder);
             }
 
@@ -109,7 +119,7 @@ namespace LanternExtractor.EQ
             if (zoneObjectsFileInArchive != null)
             {
                 WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
-                    WldType.ZoneObjects, logger, settings);
+                    WldType.ZoneObjects, logger, settings, wldFileLit);
                 zoneObjectsWldFile.Initialize(rootFolder);
             }
 
@@ -121,7 +131,7 @@ namespace LanternExtractor.EQ
         {
             var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
             wldFile.Initialize(rootFolder);
-            WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Objects/Textures/", logger);
+            WriteWldTextures(s3dArchive, wldFile, rootFolder + ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Objects/Textures/", logger);
         }
 
         private static void ExtractArchiveCharacters(string path, string rootFolder, ILogger logger, Settings settings,
@@ -154,7 +164,7 @@ namespace LanternExtractor.EQ
             string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
                                               settings.ModelExportFormat == ModelExportFormat.Intermediate
                 ? "characters/Textures/"
-                : shortName + "/Characters/Textures/");
+                : ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Characters/Textures/");
 
             s3dArchive.FilenameChanges = wldFile.FilenameChanges;
             WriteWldTextures(s3dArchive, wldFile, exportPath, logger);
