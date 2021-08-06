@@ -110,24 +110,6 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
                     break;
             }
-            
-            CheckForSpecialCaseMasked();
-        }
-
-        /// <summary>
-        /// These materials use an incorrectly flagged shader and should be marked as masked.
-        /// </summary>
-        private void CheckForSpecialCaseMasked()
-        {
-            switch (Name)
-            {
-                case "TREE20_MDF":
-                case "TOP_MDF":
-                case "FURPILE1_MDF":
-                case "BEARRUG_MDF":
-                    ShaderType = ShaderType.TransparentMasked;
-                    break;
-            }
         }
 
         public override void OutputInfo(ILogger logger)

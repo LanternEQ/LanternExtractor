@@ -227,6 +227,7 @@ namespace LanternExtractor.EQ.Wld
         protected virtual void ProcessData()
         {
             BuildSkeletonData();
+            MaterialFixer.Fix(this);
         }
 
         /// <summary>

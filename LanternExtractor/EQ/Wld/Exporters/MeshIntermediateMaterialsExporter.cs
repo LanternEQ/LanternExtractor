@@ -52,9 +52,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private string GetMaterialString(Material material)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(material.GetFullMaterialName());
+            var materialName = material.GetFullMaterialName();
+            sb.Append(materialName);
 
-                var bitmapNames = material.GetAllBitmapNames();
+            var bitmapNames = material.GetAllBitmapNames();
 
             foreach (var bitmap in bitmapNames)
             {

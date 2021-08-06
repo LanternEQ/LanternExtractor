@@ -5,13 +5,13 @@ namespace LanternExtractor.EQ.Wld.Helpers
 {
     /// <summary>
     /// Fixes numerous issues in EverQuest's character model files.
-    /// A number of character models have incorrect shader assignment.
+    /// A number of character models have incorrect shader assignments.
     /// As character models are specific to each zone, there are also conflicts with:
-    /// 1. Texture names being used for different textures
-    /// 2. Different zones using completely different models/skeleton for the same race id
+    /// 1. Texture names being used for different characters
+    /// 2. Zones using different models/skeleton for the same race id
     /// This code is only run when exporting all characters to a single folder for batch importing
     /// </summary>
-    public class GlobalCharacterFixer
+    public class CharacterFixer
     {
         private  WldFileCharacters _wld;
         public void Fix(WldFileCharacters wld)
