@@ -56,7 +56,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<Polygon> Indices { get; private set; }
         
-        public List<Color> Colors { get; private set; }
+        public List<Color> Colors { get; set; }
 
         /// <summary>
         /// The UV texture coordinates of the vertex
