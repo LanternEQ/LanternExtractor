@@ -72,6 +72,8 @@ namespace LanternExtractor.EQ
             {
                 ExtractArchiveZone(path, rootFolder, logger, settings, shortName, wldFileInArchive, s3dArchive);
             }
+            
+            MissingTextureFixer.Fix(archiveName);
         }
 
         private static void ExtractArchiveZone(string path, string rootFolder, ILogger logger, Settings settings,

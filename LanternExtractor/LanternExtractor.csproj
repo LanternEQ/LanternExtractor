@@ -249,7 +249,9 @@
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
     <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
     <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
-    <Compile Include="EQ\Wld\Helpers\GlobalCharacterFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\CharacterFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\MaterialFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\MissingTextureFixer.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
     <Compile Include="EQ\Wld\WldFileCharacters.cs" />
