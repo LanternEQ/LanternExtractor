@@ -3,6 +3,14 @@ using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Helpers
 {
+    /// <summary>
+    /// Fixes numerous issues in EverQuest's character model files.
+    /// A number of character models have incorrect shader assignment.
+    /// As character models are specific to each zone, there are also conflicts with:
+    /// 1. Texture names being used for different textures
+    /// 2. Different zones using completely different models/skeleton for the same race id
+    /// This code is only run when exporting all characters to a single folder for batch importing
+    /// </summary>
     public class GlobalCharacterFixer
     {
         private  WldFileCharacters _wld;
@@ -11,23 +19,22 @@ namespace LanternExtractor.EQ.Wld.Helpers
             _wld = wld;
             FixShipNames();
             FixGolemElemental();
-            FixDemiLich();
+            FixSnowDervish();
             FixAkanonKing();
             FixKaladimKing();
             FixFayDrake();
             FixTurtleTextures();
             FixBlackAndWhiteDragon();
-            FixGhoulTextures(wld);
+            FixGhoulTextures();
         }
-
+        
         /// <summary>
         /// Fix Ghoul face being applied to the back of the leg
         /// Thanks to modestlaw for requesting this
         /// </summary>
-        /// <param name="wldFileCharacters"></param>
-        private void FixGhoulTextures(WldFileCharacters wldFileCharacters)
+        private void FixGhoulTextures()
         {
-            var meshes = wldFileCharacters.GetFragmentsOfType<Mesh>();
+            var meshes = _wld.GetFragmentsOfType<Mesh>();
 
             if (meshes.Count == 0)
             {
@@ -36,7 +43,6 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
             foreach (var mesh in meshes)
             {
-                // Fix head material assignment
                 if (mesh.Name.StartsWith("GHUHE00"))
                 {
                     var materialGroups = mesh.MaterialGroups;
@@ -52,7 +58,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
         /// <summary>
         /// Fixes the turtle textures being named incorrectly
-        /// They use the sea horse prefix
+        /// They use the seahorse prefix
         /// </summary>
         private void FixTurtleTextures()
         {
@@ -79,12 +85,17 @@ namespace LanternExtractor.EQ.Wld.Helpers
                         string originalName = bitmapNames[i];
                         string newName = originalName.Replace("sea", "stu");
                         material.SetBitmapName(i, newName);
-                        _wld.FilenameChanges[originalName] = newName;
+                        _wld.FilenameChanges[newName] = originalName;
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// There are two different versions of the Fay Drake (colorful and brown).
+        /// The easiest way to differentiate is that the colorful version has two meshes and the brown has one.
+        /// This changes the colorful variant to have a unique model name.
+        /// </summary>
         private void FixFayDrake()
         {
             var actors = _wld.GetFragmentsOfType<Actor>();
@@ -111,9 +122,14 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 // Rename skeleton
                 var skeleton = actor.SkeletonReference.SkeletonHierarchy;
                 skeleton.Name = skeleton.Name.Replace("FDR", "FDF");
-
-                skeleton.ModelBase = "fdf";
                 
+                // Rename skeleton bones
+                //foreach(var bone in skeleton.Skeleton)
+                //skeleton.Skeleton
+
+                //skeleton.BuildSkeletonData(true);
+                skeleton.RenameNodeBase("fdf");
+
                 // Rename all main meshes
                 foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
                 {
@@ -142,14 +158,14 @@ namespace LanternExtractor.EQ.Wld.Helpers
                         string originalName = bitmapNames[i];
                         string newName = originalName.Replace("fdr", "fdf");
                         material.SetBitmapName(i, newName);
-                        _wld.FilenameChanges[originalName] = newName;
+                        _wld.FilenameChanges[newName] = originalName;
                     }
                 }
             }
         }
 
         /// <summary>
-        /// Fixes the unused Kaladim Kind model crown shader assignment
+        /// Fixes the unused Kaladim king model crown shader assignment
         /// </summary>
         private void FixKaladimKing()
         {
@@ -162,7 +178,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
         }
 
         /// <summary>
-        /// Fixes the unused Ak'Anon Kind model crown shader assignment
+        /// Fixes the unused Ak'Anon king model crown shader assignment
         /// </summary>
         private void FixAkanonKing()
         {
@@ -174,7 +190,10 @@ namespace LanternExtractor.EQ.Wld.Helpers
             }
         }
 
-        private void FixDemiLich()
+        /// <summary>
+        /// Fixes incorrect shader assignment and texture naming conflicts with normal Dervish
+        /// </summary>
+        private void FixSnowDervish()
         {
             var actors = _wld.GetFragmentsOfType<Actor>();
 
@@ -212,7 +231,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                             string originalName = bitmapNames[i];
                             string newName = originalName.Replace("dml", "sde");
                             material.SetBitmapName(i, newName);
-                            _wld.FilenameChanges[originalName] = newName;
+                            _wld.FilenameChanges[newName] = originalName;
                         }
                     }
                 }
@@ -234,6 +253,11 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 {
                     foreach (var material in mesh.MaterialList.Materials)
                     {
+                        if (!material.Name.StartsWith("GOL"))
+                        {
+                            continue;
+                        }
+                        
                         material.Name = material.Name.Replace("GOL", "GOM");
 
                         var bitmapNames = material.GetAllBitmapNames();
@@ -243,7 +267,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                             string originalName = bitmapNames[i];
                             string newName = originalName.Replace("gol", "gom");
                             material.SetBitmapName(i, newName);
-                            _wld.FilenameChanges[originalName] = newName;
+                            _wld.FilenameChanges[newName] = originalName;
                         }
                     }
                 }
