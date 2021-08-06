@@ -35,6 +35,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public List<Mesh> SecondaryMeshes = new List<Mesh>();
 
+        private bool _hasBuiltData;
+
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -210,8 +212,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void BuildSkeletonData(bool stripModelBase)
         {
+            if (_hasBuiltData)
+            {
+                return;
+            }
+            
             BuildSkeletonTreeData(0, Skeleton, null, string.Empty, 
                 string.Empty, string.Empty, stripModelBase);
+            _hasBuiltData = true;
         }
 
         public override void OutputInfo(ILogger logger)
@@ -501,6 +509,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             return boneMatrix;
+        }
+
+        public void RenameNodeBase(string newBase)
+        {
+            foreach (var node in Skeleton)
+            {
+                node.Name = node.Name.Replace(ModelBase.ToUpper(), newBase.ToUpper());
+            }
+
+            var newNameMapping = new Dictionary<int, string>();
+            foreach (var node in BoneMapping)
+            {
+                newNameMapping[node.Key] = node.Value.Replace(ModelBase.ToUpper(), newBase.ToUpper());
+            }
+
+            BoneMapping = newNameMapping;
+
+            ModelBase = newBase;
         }
     }
 }
