@@ -21,6 +21,34 @@ namespace LanternExtractor.EQ.Wld
             {
                 ImportVertexColors();
             }
+
+            if (_wldType == WldType.Objects)
+            {
+                FixSkeletalObjectCollision();
+            }
+        }
+
+        private void FixSkeletalObjectCollision()
+        {
+            var actors = GetFragmentsOfType<Actor>();
+
+            foreach (var actor in actors)
+            {
+                if (actor.ActorType != ActorType.Skeletal)
+                {
+                    continue;
+                }
+
+                var skeleton = actor.SkeletonReference.SkeletonHierarchy.Skeleton;
+
+                foreach (var bone in skeleton)
+                {
+                    if (bone.Track.TrackDefFragment.Frames.Count != 1)
+                    {
+                        bone.MeshReference.Mesh.ClearCollision();
+                    }
+                }
+            }
         }
 
         private void ImportVertexColors()

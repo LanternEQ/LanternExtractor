@@ -280,5 +280,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 logger.LogInfo("Mesh: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
             }
         }
+
+        public void ClearCollision()
+        {
+            foreach (var poly in Indices)
+            {
+                poly.IsSolid = false;
+            }
+
+            ExportSeparateCollision = true;
+        }
     }
 }
