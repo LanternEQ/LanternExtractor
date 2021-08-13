@@ -31,6 +31,9 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     case "FIRE1_MDF":
                         mf.ShaderType = ShaderType.TransparentAdditiveUnlit;
                         break;
+                    case "ICE1_MDF":
+                        mf.ShaderType = ShaderType.Invisible;
+                        break;
                 }
             }
         }
