@@ -1,4 +1,5 @@
 ﻿using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -45,7 +46,7 @@ namespace LanternExtractor.EQ.Wld
                 {
                     if (bone.Track.TrackDefFragment.Frames.Count != 1)
                     {
-                        bone.MeshReference.Mesh.ClearCollision();
+                        bone.MeshReference?.Mesh?.ClearCollision();
                     }
                 }
             }
