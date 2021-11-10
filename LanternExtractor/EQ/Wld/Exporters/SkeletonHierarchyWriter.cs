@@ -41,7 +41,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 _export.AppendLine();
             }
-            
+
             if (skeleton.AlternateMeshes != null && skeleton.AlternateMeshes.Count != 0)
             {
                 _export.Append("meshes,");
@@ -52,7 +52,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 
                 _export.AppendLine();
             }
-            
+
             foreach (var node in skeleton.Skeleton)
             {
                 string childrenList = string.Empty;
@@ -67,7 +67,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
 
-                var boneName = CleanSkeletonNodeName(node.Name);
+                var boneName = node.CleanedName;
 
                 if (_stripModelBase)
                 {

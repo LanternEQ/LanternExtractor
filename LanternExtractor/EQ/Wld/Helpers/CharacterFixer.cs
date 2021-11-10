@@ -26,8 +26,9 @@ namespace LanternExtractor.EQ.Wld.Helpers
             FixTurtleTextures();
             FixBlackAndWhiteDragon();
             FixGhoulTextures();
+            FixHalasFemale();
         }
-        
+
         /// <summary>
         /// Fix Ghoul face being applied to the back of the leg
         /// Thanks to modestlaw for requesting this
@@ -368,6 +369,24 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     //slot[1] = "d_bwdch0101";
                 }
             }
+        }
+        
+        private void FixHalasFemale()
+        {
+            var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("HLF_HS_DEF");
+
+            if (skeleton == null)
+            {
+                return;
+            }
+
+            skeleton.BoneMappingClean[7] = "bi_l";
+            skeleton.BoneMappingClean[10] = "l_point";
+            skeleton.BoneMappingClean[15] = "head_point";
+            
+            skeleton.Skeleton[7].CleanedName = "bi_l";
+            skeleton.Skeleton[10].CleanedName = "l_point";
+            skeleton.Skeleton[15].CleanedName = "head_point";
         }
     }
 }
