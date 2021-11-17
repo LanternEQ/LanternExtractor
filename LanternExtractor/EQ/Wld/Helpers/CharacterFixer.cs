@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
     /// </summary>
     public class CharacterFixer
     {
-        private  WldFileCharacters _wld;
+        private WldFileCharacters _wld;
         public void Fix(WldFileCharacters wld)
         {
             _wld = wld;
@@ -49,7 +49,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     var materialGroups = mesh.MaterialGroups;
                     materialGroups[1].MaterialIndex = 7;
                 }
-                else if(mesh.Name.StartsWith("GHU_"))
+                else if (mesh.Name.StartsWith("GHU_"))
                 {
                     var materialGroups = mesh.MaterialGroups;
                     materialGroups[0].MaterialIndex = 0;
@@ -64,14 +64,14 @@ namespace LanternExtractor.EQ.Wld.Helpers
         private void FixTurtleTextures()
         {
             var actors = _wld.GetFragmentsOfType<Actor>();
-           
+
             foreach (var actor in actors)
             {
                 if (!actor.Name.StartsWith("STU"))
                 {
                     continue;
                 }
-                
+
                 var materialList = actor.SkeletonReference.SkeletonHierarchy.Meshes.First().MaterialList;
 
                 materialList.Name = materialList.Name.Replace("SEA", "STU");
@@ -80,7 +80,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 {
                     material.Name = material.Name.Replace("SEA", "STU");
                     var bitmapNames = material.GetAllBitmapNames();
-                    
+
                     for (int i = 0; i < bitmapNames.Count; ++i)
                     {
                         string originalName = bitmapNames[i];
@@ -115,7 +115,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
                 // Rename actor
                 actor.Name = actor.Name.Replace("FDR", "FDF");
-                
+
                 // Rename skeleton reference
                 var skeletonRef = actor.SkeletonReference;
                 skeletonRef.Name = skeletonRef.Name.Replace("FDR", "FDF");
@@ -123,7 +123,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 // Rename skeleton
                 var skeleton = actor.SkeletonReference.SkeletonHierarchy;
                 skeleton.Name = skeleton.Name.Replace("FDR", "FDF");
-                
+
                 // Rename skeleton bones
                 //foreach(var bone in skeleton.Skeleton)
                 //skeleton.Skeleton
@@ -136,7 +136,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 {
                     mesh.Name = mesh.Name.Replace("FDR", "FDF");
                 }
-                
+
                 // Rename all secondary meshes
                 foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.SecondaryMeshes)
                 {
@@ -153,7 +153,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     material.Name = material.Name.Replace("FDR", "FDF");
 
                     var bitmapNames = material.GetAllBitmapNames();
-                    
+
                     for (int i = 0; i < bitmapNames.Count; ++i)
                     {
                         string originalName = bitmapNames[i];
@@ -171,11 +171,11 @@ namespace LanternExtractor.EQ.Wld.Helpers
         private void FixKaladimKing()
         {
             var crownMaterial = _wld.GetFragmentByName<Material>("KAHE0001_MDF");
-            
-           if (crownMaterial != null)
-           {
-               crownMaterial.ShaderType = ShaderType.TransparentMasked;
-           }
+
+            if (crownMaterial != null)
+            {
+                crownMaterial.ShaderType = ShaderType.TransparentMasked;
+            }
         }
 
         /// <summary>
@@ -204,12 +204,12 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 {
                     continue;
                 }
-                
+
                 if (!actor.Name.StartsWith("SDE"))
                 {
                     continue;
                 }
-                
+
                 foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
                 {
                     foreach (var material in mesh.MaterialList.Materials)
@@ -219,9 +219,9 @@ namespace LanternExtractor.EQ.Wld.Helpers
                         {
                             material.ShaderType = ShaderType.TransparentMasked;
                         }
-                        
+
                         var bitmapNames = material.GetAllBitmapNames();
-                        
+
                         for (var i = 0; i < bitmapNames.Count; i++)
                         {
                             if (!bitmapNames[i].StartsWith("dml"))
@@ -249,7 +249,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 {
                     continue;
                 }
-                
+
                 foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
                 {
                     foreach (var material in mesh.MaterialList.Materials)
@@ -258,7 +258,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                         {
                             continue;
                         }
-                        
+
                         material.Name = material.Name.Replace("GOL", "GOM");
 
                         var bitmapNames = material.GetAllBitmapNames();
@@ -281,11 +281,11 @@ namespace LanternExtractor.EQ.Wld.Helpers
 
             foreach (var actor in actors)
             {
-                if (actor.Name.StartsWith("GSP"))
+                if (actor.Name.StartsWith("GSP") && (actor?.MeshReference?.Mesh?.Name ?? null) != null)
                 {
-                    actor.MeshReference.Mesh.Name = actor.MeshReference.Mesh.Name.Replace("GHOSTSHIP", "GSP");
+                    actor.MeshReference.Mesh.Name = actor.MeshReference?.Mesh?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
                     actor.MeshReference.Mesh.MaterialList.Name =
-                        actor.MeshReference.Mesh.MaterialList.Name.Replace("GHOSTSHIP", "GSP");
+                        actor?.MeshReference?.Mesh?.MaterialList?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
                 }
 
                 if (actor.Name.StartsWith("LAUNCH"))
@@ -304,15 +304,15 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     {
                         // Bloated Belly in Iceclad
                         case "OGS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("PRE", "OGS");
-                            break;
-                        }
+                            {
+                                actor.Name = actor.Name.Replace("PRE", "OGS");
+                                break;
+                            }
                         // Sea King, Golden Maiden, StormBreaker, SirensBane
                         case "PRE_HS_DEF":
-                        {
-                            break;
-                        }
+                            {
+                                break;
+                            }
                     }
                 }
 
@@ -328,25 +328,25 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     {
                         // Icebreaker in Iceclad
                         case "GNS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("SHIP", "GNS");
-                            break;
-                        }
+                            {
+                                actor.Name = actor.Name.Replace("SHIP", "GNS");
+                                break;
+                            }
                         // Maidens Voyage in Firiona Vie
                         case "ELS_HS_DEF":
-                        {
-                            actor.Name = actor.Name.Replace("SHIP", "ELS");
-                            break;
-                        }
+                            {
+                                actor.Name = actor.Name.Replace("SHIP", "ELS");
+                                break;
+                            }
                     }
                 }
             }
         }
-        
+
         private void FixBlackAndWhiteDragon()
         {
             var actors = _wld.GetFragmentsOfType<Actor>();
-            
+
             foreach (var actor in actors)
             {
                 if (!actor.Name.StartsWith("BWD"))
@@ -355,7 +355,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 }
 
                 var frag = _wld.GetFragmentByName<Material>("BWDCH0101_MDF");
-                
+
                 if (frag != null)
                 {
                     frag.ShaderType = ShaderType.Diffuse;
@@ -370,7 +370,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 }
             }
         }
-        
+
         private void FixHalasFemale()
         {
             var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("HLF_HS_DEF");
@@ -383,7 +383,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
             skeleton.BoneMappingClean[7] = "bi_l";
             skeleton.BoneMappingClean[10] = "l_point";
             skeleton.BoneMappingClean[15] = "head_point";
-            
+
             skeleton.Skeleton[7].CleanedName = "bi_l";
             skeleton.Skeleton[10].CleanedName = "l_point";
             skeleton.Skeleton[15].CleanedName = "head_point";

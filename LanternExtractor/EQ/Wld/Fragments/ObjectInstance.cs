@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using GlmSharp;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -9,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Internal name: None
     /// Information about a single instance of an object.
     /// </summary>
-    class ObjectInstance : WldFragment
+    public class ObjectInstance : WldFragment
     {
         /// <summary>
         /// The name of the object model
@@ -55,8 +56,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // In main zone, it points to a 0x16 fragment
             // In objects.wld, it is 0
             int unknown2 = Reader.ReadInt32();
+            var x = Reader.ReadSingle();
+            var y = Reader.ReadSingle();
+            var z = Reader.ReadSingle();
 
-            Position = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
+            // Sometimes we are getting the lowest value of signed int 16. Reset to 0 otherwise this z will be way below the world. Round for floating point errors.
+            if (Math.Round(z) <= short.MinValue)
+            {
+                z = 0;
+            }
+            Position = new vec3(x, y, z);
 
             // Rotation is strange. There is never any x rotation (roll)
             // The z rotation is negated
@@ -65,17 +74,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             float value2 = Reader.ReadSingle();
 
             float modifier = 1.0f / 512.0f * 360.0f;
-            
-            Rotation = new vec3(0f, value1 * modifier, -(value0 * modifier));      
+
+            Rotation = new vec3(0f, value1 * modifier, -(value0 * modifier));
 
             // Only scale y is used
             float scaleX, scaleY, scaleZ;
-            scaleX = Reader.ReadSingle();    
+            scaleX = Reader.ReadSingle();
             scaleY = Reader.ReadSingle();
             scaleZ = Reader.ReadSingle();
-            
+
             Scale = new vec3(scaleY, scaleY, scaleY);
-            
+
             int colorFragment = Reader.ReadInt32();
 
             if (colorFragment != 0)

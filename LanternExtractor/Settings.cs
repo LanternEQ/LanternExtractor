@@ -4,6 +4,7 @@ using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
+
 namespace LanternExtractor
 {
     public enum ModelExportFormat
@@ -11,33 +12,51 @@ namespace LanternExtractor
         Intermediate = 0,
         Obj = 1,
     }
-    
+
     /// <summary>
     /// Simple class that parses settings for the extractor
     /// </summary>
     public class Settings
     {
+        private static Settings instance = null;
+        private static readonly object padlock = new object();
+
+        public static Settings Instance
+        {
+            get
+            {
+                lock (padlock)
+                {
+                    if (instance == null)
+                    {
+                        instance = new Settings();
+                    }
+                    return instance;
+                }
+            }
+        }
+
         /// <summary>
         /// The logger reference for debug output
         /// </summary>
-        private readonly ILogger _logger;
-        
+        private ILogger _logger;
+
         /// <summary>
         /// The OS path to the settings file
         /// </summary>
-        private readonly string _settingsFilePath;
+        private string _settingsFilePath;
 
         /// <summary>
         /// The OS path to the EverQuest directory
         /// </summary>
         public string EverQuestDirectory { get; private set; }
-        
+
         /// <summary>
         /// Extract data from the WLD file
         /// If false, we just extract the S3D contents
         /// </summary>
         public bool RawS3dExtract { get; private set; }
-        
+
         /// <summary>
         /// Adds group separation in the zone mesh export
         /// </summary>
@@ -57,17 +76,22 @@ namespace LanternExtractor
         /// Sets the desired model export format
         /// </summary>
         public bool ExportCharactersToSingleFolder { get; private set; }
-        
+
         /// <summary>
         /// Sets the desired model export format
         /// </summary>
         public bool ExportEquipmentToSingleFolder { get; private set; }
-        
+
         /// <summary>
         /// Exports all OBJ frames for all animations
         /// </summary>
         public bool ExportAllAnimationFrames { get; private set; }
-        
+
+        /// <summary>
+        /// Exports all OBJ frames for all animations
+        /// </summary>
+        public bool ExportZoneWithObjects { get; private set; }
+
         /// <summary>
         /// The verbosity of the logger
         /// </summary>
@@ -90,6 +114,7 @@ namespace LanternExtractor
             ExportHiddenGeometry = false;
             LoggerVerbosity = 0;
         }
+
 
         public void Initialize()
         {
@@ -115,7 +140,7 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("EverQuestDirectory"))
             {
                 EverQuestDirectory = parsedSettings["EverQuestDirectory"];
-                
+
                 // Ensure the path ends with a /
                 EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + "/");
             }
@@ -124,7 +149,7 @@ namespace LanternExtractor
             {
                 RawS3dExtract = Convert.ToBoolean(parsedSettings["RawS3DExtract"]);
             }
-            
+
             if (parsedSettings.ContainsKey("ExportZoneMeshGroups"))
             {
                 ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
@@ -134,25 +159,30 @@ namespace LanternExtractor
             {
                 ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
             }
-            
+
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
                 ModelExportFormat = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
             }
-            
+
             if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
             {
                 ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportCharacterToSingleFolder"]);
             }
-            
+
             if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
             {
                 ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
             }
-            
+
             if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
             {
                 ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
+            {
+                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

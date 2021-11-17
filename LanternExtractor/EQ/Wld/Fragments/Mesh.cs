@@ -45,7 +45,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The vertices of the mesh
         /// </summary>
         public List<vec3> Vertices { get; set; }
-        
+
         /// <summary>
         /// The normals of the mesh
         /// </summary>
@@ -55,7 +55,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The polygon indices of the mesh
         /// </summary>
         public List<Polygon> Indices { get; private set; }
-        
+
         public List<Color> Colors { get; set; }
 
         /// <summary>
@@ -123,9 +123,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Seems to be related to lighting models? (torches, etc.)
             if (unknownDword1 != 0 || unknownDword2 != 0 || unknownDword3 != 0)
             {
-                
+
             }
-            
+
             MaxDistance = Reader.ReadSingle();
             MinPosition = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
             MaxPosition = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
@@ -145,7 +145,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             short vertexTextureCount = Reader.ReadInt16();
             short size9 = Reader.ReadInt16();
             float scale = 1.0f / (1 << Reader.ReadInt16());
-            
+
             for (int i = 0; i < vertexCount; ++i)
             {
                 Vertices.Add(new vec3(Reader.ReadInt16() * scale, Reader.ReadInt16() * scale,
@@ -179,8 +179,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int g = colorBytes[1];
                 int r = colorBytes[2];
                 int a = colorBytes[3];
-                
-                Colors.Add(new Color{R = r, G = g, B = b, A = a});
+
+                Colors.Add(new Color { R = r, G = g, B = b, A = a });
             }
 
             Indices = new List<Polygon>();
@@ -202,7 +202,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     Vertex3 = Reader.ReadInt16(),
                 });
             }
-            
+
             MobPieces = new Dictionary<int, MobVertexPiece>();
             int mobStart = 0;
 
@@ -224,7 +224,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             MaterialGroups = new List<RenderGroup>();
 
             StartTextureIndex = Int32.MaxValue;
-            
+
             for (int i = 0; i < polygonTextureCount; ++i)
             {
                 var group = new RenderGroup();
@@ -247,7 +247,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 Reader.BaseStream.Position += 12;
             }
-            
+
             // In some rare cases, the number of uvs does not match the number of vertices
             if (Vertices.Count != TextureUvCoordinates.Count)
             {
