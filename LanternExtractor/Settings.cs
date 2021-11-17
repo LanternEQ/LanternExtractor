@@ -18,33 +18,16 @@ namespace LanternExtractor
     /// </summary>
     public class Settings
     {
-        private static Settings instance = null;
-        private static readonly object padlock = new object();
-
-        public static Settings Instance
-        {
-            get
-            {
-                lock (padlock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new Settings();
-                    }
-                    return instance;
-                }
-            }
-        }
 
         /// <summary>
         /// The logger reference for debug output
         /// </summary>
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// The OS path to the settings file
         /// </summary>
-        private string _settingsFilePath;
+        private readonly string _settingsFilePath;
 
         /// <summary>
         /// The OS path to the EverQuest directory
@@ -160,9 +143,14 @@ namespace LanternExtractor
                 ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
             }
 
+            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
+            {
+                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
+            }
+
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
-                ModelExportFormat = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                ModelExportFormat = ExportZoneWithObjects ? ModelExportFormat.Obj : (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
             }
 
             if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
@@ -178,11 +166,6 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
             {
                 ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
-            {
-                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

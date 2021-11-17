@@ -1,7 +1,6 @@
 using System.Globalization;
 using System.IO;
 using System.Text;
-using GlmSharp;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Exporters
@@ -9,9 +8,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
     public abstract class TextAssetWriter
     {
         protected StringBuilder _export = new StringBuilder();
-        protected NumberFormatInfo _numberFormat = new NumberFormatInfo { NumberDecimalSeparator = "." };
+        protected NumberFormatInfo _numberFormat = new NumberFormatInfo {NumberDecimalSeparator = "."};
 
         public abstract void AddFragmentData(WldFragment data);
+
         public virtual void WriteAssetToFile(string fileName)
         {
             string directory = Path.GetDirectoryName(fileName);
@@ -25,9 +25,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-
+            
             Directory.CreateDirectory(directory);
-
+            
             File.WriteAllText(fileName, _export.ToString());
         }
 

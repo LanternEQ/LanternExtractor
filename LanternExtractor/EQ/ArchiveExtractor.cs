@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
@@ -13,14 +12,12 @@ namespace LanternExtractor.EQ
     {
         public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
         {
-            Console.WriteLine($"Starting extract of {path}");
             string archiveName = Path.GetFileNameWithoutExtension(path);
 
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
-
 
 
             string shortName = archiveName.Split('_')[0];
@@ -79,7 +76,6 @@ namespace LanternExtractor.EQ
             }
 
             MissingTextureFixer.Fix(archiveName);
-            Console.WriteLine($"Finished extract of {path}");
 
         }
 
@@ -122,15 +118,6 @@ namespace LanternExtractor.EQ
             wldFile.Initialize(rootFolder);
             WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
 
-            PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
-
-            if (zoneObjectsFileInArchive != null)
-            {
-                var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
-                    WldType.ZoneObjects, logger, settings, wldFileLit);
-                zoneObjectsWldFile.Initialize(rootFolder);
-            }
-
 
             PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 
@@ -141,7 +128,14 @@ namespace LanternExtractor.EQ
                 lightsWldFile.Initialize(rootFolder);
             }
 
+            PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
 
+            if (zoneObjectsFileInArchive != null)
+            {
+                var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                    WldType.ZoneObjects, logger, settings, wldFileLit);
+                zoneObjectsWldFile.Initialize(rootFolder);
+            }
 
             ExtractSoundData(shortName, rootFolder, settings);
         }

@@ -33,10 +33,7 @@ namespace LanternExtractor.EQ.Pfs
         public bool Initialize()
         {
             _logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
-            if (FileName == "kob_chr.s3d")
-            {
-                return false;
-            }
+
             if (!File.Exists(FilePath))
             {
                 _logger.LogError("PfsArchive: File does not exist at: " + FilePath);

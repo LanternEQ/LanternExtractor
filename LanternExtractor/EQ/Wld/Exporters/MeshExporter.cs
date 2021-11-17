@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             string exportFolder = wldFile.GetExportFolderForWldType() + "/";
-
+            
             var meshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, false);
             var legacyMeshWriter = new LegacyMeshIntermediateAssetWriter();
             var collisionMeshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
@@ -75,7 +75,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     {
                         continue;
                     }
-
+                    
                     if (settings.ExportCharactersToSingleFolder && wldFile.WldType == WldType.Characters)
                     {
                         if (File.Exists(filePath))
@@ -91,7 +91,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                             }
                         }
                     }
-
+                    
                     materialList.HasBeenExported = true;
                     materialListWriter.WriteAssetToFile(filePath);
                     materialListWriter.ClearExportData();
@@ -113,7 +113,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     continue;
                 }
-
+                
                 meshWriter.AddFragmentData(mesh);
 
                 // Determine if we need collision
@@ -160,7 +160,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 foreach (var alternateMesh in legacyMeshes)
                 {
                     legacyMeshWriter.AddFragmentData(alternateMesh);
-
+                    
                     if (exportEachPass)
                     {
                         var newExportFolder = wldFile.GetExportFolderForWldType() + "/AlternateMeshes/";
@@ -172,7 +172,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
             }
-
+            
 
             if (!exportEachPass)
             {

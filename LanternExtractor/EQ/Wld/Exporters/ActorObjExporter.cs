@@ -96,12 +96,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
                 settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
             var collisionMeshWriter = new MeshObjWriter(ObjExportType.Collision, settings.ExportHiddenGeometry,
-            settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
+                settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
             var materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
 
             foreach (var mesh in meshes)
             {
                 // Find all associated objects with this mesh and instantiate each one.
+                // If settings for ExportZoneWithObjects is false, this will immediately skip because objects will be an empty list
                 var associatedObjects = objects.FindAll(o => !o.ObjectName.Contains("door") &&
                     mesh.Name.StartsWith(o.ObjectName, System.StringComparison.InvariantCultureIgnoreCase));
                 foreach (var associatedObj in associatedObjects)
@@ -116,10 +117,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
             }
 
-
-
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, wldFile.ZoneShortname));
-            // collisionMeshWriter.WriteAssetToFile(GetCollisionMeshPath(wldFile, wldFile.ZoneShortname));
+            collisionMeshWriter.WriteAssetToFile(GetCollisionMeshPath(wldFile, wldFile.ZoneShortname));
             foreach (var materialList in materialLists)
             {
                 materialListWriter.AddFragmentData(materialList);

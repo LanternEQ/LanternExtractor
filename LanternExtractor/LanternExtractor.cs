@@ -11,7 +11,7 @@ namespace LanternExtractor
     {
         private static Settings _settings;
         private static ILogger _logger;
-        private static bool _useThreading = true;
+        private static bool _useThreading = false;
 
         // Batch jobs n at a time. Set to -1 to batch all at once.
         private static int _chunkSize = 6;
