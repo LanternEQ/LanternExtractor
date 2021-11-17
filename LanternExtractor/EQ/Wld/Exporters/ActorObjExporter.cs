@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using GlmSharp;
+using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -11,13 +13,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
     public static class ActorObjExporter
     {
         public static Dictionary<Mesh, List<vec3>> _backupVertices = new Dictionary<Mesh, List<vec3>>();
-        
+
         public static void ExportActors(WldFile wldFile, Settings settings, ILogger logger)
         {
             // For a zone wld, we ignore actors and just export all meshes
             if (wldFile.WldType == WldType.Zone)
             {
-                ExportZone(wldFile, settings, logger);
+                ExportZone((WldFileZone)wldFile, settings, logger);
                 return;
             }
 
@@ -45,16 +47,50 @@ namespace LanternExtractor.EQ.Wld.Exporters
         /// <param name="wldFile"></param>
         /// <param name="settings"></param>
         /// <param name="logger"></param>
-        private static void ExportZone(WldFile wldFile, Settings settings, ILogger logger)
+        private static void ExportZone(WldFileZone wldFile, Settings settings, ILogger logger)
         {
-            var meshes = wldFile.GetFragmentsOfType<Mesh>();
+            List<Mesh> meshes = wldFile.GetFragmentsOfType<Mesh>();
+            List<MaterialList> materialLists = wldFile.GetFragmentsOfType<MaterialList>();
+            List<ObjectInstance> objects = new List<ObjectInstance>();
+
+            if (settings.ExportZoneWithObjects)
+            {
+                var path = wldFile.BasePath;
+                var s3dArchive = wldFile.BaseS3DArchive;
+                var wldFileToInject = wldFile.WldFileToInject;
+                var rootFolder = wldFile.RootFolder;
+                var shortName = wldFile.ShortName;
+
+                // Get object instances within this zone file to map up and instantiate later
+                PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
+                if (zoneObjectsFileInArchive != null)
+                {
+                    var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                        WldType.ZoneObjects, logger, settings, wldFileToInject);
+                    zoneObjectsWldFile.Initialize(rootFolder, false);
+                    objects.AddRange(zoneObjectsWldFile.GetFragmentsOfType<ObjectInstance>());
+                }
+
+                // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
+                string objPath = path.Replace(".s3d", "_obj.s3d");
+                string objArchive = Path.GetFileNameWithoutExtension(objPath);
+                var s3dObjArchive = new PfsArchive(objPath, logger);
+                if (s3dObjArchive.Initialize())
+                {
+                    string wldFileName = objArchive + LanternStrings.WldFormatExtension;
+                    var objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, logger, settings);
+                    objWldFile.Initialize(rootFolder, false);
+                    ArchiveExtractor.WriteWldTextures(s3dObjArchive, objWldFile, rootFolder + shortName + "/Zone/Textures/", logger);
+                    meshes.AddRange(objWldFile.GetFragmentsOfType<Mesh>());
+                    materialLists.AddRange(objWldFile.GetFragmentsOfType<MaterialList>());
+                }
+            }
+
 
             if (meshes.Count == 0)
             {
                 return;
             }
-            
-            var materialList = meshes[0].MaterialList;
 
             var meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
                 settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
@@ -64,15 +100,31 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (var mesh in meshes)
             {
-                meshWriter.AddFragmentData(mesh);
-                collisionMeshWriter.AddFragmentData(mesh);
+                // Find all associated objects with this mesh and instantiate each one.
+                // If settings for ExportZoneWithObjects is false, this will immediately skip because objects will be an empty list
+                var associatedObjects = objects.FindAll(o => !o.ObjectName.Contains("door") &&
+                    mesh.Name.StartsWith(o.ObjectName, System.StringComparison.InvariantCultureIgnoreCase));
+                foreach (var associatedObj in associatedObjects)
+                {
+                    // Pass in the associated object for offset, scale and rotation within the zone
+                    meshWriter.AddFragmentData(mesh, associatedObj);
+                }
+                if (associatedObjects.Count == 0)
+                {
+                    meshWriter.AddFragmentData(mesh);
+                    collisionMeshWriter.AddFragmentData(mesh);
+                }
             }
 
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, wldFile.ZoneShortname));
             collisionMeshWriter.WriteAssetToFile(GetCollisionMeshPath(wldFile, wldFile.ZoneShortname));
+            foreach (var materialList in materialLists)
+            {
+                materialListWriter.AddFragmentData(materialList);
 
-            materialListWriter.AddFragmentData(materialList);
-            materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialList)));
+            }
+            materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(materialLists[0])));
+
         }
 
         private static void ExportStaticActor(Actor actor, Settings settings, WldFile wldFile)
@@ -129,7 +181,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             List<MaterialList> materialLists = new List<MaterialList>();
-            
+
             var materialListWriter = new MeshObjMtlWriter(settings, wldFile.ZoneShortname);
 
             var materialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
@@ -138,7 +190,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 materialLists.Add(materialList);
             }
-            
+
             foreach (var skeletonBones in skeleton.Skeleton)
             {
                 var boneMaterialList = skeletonBones.MeshReference?.Mesh?.MaterialList;
@@ -152,7 +204,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
             }
 
-            foreach(var ml in materialLists)
+            foreach (var ml in materialLists)
             {
                 materialListWriter.AddFragmentData(ml);
 
@@ -166,7 +218,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     savePath = GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(ml));
                 }
-                
+
                 materialListWriter.WriteAssetToFile(savePath);
 
                 for (int i = 0; i < ml.VariantCount; ++i)
@@ -176,7 +228,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     materialListWriter.AddFragmentData(ml);
                     materialListWriter.WriteAssetToFile(GetMaterialListPath(wldFile, FragmentNameCleaner.CleanName(ml), i + 1));
                 }
-                
+
                 materialListWriter.ClearExportData();
             }
         }
@@ -185,9 +237,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             var meshWriter = new MeshObjWriter(ObjExportType.Textured, settings.ExportHiddenGeometry,
                 settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
-            
+
             meshWriter.SetIsCharacterModel(wldFile.WldType == WldType.Characters);
-            
+
             foreach (var bone in skeleton.Skeleton)
             {
                 var mesh = bone?.MeshReference?.Mesh;
@@ -197,7 +249,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     meshWriter.AddFragmentData(mesh);
                 }
             }
-            
+
             if (skeleton.Meshes != null)
             {
                 foreach (var mesh in skeleton.Meshes)
@@ -229,7 +281,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 fileName = FragmentNameCleaner.CleanName(skeleton);
             }
-            
+
             meshWriter.WriteAssetToFile(GetMeshPath(wldFile, fileName));
             RestoreVertices();
         }
@@ -253,11 +305,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             _backupVertices[mesh] = new List<vec3>();
 
             var animation = skeleton.Animations[animName];
-            
+
             foreach (var mobVertexPiece in mesh.MobPieces)
             {
                 var boneIndex = mobVertexPiece.Key;
@@ -267,9 +319,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     continue;
                 }
-                
+
                 mat4 modelMatrix = skeleton.GetBoneMatrix(boneIndex, animName, frame);
-              
+
                 for (int i = 0; i < mobVertexPiece.Value.Count; ++i)
                 {
                     int shiftedIndex = i + mobVertexPiece.Value.Start;
@@ -278,7 +330,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     {
                         continue;
                     }
-                    
+
                     var vertex = mesh.Vertices[shiftedIndex];
                     _backupVertices[mesh].Add(vertex);
                     var newVertex = modelMatrix * new vec4(vertex, 1f);

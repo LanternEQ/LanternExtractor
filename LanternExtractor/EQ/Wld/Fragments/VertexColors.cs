@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Internal name: _DMT
     /// A list of colors, one per vertex, representing baked lighting data for an object.
     /// </summary>
-    class VertexColors : WldFragment
+    public class VertexColors : WldFragment
     {
         /// <summary>
         /// The vertex colors corresponding with each vertex
@@ -44,8 +44,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int g = colorBytes[1];
                 int r = colorBytes[2];
                 int a = colorBytes[3];
-                
-                Colors.Add(new Color{R = r, G = g, B = b, A = a});
+
+                Colors.Add(new Color { R = r, G = g, B = b, A = a });
             }
         }
 

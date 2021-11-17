@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -16,12 +17,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// Reference to a skeleton piece
         /// </summary>
         public TrackDefFragment TrackDefFragment { get; set; }
-        
+
         public bool IsPoseAnimation { get; set; }
         public bool IsProcessed { get; set; }
-        
+
         public int FrameMs { get; set; }
-        
+
         public string ModelName;
         public string AnimationName;
         public string PieceName;
@@ -34,7 +35,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
-            
+
             int reference = Reader.ReadInt32();
             TrackDefFragment = fragments[reference - 1] as TrackDefFragment;
 
@@ -42,7 +43,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 logger.LogError("Bad track def reference'");
             }
-            
+
             // Either 4 or 5 - maybe something to look into
             // Bits are set 0, or 2. 0 has the extra field for delay.
             // 2 doesn't have any additional fields.
@@ -50,10 +51,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             BitAnalyzer bitAnalyzer = new BitAnalyzer(flags);
             FrameMs = bitAnalyzer.IsBitSet(0) ? Reader.ReadInt32() : 0;
-            
+
             if (Reader.BaseStream.Position != Reader.BaseStream.Length)
             {
-                
+
             }
         }
 
@@ -96,21 +97,21 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     IsNameParsed = true;
                     return;
                 }
-                
+
                 ModelName = cleanedName;
                 return;
             }
-            
+
             // Equipment edge case
             if (cleanedName.Substring(0, 3) == cleanedName.Substring(3, 3))
             {
                 AnimationName = cleanedName.Substring(0, 3);
-                ModelName = cleanedName.Substring(7);
+                ModelName = cleanedName.Substring(Math.Min(7, cleanedName.Length));
                 PieceName = "root";
                 IsNameParsed = true;
                 return;
             }
-            
+
             AnimationName = cleanedName.Substring(0, 3);
             cleanedName = cleanedName.Remove(0, 3);
             ModelName = cleanedName.Substring(0, 3);
@@ -120,7 +121,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             IsNameParsed = true;
             //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
         }
-        
+
         public void ParseTrackDataEquipment(SkeletonHierarchy skeletonHierarchy, ILogger logger)
         {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);

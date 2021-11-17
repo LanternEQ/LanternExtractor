@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LanternExtractor.EQ;
 using LanternExtractor.Infrastructure.Logger;
@@ -12,12 +13,15 @@ namespace LanternExtractor
         private static ILogger _logger;
         private static bool _useThreading = false;
 
+        // Batch jobs n at a time. Set to -1 to batch all at once.
+        private static int _chunkSize = 6;
+
         private static void Main(string[] args)
         {
             _logger = new TextFileLogger("log.txt");
             _settings = new Settings("settings.txt", _logger);
             _settings.Initialize();
-            _logger.SetVerbosity((LogVerbosity) _settings.LoggerVerbosity);
+            _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
 
             string archiveName;
 
@@ -28,7 +32,7 @@ namespace LanternExtractor
                 Console.WriteLine("Usage: lantern.exe <filename/shortname/all>");
                 return;
             }
-            
+
             archiveName = args[0];
 
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
@@ -43,18 +47,23 @@ namespace LanternExtractor
             if (_useThreading)
             {
                 List<Task> tasks = new List<Task>();
+                int i = 0;
 
-                foreach (var file in eqFiles)
+                foreach (var chunk in eqFiles.GroupBy(s => i++ / (_chunkSize == -1 ? eqFiles.Count : _chunkSize)).Select(g => g.ToArray()).ToArray())
                 {
-                    string fileName = file;
-                    Task task = Task.Factory.StartNew(() =>
+                    foreach (var file in chunk)
                     {
-                        ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
-                    });
-                    tasks.Add(task);
+                        string fileName = file;
+                        Task task = Task.Factory.StartNew(() =>
+                        {
+                            ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
+                        });
+                        tasks.Add(task);
+                    }
+
+                    Task.WaitAll(tasks.ToArray());
                 }
 
-                Task.WaitAll(tasks.ToArray());
             }
             else
             {
