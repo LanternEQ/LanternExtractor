@@ -61,25 +61,24 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 var rootFolder = wldFile.RootFolder;
                 var shortName = wldFile.ShortName;
 
-                string objPath = path.Replace(".s3d", "_obj.s3d");
-                string objArchive = Path.GetFileNameWithoutExtension(objPath);
-                var s3dObjArchive = new PfsArchive(objPath, logger);
-                bool hasObj = s3dObjArchive.Initialize();
-                string wldFileName = objArchive + LanternStrings.WldFormatExtension;
-
-                WldFile objWldFile = null;
+                // Get object instances within this zone file to map up and instantiate later
                 PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
-                WldFileZoneObjects zoneObjectsWldFile = null;
                 if (zoneObjectsFileInArchive != null)
                 {
-                    zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                    var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
                         WldType.ZoneObjects, logger, settings, wldFileToInject);
                     zoneObjectsWldFile.Initialize(rootFolder, false);
                     objects.AddRange(zoneObjectsWldFile.GetFragmentsOfType<ObjectInstance>());
                 }
-                if (hasObj)
+
+                // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
+                string objPath = path.Replace(".s3d", "_obj.s3d");
+                string objArchive = Path.GetFileNameWithoutExtension(objPath);
+                var s3dObjArchive = new PfsArchive(objPath, logger);
+                if (s3dObjArchive.Initialize())
                 {
-                    objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, logger, settings);
+                    string wldFileName = objArchive + LanternStrings.WldFormatExtension;
+                    var objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, logger, settings);
                     objWldFile.Initialize(rootFolder, false);
                     ArchiveExtractor.WriteWldTextures(s3dObjArchive, objWldFile, rootFolder + shortName + "/Zone/Textures/", logger);
                     meshes.AddRange(objWldFile.GetFragmentsOfType<Mesh>());

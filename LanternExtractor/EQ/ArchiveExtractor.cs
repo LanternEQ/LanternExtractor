@@ -132,7 +132,7 @@ namespace LanternExtractor.EQ
 
             if (zoneObjectsFileInArchive != null)
             {
-                var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
                     WldType.ZoneObjects, logger, settings, wldFileLit);
                 zoneObjectsWldFile.Initialize(rootFolder);
             }
