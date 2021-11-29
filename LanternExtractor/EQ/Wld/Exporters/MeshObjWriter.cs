@@ -71,6 +71,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public void AddFragmentData(WldFragment fragment, ObjectInstance associatedObject)
         {
             Mesh mesh = fragment as Mesh;
+
+            // Sometimes we are getting the lowest value of signed int 16. Dropped trees - no use trying to adjust
+            if (Math.Round(associatedObject?.Position.z ?? 0) <= short.MinValue)
+            {
+                return;
+            }
             vec3 offset = associatedObject?.Position ?? new vec3(0, 0, 0);
             vec3 rotation = associatedObject?.Rotation ?? new vec3(0, 0, 0);
             var scale = associatedObject?.Scale.y ?? 1;

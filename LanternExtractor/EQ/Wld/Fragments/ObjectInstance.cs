@@ -56,16 +56,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // In main zone, it points to a 0x16 fragment
             // In objects.wld, it is 0
             int unknown2 = Reader.ReadInt32();
-            var x = Reader.ReadSingle();
-            var y = Reader.ReadSingle();
-            var z = Reader.ReadSingle();
 
-            // Sometimes we are getting the lowest value of signed int 16. Reset to 0 otherwise this z will be way below the world. Round for floating point errors.
-            if (Math.Round(z) <= short.MinValue)
-            {
-                z = 0;
-            }
-            Position = new vec3(x, y, z);
+            Position = new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle());
 
             // Rotation is strange. There is never any x rotation (roll)
             // The z rotation is negated
