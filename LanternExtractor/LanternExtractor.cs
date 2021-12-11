@@ -13,7 +13,8 @@ namespace LanternExtractor
     {
         private static Settings _settings;
         private static ILogger _logger;
-        private static bool _useMultiProcess = true;
+        // Switch to true to use multiple processes for processing
+        private static bool _useMultiProcess = false;
 
         // Batch jobs n at a time
         private static int _processCount = 4;
