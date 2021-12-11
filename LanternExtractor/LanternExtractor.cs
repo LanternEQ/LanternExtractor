@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using LanternExtractor.EQ;
 using LanternExtractor.Infrastructure.Logger;
@@ -11,13 +13,31 @@ namespace LanternExtractor
     {
         private static Settings _settings;
         private static ILogger _logger;
-        private static bool _useThreading = false;
+        private static bool _useMultiProcess = true;
 
-        // Batch jobs n at a time. Set to -1 to batch all at once.
-        private static int _chunkSize = 6;
-
+        // Batch jobs n at a time
+        private static int _processCount = 4;
         private static void Main(string[] args)
         {
+            if (args.Length > 0 && args[0] == "PROCESS_JOB")
+            {
+                var zoneFiles = args.Skip(1).ToArray();
+                var scrubbedZoneFiles = zoneFiles.Select(s => Regex.Match(s, "(\\w+)(?:\\.s3d)$").ToString()).ToArray();
+
+                _logger = new TextFileLogger($"log-{Process.GetCurrentProcess().Id}.txt");
+                _logger.LogInfo(string.Join("-", scrubbedZoneFiles));
+                _settings = new Settings("settings.txt", _logger);
+
+                foreach (var fileName in zoneFiles)
+                {
+                    Console.WriteLine($"Startined to extract {fileName}");
+                    ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
+                    Console.WriteLine($"Finished extracting {fileName}");
+                }
+                return;
+            }
+
+
             _logger = new TextFileLogger("log.txt");
             _settings = new Settings("settings.txt", _logger);
             _settings.Initialize();
@@ -44,26 +64,23 @@ namespace LanternExtractor
                 return;
             }
 
-            if (_useThreading)
+            if (_useMultiProcess && _processCount > 0)
             {
                 List<Task> tasks = new List<Task>();
                 int i = 0;
 
-                foreach (var chunk in eqFiles.GroupBy(s => i++ / (_chunkSize == -1 ? eqFiles.Count : _chunkSize)).Select(g => g.ToArray()).ToArray())
+                // Each process is responsible for n number of files to work through determined by the process count here. 
+                int chunkCount = Math.Max(1, (int)Math.Ceiling((double)(eqFiles.Count / _processCount)));
+                foreach (var chunk in eqFiles.GroupBy(s => i++ / chunkCount).Select(g => g.ToArray()).ToArray())
                 {
-                    foreach (var file in chunk)
+                    Task task = Task.Factory.StartNew(() =>
                     {
-                        string fileName = file;
-                        Task task = Task.Factory.StartNew(() =>
-                        {
-                            ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
-                        });
-                        tasks.Add(task);
-                    }
-
-                    Task.WaitAll(tasks.ToArray());
+                        var processJob = Process.Start("LanternExtractor.exe", string.Join(" ", chunk.Select(c => $"\"{c}\"").ToArray().Prepend("PROCESS_JOB")));
+                        processJob.WaitForExit();
+                    });
+                    tasks.Add(task);
                 }
-
+                Task.WaitAll(tasks.ToArray());
             }
             else
             {
