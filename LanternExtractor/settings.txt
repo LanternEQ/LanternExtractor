@@ -22,7 +22,7 @@ ExportHiddenGeometry = true
 
 # Sets the desired export format for models
 # 0 = Intermediate (Unity importer), 1 = OBJ
-ModelExportFormat = 1
+ModelExportFormat = 0
 
 # If true, will export all characters to the 'characters' folder (intermediate only)
 # This is useful when batch importing into Unity

@@ -42,12 +42,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int regionStringSize = Reader.ReadInt32();
 
             string regionTypeString = regionStringSize == 0 ? Name.ToLower() : 
-                WldStringDecoder.DecodeString(Reader.ReadBytes(regionStringSize));
+                WldStringDecoder.DecodeString(Reader.ReadBytes(regionStringSize)).ToLower();
 
             RegionTypes = new List<RegionType>();
             
-            if(regionTypeString.StartsWith("wtn_"))
+            if(regionTypeString.StartsWith("wtn_") || regionTypeString.StartsWith("wt_"))
             {
+                // Ex: wt_zone, wtn_XXXXXX
                 RegionTypes.Add(RegionType.Water);
             }
             else if (regionTypeString.StartsWith("wtntp"))
@@ -57,38 +58,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 DecodeZoneline(regionTypeString);
                 RegionString = regionTypeString;
             }
-            else if (regionTypeString.StartsWith("lan_"))
+            else if (regionTypeString.StartsWith("lan_") || regionTypeString.StartsWith("la_"))
             {
                 RegionTypes.Add(RegionType.Lava);
-            }
-            else if (regionTypeString.StartsWith("wt_zone"))
-            {
-                RegionTypes.Add(RegionType.Normal);
-                // TODO: Figure this out
-            }
-            else if (regionTypeString.StartsWith("drp_"))
-            {
-                RegionTypes.Add(RegionType.Pvp);
-            }
-            else if (regionTypeString.StartsWith("drn_"))
-            {
-                RegionTypes.Add(RegionType.Normal);
-                // TODO: Figure this out
-            }
-            else if (regionTypeString.StartsWith("sln_"))
-            {
-                RegionTypes.Add(RegionType.Normal);
-                // TODO: Figure this out
-            }
-            else if (regionTypeString.StartsWith("la_zone"))
-            {
-                RegionTypes.Add(RegionType.Normal);
-                // TODO: Figure this out - lava zoneline?
-            }
-            else if (regionTypeString.StartsWith("vwn_"))
-            {
-                RegionTypes.Add(RegionType.Normal);
-                // TODO: Figure this out - sleeper
             }
             else if (regionTypeString.StartsWith("lantp"))
             {
@@ -102,17 +74,28 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 RegionTypes.Add(RegionType.Zoneline);
                 DecodeZoneline(regionTypeString);
-
                 RegionString = regionTypeString;
+            }
+            else if (regionTypeString.StartsWith("drp_"))
+            {
+                RegionTypes.Add(RegionType.Pvp);
+            }
+            else if (regionTypeString.StartsWith("drn_"))
+            {
+                RegionTypes.Add(RegionType.Unknown);
+            }
+            else if (regionTypeString.StartsWith("sln_"))
+            {
+                // gukbottom, cazicthule (gumdrop), runnyeye, velketor
+                RegionTypes.Add(RegionType.WaterBlockLOS);
+            }
+            else if (regionTypeString.StartsWith("vwn_"))
+            {
+                RegionTypes.Add(RegionType.FreezingWater);
             }
             else
             {
                 RegionTypes.Add(RegionType.Normal);
-            }
-
-            if (RegionTypes.Count == 0)
-            {
-                
             }
         }
 

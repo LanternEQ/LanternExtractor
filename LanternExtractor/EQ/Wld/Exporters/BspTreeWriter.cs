@@ -48,11 +48,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(node.RegionId.ToString(_numberFormat));
                     _export.Append(",");
 
-                    if (node.RegionId == 1514)
-                    {
-                        
-                    }
-
                     string types = string.Empty;
 
                     if (node.Region.RegionType != null)

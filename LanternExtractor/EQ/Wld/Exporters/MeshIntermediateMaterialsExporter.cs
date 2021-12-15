@@ -25,22 +25,24 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                 List<Material> allMaterials = new List<Material> {material};
                 allMaterials.AddRange(list.GetMaterialVariants(material, null));
-
-                foreach (var skinMaterial in allMaterials)
+                
+                for (int j = 0; j < allMaterials.Count; j++)
                 {
-                    if (skinMaterial == null)
+                    var currentMaterial = allMaterials[j];
+
+                    if (currentMaterial == null)
                     {
-                        continue;
+                        currentMaterial = allMaterials.First();
                     }
 
-                    _export.Append(GetMaterialString(skinMaterial));
-                    
-                    if(allMaterials.Last() != skinMaterial)
+                    _export.Append(GetMaterialString(currentMaterial));
+
+                    if (j < list.VariantCount)
                     {
                         _export.Append(";");
                     }
                 }
-                
+
                 _export.Append(",");
                 _export.Append(material.BitmapInfoReference?.BitmapInfo.AnimationDelayMs ?? 0);
                 _export.AppendLine();
@@ -50,9 +52,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private string GetMaterialString(Material material)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(material.GetFullMaterialName());
+            var materialName = material.GetFullMaterialName();
+            sb.Append(materialName);
 
-                var bitmapNames = material.GetAllBitmapNames();
+            var bitmapNames = material.GetAllBitmapNames();
 
             foreach (var bitmap in bitmapNames)
             {

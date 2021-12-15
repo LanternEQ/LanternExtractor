@@ -35,9 +35,10 @@ namespace LanternExtractor
             if (archiveName == "all")
             {
                 validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip")).ToList();
+                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip") &&
+                                !s.EndsWith("_lit.s3d")).ToList();
             }
-            else if(archiveName == "equipment")
+            else if (archiveName == "equipment")
             {
                 validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
                     .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && s.Contains("gequip")).ToList();
@@ -80,6 +81,23 @@ namespace LanternExtractor
                 if (File.Exists(charactersArchivePath))
                 {
                     validFiles.Add(charactersArchivePath);
+                }
+
+                // Some zones have additional object archives for things added past their initial release
+                // None of them contain fragments that are linked to other related archives.
+                string extensionObjectsArchivePath = directory + archiveName + "_2_obj.s3d";
+                if (File.Exists(extensionObjectsArchivePath))
+                {
+                    validFiles.Add(extensionObjectsArchivePath);
+                }
+
+                // Some zones have additional character archives for things added past their initial release
+                // None of them contain fragments that are linked to other related archives.
+                // "qeynos" must be excluded because both qeynos and qeynos2 are used as shortnames
+                string extensionCharactersArchivePath = directory + archiveName + "2_chr.s3d";
+                if (File.Exists(extensionCharactersArchivePath) && archiveName != "qeynos")
+                {
+                    validFiles.Add(extensionCharactersArchivePath);
                 }
             }
 

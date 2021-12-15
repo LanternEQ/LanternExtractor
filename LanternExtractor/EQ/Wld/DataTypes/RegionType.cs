@@ -7,6 +7,8 @@
         Lava = 2,
         Pvp = 3,
         Zoneline = 4,
-        Slime = 5
+        WaterBlockLOS = 5,
+        FreezingWater = 6,
+        Unknown = 7
     }
 }

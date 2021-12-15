@@ -6,6 +6,7 @@ using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld
@@ -80,6 +81,9 @@ namespace LanternExtractor.EQ.Wld
 
         protected readonly WldFile _wldToInject;
 
+        
+        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
+
         /// <summary>
         /// Constructor setting data references used during the initialization process
         /// </summary>
@@ -110,7 +114,6 @@ namespace LanternExtractor.EQ.Wld
             _logger.LogInfo("WLD type: " + _wldType);
 
             _fragments = new List<WldFragment>();
-            //_fragmentTypeDictionary = new Dictionary<FragmentType, List<WldFragment>>();
             _fragmentTypeDictionary = new Dictionary<Type, List<WldFragment>>();
             _fragmentNameDictionary = new Dictionary<string, WldFragment>();
             _bspRegions = new List<BspRegion>();
@@ -227,6 +230,7 @@ namespace LanternExtractor.EQ.Wld
         protected virtual void ProcessData()
         {
             BuildSkeletonData();
+            MaterialFixer.Fix(this);
         }
 
         /// <summary>
@@ -331,7 +335,14 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return GetRootExportFolder();
                 case WldType.Characters:
-                    return GetRootExportFolder() + "Characters/";
+                    if (_settings.ExportCharactersToSingleFolder)
+                    {
+                        return GetRootExportFolder();
+                    }
+                    else
+                    {
+                        return GetRootExportFolder() + "Characters/";
+                    }
                 default:
                     return string.Empty;
             }
@@ -344,11 +355,11 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Equipment when _settings.ExportEquipmentToSingleFolder &&
                                             _settings.ModelExportFormat == ModelExportFormat.Intermediate:
                     return RootExportFolder + "equipment/";
-                case WldType.Characters when _settings.ExportCharactersToSingleFolder &&
-                                             _settings.ModelExportFormat == ModelExportFormat.Intermediate:
+                case WldType.Characters when (_settings.ExportCharactersToSingleFolder &&
+                        _settings.ModelExportFormat == ModelExportFormat.Intermediate):
                     return RootExportFolder + "characters/";
                 default:
-                    return RootExportFolder + _zoneName + "/";
+                    return RootExportFolder + ShortnameHelper.GetCorrectZoneShortname(_zoneName) + "/";
             }
         }
 
@@ -361,12 +372,13 @@ namespace LanternExtractor.EQ.Wld
 
             TextAssetWriter actorWriterStatic, actorWriterSkeletal, actorWriterParticle, actorWriterSprite2d;
 
-            if (_wldType == WldType.Equipment)
+            if (_wldType == WldType.Equipment && _settings.ExportEquipmentToSingleFolder || _wldType == WldType.Characters)
             {
-                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static);
-                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal);
-                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle);
-                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite);
+                bool isCharacters = _wldType == WldType.Characters;
+                actorWriterStatic = new ActorWriterNewGlobal(ActorType.Static, GetExportFolderForWldType());
+                actorWriterSkeletal = new ActorWriterNewGlobal(ActorType.Skeletal, GetExportFolderForWldType());
+                actorWriterParticle = new ActorWriterNewGlobal(ActorType.Particle, GetExportFolderForWldType());
+                actorWriterSprite2d = new ActorWriterNewGlobal(ActorType.Sprite, GetExportFolderForWldType());
             }
             else
             {
@@ -398,7 +410,7 @@ namespace LanternExtractor.EQ.Wld
 
             var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
 
-            if (skeletons == null)
+            if (skeletons.Count == 0)
             {
                 if (_wldToInject == null)
                 {

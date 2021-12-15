@@ -56,7 +56,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public List<Polygon> Indices { get; private set; }
         
-        public List<Color> Colors { get; private set; }
+        public List<Color> Colors { get; set; }
 
         /// <summary>
         /// The UV texture coordinates of the vertex
@@ -279,6 +279,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 logger.LogInfo("Mesh: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
             }
+        }
+
+        public void ClearCollision()
+        {
+            foreach (var poly in Indices)
+            {
+                poly.IsSolid = false;
+            }
+
+            ExportSeparateCollision = true;
         }
     }
 }

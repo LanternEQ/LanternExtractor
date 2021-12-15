@@ -2,6 +2,7 @@
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -12,7 +13,7 @@ namespace LanternExtractor.EQ
         public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
-
+            
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
@@ -54,93 +55,147 @@ namespace LanternExtractor.EQ
 
             if (EqFileHelper.IsEquipmentArchive(archiveName))
             {
-                var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
-                wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile,
-                    rootFolder +
-                    (settings.ExportEquipmentToSingleFolder &&
-                     settings.ModelExportFormat == ModelExportFormat.Intermediate
-                        ? "equipment/Textures/"
-                        : shortName + "/Textures/"), logger);
+                ExtractArchiveEquipment(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
             else if (EqFileHelper.IsSkyArchive(archiveName))
             {
-                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Sky, logger, settings);
-                wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Textures/", logger);
+                ExtractArchiveSky(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
             else if (EqFileHelper.IsCharactersArchive(archiveName))
             {
-                WldFileCharacters wldFileToInject = null;
-
-                if (archiveName.StartsWith("global3_chr"))
-                {
-                    var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), logger);
-
-                    if (!s3dArchive2.Initialize())
-                    {
-                        logger.LogError("Failed to initialize PFS archive at path: " + path);
-                        return;
-                    }
-
-                    PfsFile wldFileInArchive2 = s3dArchive2.GetFile("global_chr.wld");
-
-                    wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters,
-                        logger, settings);
-                    wldFileToInject.Initialize(rootFolder, false);
-                }
-
-                var wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters,
-                    logger, settings, wldFileToInject);
-                wldFile.Initialize(rootFolder);
-
-                string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
-                                                  settings.ModelExportFormat == ModelExportFormat.Intermediate
-                    ? "characters/Characters/Textures/"
-                    : shortName + "/Characters/Textures/");
-
-                s3dArchive.FilenameChanges = wldFile.FilenameChanges;
-                WriteWldTextures(s3dArchive, wldFile, exportPath, logger);
+                ExtractArchiveCharacters(path, rootFolder, logger, settings, archiveName, wldFileInArchive, shortName, s3dArchive);
             }
             else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
-                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
-                wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Objects/Textures/", logger);
+                ExtractArchiveObjects(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
             else
             {
-                var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, logger, settings);
-                wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
+                ExtractArchiveZone(path, rootFolder, logger, settings, shortName, wldFileInArchive, s3dArchive);
+            }
+            
+            MissingTextureFixer.Fix(archiveName);
+        }
 
-                PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
+        private static void ExtractArchiveZone(string path, string rootFolder, ILogger logger, Settings settings,
+            string shortName, PfsFile wldFileInArchive, PfsArchive s3dArchive)
+        {
+            // Some Kunark zones have a "_lit" which needs to be injected into the main zone file
+            var s3dArchiveLit = new PfsArchive(path.Replace(shortName, shortName + "_lit"), logger);
+            WldFileZone wldFileLit = null;
 
-                if (lightsFileInArchive != null)
+            if (s3dArchiveLit.Initialize())
+            {
+                var litWldFileInArchive = s3dArchiveLit.GetFile(shortName + "_lit.wld");
+                wldFileLit = new WldFileZone(litWldFileInArchive, shortName, WldType.Zone,
+                    logger, settings);
+                wldFileLit.Initialize(rootFolder, false);
+                
+                var litWldLightsFileInArchive = s3dArchiveLit.GetFile(shortName + "_lit.wld");
+
+                if (litWldLightsFileInArchive != null)
                 {
                     var lightsWldFile =
-                        new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, logger, settings);
+                        new WldFileLights(litWldLightsFileInArchive, shortName, WldType.Lights, logger, settings, wldFileLit);
                     lightsWldFile.Initialize(rootFolder);
                 }
+            }
 
-                PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
+            var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Zone, logger, settings, wldFileLit);
+            wldFile.Initialize(rootFolder);
+            WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
 
-                if (zoneObjectsFileInArchive != null)
+            PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
+
+            if (lightsFileInArchive != null)
+            {
+                var lightsWldFile =
+                    new WldFileLights(lightsFileInArchive, shortName, WldType.Lights, logger, settings, wldFileLit);
+                lightsWldFile.Initialize(rootFolder);
+            }
+
+            PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
+
+            if (zoneObjectsFileInArchive != null)
+            {
+                WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
+                    WldType.ZoneObjects, logger, settings, wldFileLit);
+                zoneObjectsWldFile.Initialize(rootFolder);
+            }
+
+            ExtractSoundData(shortName, rootFolder, settings);
+        }
+
+        private static void ExtractArchiveObjects(string rootFolder, ILogger logger, Settings settings,
+            PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
+        {
+            var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
+            wldFile.Initialize(rootFolder);
+            WriteWldTextures(s3dArchive, wldFile, rootFolder + ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Objects/Textures/", logger);
+        }
+
+        private static void ExtractArchiveCharacters(string path, string rootFolder, ILogger logger, Settings settings,
+            string archiveName, PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
+        {
+            WldFileCharacters wldFileToInject = null;
+
+            // global3_chr contains just animations
+            if (archiveName.StartsWith("global3_chr"))
+            {
+                var s3dArchive2 = new PfsArchive(path.Replace("global3_chr", "global_chr"), logger);
+
+                if (!s3dArchive2.Initialize())
                 {
-                    WldFileZoneObjects zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
-                        WldType.ZoneObjects, logger, settings);
-                    zoneObjectsWldFile.Initialize(rootFolder);
+                    logger.LogError("Failed to initialize PFS archive at path: " + path);
+                    return;
                 }
 
-                ExtractSoundData(shortName, rootFolder, settings);
+                PfsFile wldFileInArchive2 = s3dArchive2.GetFile("global_chr.wld");
+
+                wldFileToInject = new WldFileCharacters(wldFileInArchive2, "global_chr", WldType.Characters,
+                    logger, settings);
+                wldFileToInject.Initialize(rootFolder, false);
             }
+
+            var wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters,
+                logger, settings, wldFileToInject);
+            wldFile.Initialize(rootFolder);
+
+            string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
+                                              settings.ModelExportFormat == ModelExportFormat.Intermediate
+                ? "characters/Textures/"
+                : ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Characters/Textures/");
+
+            s3dArchive.FilenameChanges = wldFile.FilenameChanges;
+            WriteWldTextures(s3dArchive, wldFile, exportPath, logger);
+        }
+
+        private static void ExtractArchiveSky(string rootFolder, ILogger logger, Settings settings, PfsFile wldFileInArchive,
+            string shortName, PfsArchive s3dArchive)
+        {
+            var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Sky, logger, settings);
+            wldFile.Initialize(rootFolder);
+            WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Textures/", logger);
+        }
+
+        private static void ExtractArchiveEquipment(string rootFolder, ILogger logger, Settings settings,
+            PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
+        {
+            var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
+            wldFile.Initialize(rootFolder);
+            WriteWldTextures(s3dArchive, wldFile,
+                rootFolder +
+                (settings.ExportEquipmentToSingleFolder &&
+                 settings.ModelExportFormat == ModelExportFormat.Intermediate
+                    ? "equipment/Textures/"
+                    : shortName + "/Textures/"), logger);
         }
 
         /// <summary>
         /// Writes textures from the PFS archive to disk, converting them to PNG
         /// </summary>
         /// <param name="s3dArchive"></param>
-        /// <param name="zoneName"></param>
+        /// <param name="filePath"></param>
         private static void WriteS3dTextures(PfsArchive s3dArchive, string filePath, ILogger logger)
         {
             var allFiles = s3dArchive.GetAllFiles();
@@ -167,7 +222,14 @@ namespace LanternExtractor.EQ
 
             foreach (var bitmap in allBitmaps)
             {
-                var pfsFile = s3dArchive.GetFile(bitmap);
+                string filename = bitmap;
+                if (s3dArchive.FilenameChanges != null &&
+                    s3dArchive.FilenameChanges.ContainsKey(Path.GetFileNameWithoutExtension(bitmap)))
+                {
+                    filename = s3dArchive.FilenameChanges[Path.GetFileNameWithoutExtension(bitmap)] + ".bmp";
+                }
+                
+                var pfsFile = s3dArchive.GetFile(filename);
 
                 if (pfsFile == null)
                 {
@@ -175,7 +237,6 @@ namespace LanternExtractor.EQ
                 }
 
                 bool isMasked = maskedBitmaps != null && maskedBitmaps.Contains(bitmap);
-
                 ImageWriter.WriteImageAsPng(pfsFile.Bytes, zoneName, bitmap, isMasked, logger);
             }
         }

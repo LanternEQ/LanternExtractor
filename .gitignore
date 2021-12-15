@@ -5,3 +5,4 @@ LanternExtractor/bin/
 
 *.DS_Store
 packages/
+.vs/
