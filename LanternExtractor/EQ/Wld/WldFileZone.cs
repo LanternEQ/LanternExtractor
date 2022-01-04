@@ -13,6 +13,13 @@ namespace LanternExtractor.EQ.Wld
         {
         }
 
+        public string BasePath { get; set; } = "";
+        public string RootFolder { get; set; } = "";
+        public string ShortName { get; set; } = "";
+        public PfsArchive BaseS3DArchive { get; set; } = null;
+        public WldFile WldFileToInject { get; set; } = null;
+
+
         protected override void ProcessData()
         {
             base.ProcessData();
@@ -88,13 +95,13 @@ namespace LanternExtractor.EQ.Wld
             }
 
             bspTree[0].LinkBspRegions(bspRegions);
-            
+
             foreach (var regionType in regionTypes)
             {
                 regionType.LinkRegionType(bspRegions);
             }
         }
-        
+
         protected override void ExportData()
         {
             base.ExportData();
@@ -105,26 +112,26 @@ namespace LanternExtractor.EQ.Wld
         private void ExportAmbientLightColor()
         {
             var ambientLight = GetFragmentsOfType<GlobalAmbientLight>();
-            
+
             if (ambientLight.Count == 0)
             {
                 return;
             }
-            
+
             AmbientLightColorWriter writer = new AmbientLightColorWriter();
             writer.AddFragmentData(ambientLight[0]);
-            writer.WriteAssetToFile(GetExportFolderForWldType() + "/ambient_light.txt");        
+            writer.WriteAssetToFile(GetExportFolderForWldType() + "/ambient_light.txt");
         }
 
         private void ExportBspTree()
         {
             var bspTree = GetFragmentsOfType<BspTree>();
-            
+
             if (bspTree.Count == 0)
             {
                 return;
             }
-            
+
             BspTreeWriter writer = new BspTreeWriter();
             writer.AddFragmentData(bspTree[0]);
             writer.WriteAssetToFile(GetExportFolderForWldType() + "/bsp_tree.txt");

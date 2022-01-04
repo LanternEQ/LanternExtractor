@@ -36,6 +36,9 @@ ExportEquipmentToSingleFolder = true
 # This could use a high amount of disk space.
 ExportAllAnimationFrames = false
 
+# If true, will *only* export zone files in obj format with their associated objects placed within the zone
+ExportZoneWithObjects = false
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
 LoggerVerbosity = 2

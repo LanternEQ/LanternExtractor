@@ -14,7 +14,7 @@ namespace LanternExtractor.EQ.Pfs
     {
         public string FilePath { get; }
         public string FileName { get; }
-        
+
         private List<PfsFile> _files = new List<PfsFile>();
         private Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
         private ILogger _logger;
@@ -22,7 +22,7 @@ namespace LanternExtractor.EQ.Pfs
         public bool IsWldArchive { get; set; }
 
         public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
-        
+
         public PfsArchive(string filePath, ILogger logger)
         {
             FilePath = filePath;
@@ -79,10 +79,10 @@ namespace LanternExtractor.EQ.Pfs
                             return false;
                         }
 
-                        byte[] compressedBytes = reader.ReadBytes((int) deflatedLength);
+                        byte[] compressedBytes = reader.ReadBytes((int)deflatedLength);
                         byte[] inflatedBytes;
 
-                        if (!InflateBlock(compressedBytes, (int) inflatedLength, out inflatedBytes, _logger))
+                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, _logger))
                         {
                             _logger.LogError("PfsArchive: Error occured inflating data");
                             return false;
@@ -101,7 +101,7 @@ namespace LanternExtractor.EQ.Pfs
                         for (uint j = 0; j < filenameCount; ++j)
                         {
                             uint fileNameLength = dictionary.ReadUInt32();
-                            string filename = new string(dictionary.ReadChars((int) fileNameLength));
+                            string filename = new string(dictionary.ReadChars((int)fileNameLength));
                             fileNames.Add(filename.Substring(0, filename.Length - 1));
                         }
 
@@ -132,10 +132,10 @@ namespace LanternExtractor.EQ.Pfs
 
                 _logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
             }
-            
+
             return true;
         }
-        
+
         private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes,
             ILogger logger)
         {
@@ -151,7 +151,7 @@ namespace LanternExtractor.EQ.Pfs
                 zlibCodec.NextIn = 0;
                 zlibCodec.OutputBuffer = output;
 
-                foreach (FlushType f in new[] {FlushType.None, FlushType.Finish})
+                foreach (FlushType f in new[] { FlushType.None, FlushType.Finish })
                 {
                     int bytesToWrite;
 
@@ -173,7 +173,7 @@ namespace LanternExtractor.EQ.Pfs
                         bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
                         if (bytesToWrite > 0)
                             memoryStream.Write(output, 0, bytesToWrite);
-                    } 
+                    }
                     while (f == FlushType.None &&
                              (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0) ||
                              f == FlushType.Finish && bytesToWrite != 0);
@@ -185,19 +185,19 @@ namespace LanternExtractor.EQ.Pfs
                 return true;
             }
         }
-        
+
         public PfsFile GetFile(string fileName)
         {
             return !_fileNameReference.ContainsKey(fileName) ? null : _fileNameReference[fileName];
         }
-        
+
         public PfsFile GetFile(int index)
         {
             if (index < 0 || index >= _files.Count)
             {
                 return null;
             }
-            
+
             return _files[index];
         }
 

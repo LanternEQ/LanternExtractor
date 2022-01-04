@@ -8,6 +8,7 @@ using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.EQ;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -18,6 +19,7 @@ namespace LanternExtractor.EQ.Wld
     {
         public string RootExportFolder;
         public string ZoneShortname => _zoneName;
+
 
         public WldType WldType => _wldType;
 
@@ -81,7 +83,7 @@ namespace LanternExtractor.EQ.Wld
 
         protected readonly WldFile _wldToInject;
 
-        
+
         public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
 
         /// <summary>
@@ -108,7 +110,6 @@ namespace LanternExtractor.EQ.Wld
         public virtual bool Initialize(string rootFolder, bool exportData = true)
         {
             RootExportFolder = rootFolder;
-
             _logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
             _logger.LogInfo("-----------------------------------");
             _logger.LogInfo("WLD type: " + _wldType);
@@ -154,7 +155,7 @@ namespace LanternExtractor.EQ.Wld
             uint stringHashSize = reader.ReadUInt32();
             int unknown2 = reader.ReadInt32();
 
-            byte[] stringHash = reader.ReadBytes((int) stringHashSize);
+            byte[] stringHash = reader.ReadBytes((int)stringHashSize);
 
             ParseStringHash(WldStringDecoder.DecodeString(stringHash));
 
@@ -174,7 +175,7 @@ namespace LanternExtractor.EQ.Wld
                     _logger.LogWarning($"WldFile: Unhandled fragment type: {fragId:x}");
                 }
 
-                newFragment.Initialize(i, (int) fragSize, reader.ReadBytes((int) fragSize), _fragments, _stringHash,
+                newFragment.Initialize(i, (int)fragSize, reader.ReadBytes((int)fragSize), _fragments, _stringHash,
                     _isNewWldFormat,
                     _logger);
                 newFragment.OutputInfo(_logger);

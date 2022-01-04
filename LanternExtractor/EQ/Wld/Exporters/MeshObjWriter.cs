@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,13 +22,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
         /// As zones are made of multiple meshes, this prevents multiple usemtl declarations of the same material
         /// </summary>
         private Material _activeMaterial;
-        
+
         /// <summary>
         /// Used when dealing with multiple meshes
         /// The base vertex is added to submesh vertex to get the correct vertex value
         /// </summary>
         private int _baseVertex;
-        
+
         /// <summary>
         /// If we export groups, the mesh is divided into submeshes.
         /// Only applies to the zone mesh.
@@ -39,7 +40,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         /// Only applies to the zone mesh.
         /// </summary>
         private bool _exportHiddenGeometry;
-        
+
         private ObjExportType _objExportType;
         private int _usedVertices;
         private string _forcedMeshList;
@@ -64,7 +65,47 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void AddFragmentData(WldFragment fragment)
         {
+            AddFragmentData(fragment, null);
+        }
+
+        public void AddFragmentData(WldFragment fragment, ObjectInstance associatedObject)
+        {
             Mesh mesh = fragment as Mesh;
+
+            // Sometimes we are getting the lowest value of signed int 16. Dropped trees - no use trying to adjust
+            if (Math.Round(associatedObject?.Position.z ?? 0) <= short.MinValue)
+            {
+                return;
+            }
+            vec3 offset = associatedObject?.Position ?? new vec3(0, 0, 0);
+            vec3 rotation = associatedObject?.Rotation ?? new vec3(0, 0, 0);
+            var scale = associatedObject?.Scale.y ?? 1;
+
+            // Rotation matrix transform
+            var pitch = (float)(Math.PI / 180) * rotation.x;
+            var roll = (float)(Math.PI / 180) * rotation.y;
+            var yaw = (float)(Math.PI / 180) * rotation.z * -1;
+
+            var cosa = Math.Cos(yaw);
+            var sina = Math.Sin(yaw);
+
+            var cosb = Math.Cos(pitch);
+            var sinb = Math.Sin(pitch);
+
+            var cosc = Math.Cos(roll);
+            var sinc = Math.Sin(roll);
+
+            var Axx = cosa * cosb;
+            var Axy = cosa * sinb * sinc - sina * cosc;
+            var Axz = cosa * sinb * cosc + sina * sinc;
+
+            var Ayx = sina * cosb;
+            var Ayy = sina * sinb * sinc + cosa * cosc;
+            var Ayz = sina * sinb * cosc - cosa * sinc;
+
+            var Azx = -sinb;
+            var Azy = cosb * sinc;
+            var Azz = cosb * cosc;
 
             if (mesh == null)
             {
@@ -83,11 +124,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     name = LanternStrings.ObjMaterialHeader + _forcedMeshList + ".mtl";
                 }
-                
+
                 _export.AppendLine(name);
                 _isFirstMesh = false;
             }
-            
+
             if (_exportGroups)
             {
                 _export.AppendLine("g " + FragmentNameCleaner.CleanName(mesh));
@@ -230,7 +271,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             int frameCount = 1;
 
-            if (mesh.AnimatedVerticesReference != null)
+            // We end up with OOM errors trying to concat frames of exported zones with objects, i.e. when we have associatedObject
+            if (associatedObject == null && mesh.AnimatedVerticesReference != null)
             {
                 frameCount += mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count;
             }
@@ -262,9 +304,28 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         vertex = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[i - 1][usedVertex];
                     }
 
-                    vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x)).ToString(_numberFormat) + " " +
-                                            (vertex.z + mesh.Center.z).ToString(_numberFormat) + " " +
-                                            (vertex.y + mesh.Center.y).ToString(_numberFormat));
+                    // Apply transformation for scale
+                    if (scale != 1)
+                    {
+                        vertex.x = vertex.x * scale;
+                        vertex.y = vertex.y * scale;
+                        vertex.z = vertex.z * scale;
+                    }
+                    // Apply transformation for rotation
+                    if (rotation.x != 0 || rotation.y != 0 || rotation.z != 0)
+                    {
+                        var px = vertex.x;
+                        var py = vertex.y;
+                        var pz = vertex.z;
+
+                        float x = (float)(Axx * px + Axy * py + Axz * pz);
+                        float y = (float)(Ayx * px + Ayy * py + Ayz * pz);
+                        float z = (float)(Azx * px + Azy * py + Azz * pz);
+                        vertex = new vec3(x, y, z);
+                    }
+                    vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x + offset.x)).ToString(_numberFormat) + " " +
+                                            (vertex.z + mesh.Center.z + offset.z).ToString(_numberFormat) + " " +
+                                            (vertex.y + mesh.Center.y + offset.y).ToString(_numberFormat));
 
                     if (_objExportType == ObjExportType.Collision)
                     {
@@ -304,7 +365,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (mesh.Name.Contains("BAT"))
             {
-                
+
             }
         }
 
