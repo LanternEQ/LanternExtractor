@@ -21,7 +21,7 @@ ExportZoneMeshGroups = false
 ExportHiddenGeometry = true
 
 # Sets the desired export format for models
-# 0 = Intermediate (Unity importer), 1 = OBJ
+# 0 = Intermediate (Unity importer), 1 = OBJ, 2 = glTF
 ModelExportFormat = 0
 
 # If true, will export all characters to the 'characters' folder (intermediate only)

@@ -114,9 +114,19 @@ namespace LanternExtractor.EQ
                 wldFile.RootFolder = rootFolder;
                 wldFile.ShortName = shortName;
             }
+            
+            if (settings.ModelExportFormat != ModelExportFormat.GlTF)
+            {
+                wldFile.Initialize(rootFolder);
+                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
+            }
+            else
+            {
+                wldFile.Initialize(rootFolder, false);
+                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
+                wldFile.ExportData();
+            }
 
-            wldFile.Initialize(rootFolder);
-            WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
 
 
             PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);

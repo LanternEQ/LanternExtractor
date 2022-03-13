@@ -237,7 +237,7 @@ namespace LanternExtractor.EQ.Wld
         /// <summary>
         /// Writes the files relevant to this WLD type to disk
         /// </summary>
-        protected virtual void ExportData()
+        public virtual void ExportData()
         {
             ExportMeshes();
 
@@ -315,9 +315,13 @@ namespace LanternExtractor.EQ.Wld
             {
                 MeshExporter.ExportMeshes(this, _settings, _logger);
             }
-            else
+            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
             {
                 ActorObjExporter.ExportActors(this, _settings, _logger);
+            }
+            else
+            {
+                ActorGltfExporter.ExportActors(this, _settings, _logger);
             }
         }
 

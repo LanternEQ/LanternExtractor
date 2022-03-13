@@ -102,7 +102,7 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        protected override void ExportData()
+        public override void ExportData()
         {
             base.ExportData();
             ExportAmbientLightColor();

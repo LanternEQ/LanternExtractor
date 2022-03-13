@@ -11,6 +11,7 @@ namespace LanternExtractor
     {
         Intermediate = 0,
         Obj = 1,
+        GlTF = 2
     }
 
     /// <summary>
@@ -150,7 +151,15 @@ namespace LanternExtractor
 
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
-                ModelExportFormat = ExportZoneWithObjects ? ModelExportFormat.Obj : (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                if (exportFormatSetting == ModelExportFormat.Intermediate && ExportZoneWithObjects)
+                {
+                    ModelExportFormat = ModelExportFormat.Obj;
+                }
+                else
+                {
+                    ModelExportFormat = exportFormatSetting;
+                }
             }
 
             if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))

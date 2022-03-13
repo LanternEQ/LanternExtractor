@@ -12,7 +12,7 @@ namespace LanternExtractor.EQ.Wld
         {
         }
         
-        protected override void ExportData()
+        public override void ExportData()
         {
             ExportObjectInstanceAndVertexColorList();
         }

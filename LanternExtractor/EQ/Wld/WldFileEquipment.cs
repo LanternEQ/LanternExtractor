@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld
             FindAdditionalAnimations();
         }
 
-        protected override void ExportData()
+        public override void ExportData()
         {
             base.ExportData();
             ExportParticleSystems();
