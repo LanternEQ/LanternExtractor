@@ -2,18 +2,12 @@
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
-using SharpGLTF.Geometry;
-using SharpGLTF.Materials;
-using SharpGLTF.Geometry.VertexTypes;
-using SharpGLTF.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using GlmSharp;
+using LanternExtractor.EQ.Wld.Helpers;
+using static LanternExtractor.EQ.Wld.Exporters.GltfWriter;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -27,7 +21,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 ExportZone((WldFileZone)wldFile, settings, logger);
                 return;
             }
-            return;
 
             foreach (var actor in wldFile.GetFragmentsOfType<Actor>())
             {
@@ -47,14 +40,15 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private static void ExportZone(WldFileZone wldFileZone, Settings settings, ILogger logger )
         {
-            var meshes = wldFileZone.GetFragmentsOfType<Mesh>();
+            var zoneMeshes = wldFileZone.GetFragmentsOfType<Mesh>();
+            var actors = new List<Actor>();
             var materialLists = wldFileZone.GetFragmentsOfType<MaterialList>();
             var objects = new List<ObjectInstance>();
+            var shortName = wldFileZone.ShortName;
 
             if (settings.ExportZoneWithObjects)
             {
-                var rootFolder = wldFileZone.RootFolder;
-                var shortName = wldFileZone.ShortName;
+                var rootFolder = wldFileZone.RootFolder; 
 
                 // Get object instances within this zone file to map up and instantiate later
                 var zoneObjectsFileInArchive = wldFileZone.BaseS3DArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
@@ -63,7 +57,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
                         WldType.ZoneObjects, logger, settings, wldFileZone.WldFileToInject);
                     zoneObjectsWldFile.Initialize(rootFolder, false);
-                    objects.AddRange(zoneObjectsWldFile.GetFragmentsOfType<ObjectInstance>());
+                    objects.AddRange(zoneObjectsWldFile.GetFragmentsOfType<ObjectInstance>()
+                        .Where(o => !o.ObjectName.Contains("door")));
                 }
 
                 // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
@@ -76,231 +71,185 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     var objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, logger, settings);
                     objWldFile.Initialize(rootFolder, false);
                     ArchiveExtractor.WriteWldTextures(s3dObjArchive, objWldFile, rootFolder + shortName + "/Zone/Textures/", logger);
-                    meshes.AddRange(objWldFile.GetFragmentsOfType<Mesh>());
+                    actors.AddRange(objWldFile.GetFragmentsOfType<Actor>());
                     materialLists.AddRange(objWldFile.GetFragmentsOfType<MaterialList>());
                 }
             }
 
-            if (!meshes.Any())
+            if (!zoneMeshes.Any())
             {
                 return;
             }
 
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
             var textureImageFolder = $"{wldFileZone.GetExportFolderForWldType()}Textures/";
-            var gltfMaterials = GenerateGltfMaterials(materialLists, textureImageFolder, settings);
-            var scene = new SharpGLTF.Scenes.SceneBuilder();
+            gltfWriter.GenerateGltfMaterials(materialLists, textureImageFolder);
 
-            AddMeshesToScene(scene, meshes, gltfMaterials, settings, wldFileZone.ZoneShortname);
+            foreach (var mesh in zoneMeshes)
+            {
+                gltfWriter.AddFragmentData(mesh, ModelGenerationMode.Combine, false, shortName);
+            }
+            gltfWriter.AddCombinedMeshToScene(shortName);
 
-            var model = scene.ToGltf2();
+            foreach (var actor in actors)
+            {
+                if (actor.ActorType == ActorType.Static)
+                {
+                    var objMesh = actor.MeshReference?.Mesh;
+                    if (objMesh == null) continue;
+                    var instances = objects.FindAll(o => objMesh.Name.StartsWith(o.ObjectName, StringComparison.InvariantCultureIgnoreCase));
+                    var instanceIndex = 0;
+                    foreach (var instance in instances)
+                    {
+                        if (instance.Position.z < short.MinValue) continue;
+                        gltfWriter.AddFragmentData(objMesh, ModelGenerationMode.Separate, false, null, -1, instance, instanceIndex++);
+                    }
+                }
+                else if (actor.ActorType == ActorType.Skeletal)
+                {
+                    var skeleton = actor.SkeletonReference?.SkeletonHierarchy;
+                    if (skeleton == null) continue;
+                    var instances = objects.FindAll(o => skeleton.Name.StartsWith(o.ObjectName, StringComparison.InvariantCultureIgnoreCase));
+                    var instanceIndex = 0;
+                    var combinedMeshName = FragmentNameCleaner.CleanName(skeleton);
+                    var addedMeshOnce = false;
+
+                    foreach (var instance in instances)
+                    {
+                        if(instance.Position.z < short.MinValue) continue;
+
+                        if (!addedMeshOnce || 
+                            (settings.ExportGltfVertexColors 
+                                && instance.Colors?.Colors != null 
+                                && instance.Colors.Colors.Any()))
+                        {
+                            for (int i = 0; i < skeleton.Skeleton.Count; i++)
+                            {
+                                var bone = skeleton.Skeleton[i];
+                                var mesh = bone?.MeshReference?.Mesh;
+                                if (mesh != null)
+                                {
+                                    var originalVertices = MeshExportHelper.ShiftMeshVertices(mesh, skeleton, false, "pos", 0, i);
+                                    gltfWriter.AddFragmentData(mesh, ModelGenerationMode.Combine, false,
+                                        combinedMeshName, i, instance, instanceIndex);
+                                    mesh.Vertices = originalVertices;
+                                }
+                            }
+
+                            gltfWriter.AddCombinedMeshToScene(null, instance, combinedMeshName);
+                            addedMeshOnce = true;
+                        }
+
+                        gltfWriter.AddCombinedMeshToScene(null, instance, combinedMeshName);
+                        instanceIndex++;
+                    }
+                }
+            }
+
             var exportFilePath = $"{wldFileZone.GetExportFolderForWldType()}{wldFileZone.ZoneShortname}.gltf";
-            model.SaveGLTF(exportFilePath);
+            gltfWriter.WriteAssetToFile(exportFilePath, true);
         }
 
         private static void ExportStaticActor(Actor actor, Settings settings, WldFile wldFile )
         {
+            var mesh = actor?.MeshReference?.Mesh;
 
+            if (mesh == null) return;
+
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+            
+            var exportFolder = wldFile.GetExportFolderForWldType();
+
+            // HACK - the helper method GetExportFolderForWldType() is looking at
+            // this setting and returns the base zone folder if true
+            if (settings.ExportCharactersToSingleFolder && wldFile.WldType == WldType.Characters)
+            {
+                exportFolder = $"{exportFolder}Characters/";
+            }
+            var textureImageFolder = $"{exportFolder}Textures/";
+            gltfWriter.GenerateGltfMaterials(new List<MaterialList>() { mesh.MaterialList }, textureImageFolder);
+            gltfWriter.AddFragmentData(mesh);
+           
+            var exportFilePath = $"{exportFolder}{FragmentNameCleaner.CleanName(mesh)}.gltf";
+            gltfWriter.WriteAssetToFile(exportFilePath, true);
         }
 
         private static void ExportSkeletalActor(Actor actor, Settings settings, WldFile wldFile)
         {
+            var skeleton = actor?.SkeletonReference?.SkeletonHierarchy;
 
-        }
+            if (skeleton == null) return;
 
-        private static MaterialBuilder GetBlankMaterial()
-        {
-            return new MaterialBuilder(MaterialBlankName)
-                .WithDoubleSide(false)
-                .WithMetallicRoughnessShader()
-                .WithChannelParam(KnownChannel.BaseColor, KnownProperty.RGBA, new Vector4(1, 1, 1, 0));
-        }
-
-        private static MaterialBuilder GetInvisibleMaterial()
-        {
-            return new MaterialBuilder(MaterialInvisName)
-                .WithDoubleSide(false)
-                .WithMetallicRoughnessShader()
-                .WithChannelParam(KnownChannel.BaseColor, KnownProperty.RGBA, new Vector4(1, 1, 1, 1))
-                .WithAlpha(AlphaMode.MASK);
-        }
-
-        private static IDictionary<string, MaterialBuilder> GenerateGltfMaterials(IList<MaterialList> materialLists, string textureImageFolder, Settings settings)
-        {
-            var gltfMaterials = new Dictionary<string, MaterialBuilder>();
-            gltfMaterials.Add(MaterialBlankName, GetBlankMaterial());
-            gltfMaterials.Add(MaterialInvisName, GetInvisibleMaterial());
-
-            foreach (var materialList in materialLists)
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+            
+            var materialLists = new HashSet<MaterialList>();
+            var skeletonMeshMaterialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
+            if (skeletonMeshMaterialList != null)
             {
-                if (materialList == null)
+                materialLists.Add(skeletonMeshMaterialList);
+            }
+
+            foreach (var skeletonBones in skeleton.Skeleton)
+            {
+                var boneMaterialList = skeletonBones.MeshReference?.Mesh?.MaterialList;
+                if (boneMaterialList != null)
                 {
-                    continue;
-                }
-
-                foreach (var eqMaterial in materialList.Materials)
-                {
-                    var materialName = GetMaterialName(eqMaterial);
-
-                    if (gltfMaterials.ContainsKey(materialName)) continue;
-
-                    var imageFileNameWithoutExtension = eqMaterial.GetFirstBitmapNameWithoutExtension();
-
-                    if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;       
-                    if (eqMaterial.ShaderType == ShaderType.Invisible) continue;
-
-                    var gltfMaterial = new MaterialBuilder(materialName)
-                        .WithDoubleSide(false)
-                        .WithMetallicRoughnessShader()
-                        .WithChannelParam(KnownChannel.MetallicRoughness, KnownProperty.RoughnessFactor, MaterialRoughness)
-                        .WithChannelParam(KnownChannel.MetallicRoughness, KnownProperty.MetallicFactor, 0f)
-                        .WithChannelImage(KnownChannel.BaseColor, $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}");
-
-                    switch (eqMaterial.ShaderType)
-                    {
-                        case ShaderType.Transparent25:
-                            gltfMaterial.WithAlpha(AlphaMode.MASK, 0.25f);
-                            break;
-                        case ShaderType.Transparent50:
-                            gltfMaterial.WithAlpha(AlphaMode.MASK, 0.5f);
-                            break;
-                        case ShaderType.Transparent75:
-                            gltfMaterial.WithAlpha(AlphaMode.MASK, 0.75f);
-                            break;
-                        case ShaderType.TransparentAdditive:
-                        case ShaderType.TransparentAdditiveUnlit:
-                        case ShaderType.TransparentMasked:
-                        case ShaderType.TransparentSkydome:
-                        case ShaderType.TransparentAdditiveUnlitSkydome:
-                            gltfMaterial.WithAlpha(AlphaMode.BLEND);
-                            break;
-                        default:
-                            gltfMaterial.WithAlpha(AlphaMode.OPAQUE);
-                            break;
-                    }
-
-                    if (eqMaterial.ShaderType == ShaderType.TransparentAdditiveUnlit ||
-                        eqMaterial.ShaderType == ShaderType.DiffuseSkydome ||
-                        eqMaterial.ShaderType == ShaderType.TransparentAdditiveUnlitSkydome)
-                    {
-                        gltfMaterial.WithUnlitShader();
-                    }
-
-                    gltfMaterials.Add(materialName, gltfMaterial);
+                    materialLists.Add(boneMaterialList);
                 }
             }
 
-            return gltfMaterials;
-        }
-        private static string GetMaterialName(Material eqMaterial)
-        {
-            return $"{MaterialList.GetMaterialPrefix(eqMaterial.ShaderType)}_{eqMaterial.GetFirstBitmapNameWithoutExtension()}";
-        }
-
-        private static void AddMeshesToScene(SharpGLTF.Scenes.SceneBuilder scene, 
-            IEnumerable<Mesh> meshes, IDictionary<string, MaterialBuilder> gltfMaterials, 
-            Settings settings, string singleMeshName = null)
-        {
-            var exportVertexColors = false;
-            // Result needs to be mirrored along the X axis
-            var transformMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
-            IMeshBuilder<MaterialBuilder> gltfMesh = null;
-            foreach (var mesh in meshes)
+            var exportFolder = wldFile.GetExportFolderForWldType();
+            // HACK - the helper method GetExportFolderForWldType() is looking at
+            // this setting and returns the base zone folder if true
+            if (settings.ExportCharactersToSingleFolder && wldFile.WldType == WldType.Characters)
             {
-                var polygonIndex = 0;
-                var meshName = singleMeshName ?? mesh.Name ?? $"Mesh_{scene.Instances.Count}";
-                if (gltfMesh == null || singleMeshName == null)
-                {
-                    if (exportVertexColors)
-                    {
-                        gltfMesh = new MeshBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>(meshName);
-                    }
-                    else
-                    {
-                        gltfMesh = new MeshBuilder<VertexPositionNormal, VertexTexture1, VertexEmpty>(meshName);
-                    }
-                }
-                foreach (var materialGroup in mesh.MaterialGroups)
-                {
-                    var materialName = GetMaterialName(mesh.MaterialList.Materials[materialGroup.MaterialIndex]);
-                    if (!gltfMaterials.TryGetValue(materialName, out var gltfMaterial))
-                    {
-                        gltfMaterial = gltfMaterials[MaterialBlankName];
-                    }
+                exportFolder = $"{exportFolder}Characters/";
+            }
+            var textureImageFolder = $"{exportFolder}Textures/";
+            gltfWriter.GenerateGltfMaterials(materialLists, textureImageFolder);
 
-                    var primitive = gltfMesh.UsePrimitive(gltfMaterial);
-                    for (var i = 0; i < materialGroup.PolygonCount; ++i)
-                    {
-                        var triangle = mesh.Indices[polygonIndex++];
-                        (int v0, int v1, int v2) vertexIndices = (triangle.Vertex1, triangle.Vertex2, triangle.Vertex3);
-                        (Vector3 v0, Vector3 v1, Vector3 v2) vertexPositions = (
-                            (mesh.Vertices[vertexIndices.v0] + mesh.Center).ToVector3(true),
-                            (mesh.Vertices[vertexIndices.v1] + mesh.Center).ToVector3(true),
-                            (mesh.Vertices[vertexIndices.v2] + mesh.Center).ToVector3(true));
-                        (Vector3 v0, Vector3 v1, Vector3 v2) vertexNormals = (
-                            -mesh.Normals[vertexIndices.v0].ToVector3(),
-                            -mesh.Normals[vertexIndices.v1].ToVector3(),
-                            -mesh.Normals[vertexIndices.v2].ToVector3());
-                        (Vector2 v0, Vector2 v1, Vector2 v2) vertexUvs = (
-                            mesh.TextureUvCoordinates[vertexIndices.v0].ToVector2(),
-                            mesh.TextureUvCoordinates[vertexIndices.v1].ToVector2(),
-                            mesh.TextureUvCoordinates[vertexIndices.v2].ToVector2());
-                        if (exportVertexColors)
-                        {
-                            (Vector4 v0, Vector4 v1, Vector4 v2) vertexColors = (
-                                mesh.Colors[vertexIndices.v0].ToVector4(),
-                                mesh.Colors[vertexIndices.v1].ToVector4(),
-                                mesh.Colors[vertexIndices.v2].ToVector4());
-                            ((PrimitiveBuilder<MaterialBuilder, VertexPositionNormal, VertexColor1Texture1, VertexEmpty>)primitive)
-                                .AddTriangle(
-                                    ((vertexPositions.v0, vertexNormals.v0), (vertexColors.v0, vertexUvs.v0)),
-                                    ((vertexPositions.v1, vertexNormals.v1), (vertexColors.v1, vertexUvs.v1)),
-                                    ((vertexPositions.v2, vertexNormals.v2), (vertexColors.v2, vertexUvs.v2)));
-                        }
-                        else
-                        {
-                            ((PrimitiveBuilder<MaterialBuilder, VertexPositionNormal, VertexTexture1, VertexEmpty>)primitive)
-                                .AddTriangle(
-                                    ((vertexPositions.v0, vertexNormals.v0), (vertexUvs.v0)),
-                                    ((vertexPositions.v1, vertexNormals.v1), (vertexUvs.v1)),
-                                    ((vertexPositions.v2, vertexNormals.v2), (vertexUvs.v2)));
-                        }
-
-                    }
-                    if (singleMeshName == null)
-                    {                  
-                        scene.AddRigidMesh(gltfMesh, transformMatrix);
-                    }
+            for (int i = 0; i < skeleton.Skeleton.Count; i++)
+            {
+                var bone = skeleton.Skeleton[i];
+                var mesh = bone?.MeshReference?.Mesh;
+                if (mesh != null)
+                {
+                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0, i);
+                    gltfWriter.AddFragmentData(mesh, skeleton, null, i);
                 }
             }
-            if (singleMeshName != null)
+            if (skeleton.Meshes != null)
             {
-                scene.AddRigidMesh(gltfMesh, transformMatrix);
-            }
-        }
+                foreach (var mesh in skeleton.Meshes)
+                {
+                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0);
+                    gltfWriter.AddFragmentData(mesh, skeleton);
+                }
 
-        private static Vector2 ToVector2(this vec2 v2)
-        {
-            return new Vector2(v2.x, v2.y);
-        }
+                for (var i = 0; i < skeleton.SecondaryMeshes.Count; i++)
+                {
+                    var secondaryMesh = skeleton.SecondaryMeshes[i];
+                    var secondaryGltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+                    secondaryGltfWriter.CopyMaterialList(gltfWriter);
+                    secondaryGltfWriter.AddFragmentData(skeleton.Meshes[0], skeleton);
+                    MeshExportHelper.ShiftMeshVertices(secondaryMesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0);
+                    secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
+                    secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", 0);
+                    var secondaryExportPath = $"{exportFolder}{FragmentNameCleaner.CleanName(skeleton)}_{i:00}.gltf";
+                    secondaryGltfWriter.WriteAssetToFile(secondaryExportPath, true, skeleton.ModelBase);
+                }
 
-        private static Vector3 ToVector3(this vec3 v3, bool swapYandZ = false)
-        {
-            if (swapYandZ)
-            {
-                return new Vector3(v3.x, v3.z, v3.y);
             }
-            else
-            {
-                return new Vector3(v3.x, v3.y, v3.z);
-            }
-        }
+            gltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", 0);
+           
+            var exportFilePath = $"{exportFolder}{FragmentNameCleaner.CleanName(skeleton)}.gltf";
+            gltfWriter.WriteAssetToFile(exportFilePath, true, skeleton.ModelBase);
 
-        private static Vector4 ToVector4(this Color color)
-        {
-            return new Vector4(color.B, color.G, color.R, color.A);
+            // TODO: bother with skin variants? If GLTF can just copy the .gltf and change the
+            // corresponding image URIs. If GLB then would have to repackage every variant.
         }
-        private static float MaterialRoughness = 0.85f;
-        private static string MaterialInvisName = "Invis";
-        private static string MaterialBlankName = "Blank";
     }
 }

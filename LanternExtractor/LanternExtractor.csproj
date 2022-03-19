@@ -76,6 +76,7 @@
     <Compile Include="EQ\Wld\Exporters\ActorGltfExporter.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriterNew.cs" />
     <Compile Include="EQ\Wld\Exporters\ActorWriterNewGlobal.cs" />
+    <Compile Include="EQ\Wld\Exporters\GltfWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\LegacyMeshIntermediateAssetWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
     <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
@@ -134,6 +135,7 @@
     <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
     <Compile Include="EQ\Wld\Helpers\CharacterFixer.cs" />
     <Compile Include="EQ\Wld\Helpers\MaterialFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\MeshExportHelper.cs" />
     <Compile Include="EQ\Wld\Helpers\MissingTextureFixer.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />

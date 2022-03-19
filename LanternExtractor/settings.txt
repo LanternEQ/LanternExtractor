@@ -18,11 +18,11 @@ RawS3DExtract = false
 ExportZoneMeshGroups = false
 
 # Include hidden geometry (invisible boundaries) in the zone collision export?
-ExportHiddenGeometry = true
+ExportHiddenGeometry = false
 
 # Sets the desired export format for models
 # 0 = Intermediate (Unity importer), 1 = OBJ, 2 = glTF
-ModelExportFormat = 0
+ModelExportFormat = 2
 
 # If true, will export all characters to the 'characters' folder (intermediate only)
 # This is useful when batch importing into Unity
@@ -38,6 +38,12 @@ ExportAllAnimationFrames = false
 
 # If true, will *only* export zone files in obj format with their associated objects placed within the zone
 ExportZoneWithObjects = false
+
+# Export vertex colors (glTF only). 
+# Default behavior of glTF renderers is to mix the vertex color with the base color, 
+# which will not look right. Only turn this on if you intend to do some post-processing that
+# requires vertex colors being present.
+ExportGltfVertexColors = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors

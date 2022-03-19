@@ -114,20 +114,8 @@ namespace LanternExtractor.EQ
                 wldFile.RootFolder = rootFolder;
                 wldFile.ShortName = shortName;
             }
-            
-            if (settings.ModelExportFormat != ModelExportFormat.GlTF)
-            {
-                wldFile.Initialize(rootFolder);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
-            }
-            else
-            {
-                wldFile.Initialize(rootFolder, false);
-                WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
-                wldFile.ExportData();
-            }
-
-
+            InitializeWldAndWriteTextures(wldFile, rootFolder, rootFolder + shortName + "/Zone/Textures/",
+                s3dArchive, settings, logger);
 
             PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 
@@ -154,8 +142,9 @@ namespace LanternExtractor.EQ
             PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
         {
             var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
-            wldFile.Initialize(rootFolder);
-            WriteWldTextures(s3dArchive, wldFile, rootFolder + ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Objects/Textures/", logger);
+            InitializeWldAndWriteTextures(wldFile, rootFolder, 
+                rootFolder + ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Objects/Textures/",
+                s3dArchive, settings, logger);
         }
 
         private static void ExtractArchiveCharacters(string path, string rootFolder, ILogger logger, Settings settings,
@@ -183,23 +172,22 @@ namespace LanternExtractor.EQ
 
             var wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters,
                 logger, settings, wldFileToInject);
-            wldFile.Initialize(rootFolder);
 
             string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
                                               settings.ModelExportFormat == ModelExportFormat.Intermediate
                 ? "characters/Textures/"
                 : ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Characters/Textures/");
 
-            s3dArchive.FilenameChanges = wldFile.FilenameChanges;
-            WriteWldTextures(s3dArchive, wldFile, exportPath, logger);
+            InitializeWldAndWriteTextures(wldFile, rootFolder, exportPath,
+                s3dArchive, settings, logger);
         }
 
         private static void ExtractArchiveSky(string rootFolder, ILogger logger, Settings settings, PfsFile wldFileInArchive,
             string shortName, PfsArchive s3dArchive)
         {
             var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Sky, logger, settings);
-            wldFile.Initialize(rootFolder);
-            WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Textures/", logger);
+            InitializeWldAndWriteTextures(wldFile, rootFolder, rootFolder + shortName + "/Textures/",
+                s3dArchive, settings, logger);
         }
 
         private static void ExtractArchiveEquipment(string rootFolder, ILogger logger, Settings settings,
@@ -207,14 +195,32 @@ namespace LanternExtractor.EQ
         {
             var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
             wldFile.Initialize(rootFolder);
-            WriteWldTextures(s3dArchive, wldFile,
-                rootFolder +
+            var exportPath = rootFolder +
                 (settings.ExportEquipmentToSingleFolder &&
                  settings.ModelExportFormat == ModelExportFormat.Intermediate
                     ? "equipment/Textures/"
-                    : shortName + "/Textures/"), logger);
+                    : shortName + "/Textures/");
+
+            InitializeWldAndWriteTextures(wldFile, rootFolder, exportPath, s3dArchive, settings, logger);
         }
 
+        private static void InitializeWldAndWriteTextures(WldFile wldFile, string rootFolder, string texturePath,
+            PfsArchive s3dArchive, Settings settings, ILogger logger)
+        {
+            if (settings.ModelExportFormat != ModelExportFormat.GlTF)
+            {
+                wldFile.Initialize(rootFolder);
+                s3dArchive.FilenameChanges = wldFile.FilenameChanges;
+                WriteWldTextures(s3dArchive, wldFile, texturePath, logger);
+            }
+            else // Exporting to GlTF requires that the texture images already be present 
+            {
+                wldFile.Initialize(rootFolder, false);
+                s3dArchive.FilenameChanges = wldFile.FilenameChanges;
+                WriteWldTextures(s3dArchive, wldFile, texturePath, logger);
+                wldFile.ExportData();
+            }
+        }
         /// <summary>
         /// Writes textures from the PFS archive to disk, converting them to PNG
         /// </summary>

@@ -19,6 +19,12 @@ namespace LanternExtractor.EQ.Wld
         public PfsArchive BaseS3DArchive { get; set; } = null;
         public WldFile WldFileToInject { get; set; } = null;
 
+        public override void ExportData()
+        {
+            base.ExportData();
+            ExportAmbientLightColor();
+            ExportBspTree();
+        }
 
         protected override void ProcessData()
         {
@@ -102,12 +108,6 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
-        public override void ExportData()
-        {
-            base.ExportData();
-            ExportAmbientLightColor();
-            ExportBspTree();
-        }
 
         private void ExportAmbientLightColor()
         {

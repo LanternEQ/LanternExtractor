@@ -77,6 +77,14 @@ namespace LanternExtractor
         public bool ExportZoneWithObjects { get; private set; }
 
         /// <summary>
+        /// Export vertex colors with glTF model. Default behavior of glTF renderers
+        /// is to mix the vertex color with the base color, which will not look right.
+        /// Only turn this on if you intend to do some post-processing that
+        /// requires vertex colors being present.
+        /// </summary>
+        public bool ExportGltfVertexColors { get; private set; }
+
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -175,6 +183,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
             {
                 ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
+            {
+                ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
