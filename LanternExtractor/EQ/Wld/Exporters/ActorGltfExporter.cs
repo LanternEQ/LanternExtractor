@@ -27,10 +27,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 switch (actor.ActorType)
                 {
                     case ActorType.Static:
-                        ExportStaticActor(actor, settings, wldFile);
+                        ExportStaticActor(actor, settings, wldFile, logger);
                         break;
                     case ActorType.Skeletal:
-                        ExportSkeletalActor(actor, settings, wldFile);
+                        ExportSkeletalActor(actor, settings, wldFile, logger);
                         break;
                     default:
                         continue;
@@ -45,6 +45,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var materialLists = wldFileZone.GetFragmentsOfType<MaterialList>();
             var objects = new List<ObjectInstance>();
             var shortName = wldFileZone.ShortName;
+            var exportFormat = settings.ExportGltfInGlbFormat ? GltfExportFormat.Glb : GltfExportFormat.GlTF;
 
             if (settings.ExportZoneWithObjects)
             {
@@ -81,7 +82,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
             var textureImageFolder = $"{wldFileZone.GetExportFolderForWldType()}Textures/";
             gltfWriter.GenerateGltfMaterials(materialLists, textureImageFolder);
 
@@ -116,7 +117,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     foreach (var instance in instances)
                     {
-                        if(instance.Position.z < short.MinValue) continue;
+                        if (instance.Position.z < short.MinValue) continue;
 
                         if (!addedMeshOnce || 
                             (settings.ExportGltfVertexColors 
@@ -150,13 +151,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
             gltfWriter.WriteAssetToFile(exportFilePath, true);
         }
 
-        private static void ExportStaticActor(Actor actor, Settings settings, WldFile wldFile )
+        private static void ExportStaticActor(Actor actor, Settings settings, WldFile wldFile, ILogger logger)
         {
             var mesh = actor?.MeshReference?.Mesh;
 
             if (mesh == null) return;
 
-            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+            var exportFormat = settings.ExportGltfInGlbFormat ? GltfExportFormat.Glb : GltfExportFormat.GlTF;
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
             
             var exportFolder = wldFile.GetExportFolderForWldType();
 
@@ -174,13 +176,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
             gltfWriter.WriteAssetToFile(exportFilePath, true);
         }
 
-        private static void ExportSkeletalActor(Actor actor, Settings settings, WldFile wldFile)
+        private static void ExportSkeletalActor(Actor actor, Settings settings, WldFile wldFile, ILogger logger)
         {
             var skeleton = actor?.SkeletonReference?.SkeletonHierarchy;
 
             if (skeleton == null) return;
 
-            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+            var exportFormat = settings.ExportGltfInGlbFormat ? GltfExportFormat.Glb : GltfExportFormat.GlTF;
+            var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
             
             var materialLists = new HashSet<MaterialList>();
             var skeletonMeshMaterialList = skeleton.Meshes?.FirstOrDefault()?.MaterialList;
@@ -214,8 +217,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 var mesh = bone?.MeshReference?.Mesh;
                 if (mesh != null)
                 {
-                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
-                        wldFile.WldType == WldType.Characters, "pos", 0, i);
+                    if (!settings.ExportAllAnimationFrames)
+                    {
+                        MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                            wldFile.WldType == WldType.Characters, "pos", 0, i);
+                    }
                     gltfWriter.AddFragmentData(mesh, skeleton, null, i);
                 }
             }
@@ -223,27 +229,52 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
-                        wldFile.WldType == WldType.Characters, "pos", 0);
+                    if (!settings.ExportAllAnimationFrames)
+                    {
+                        MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                            wldFile.WldType == WldType.Characters, "pos", 0);
+                    }
                     gltfWriter.AddFragmentData(mesh, skeleton);
                 }
 
                 for (var i = 0; i < skeleton.SecondaryMeshes.Count; i++)
                 {
                     var secondaryMesh = skeleton.SecondaryMeshes[i];
-                    var secondaryGltfWriter = new GltfWriter(settings.ExportGltfVertexColors, GltfExportFormat.GlTF);
+                    var secondaryGltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
                     secondaryGltfWriter.CopyMaterialList(gltfWriter);
                     secondaryGltfWriter.AddFragmentData(skeleton.Meshes[0], skeleton);
-                    MeshExportHelper.ShiftMeshVertices(secondaryMesh, skeleton,
-                        wldFile.WldType == WldType.Characters, "pos", 0);
-                    secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
-                    secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", 0);
+                    if (!settings.ExportAllAnimationFrames)
+                    {
+                        MeshExportHelper.ShiftMeshVertices(secondaryMesh, skeleton,
+                            wldFile.WldType == WldType.Characters, "pos", 0);
+                        secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
+                        secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true); ;
+
+                    }
+                    else
+                    {
+                        secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
+                        foreach (var animationKey in skeleton.Animations.Keys)
+                        {
+                            secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, animationKey, wldFile.WldType == WldType.Characters, false);
+                        }
+                    }
+                    
                     var secondaryExportPath = $"{exportFolder}{FragmentNameCleaner.CleanName(skeleton)}_{i:00}.gltf";
                     secondaryGltfWriter.WriteAssetToFile(secondaryExportPath, true, skeleton.ModelBase);
                 }
-
             }
-            gltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", 0);
+            if (!settings.ExportAllAnimationFrames)
+            {
+                gltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true);
+            }
+            else
+            {
+                foreach (var animationKey in skeleton.Animations.Keys)
+                {
+                    gltfWriter.ApplyAnimationToSkeleton(skeleton, animationKey, wldFile.WldType == WldType.Characters, false);
+                }
+            }
            
             var exportFilePath = $"{exportFolder}{FragmentNameCleaner.CleanName(skeleton)}.gltf";
             gltfWriter.WriteAssetToFile(exportFilePath, true, skeleton.ModelBase);

@@ -85,6 +85,14 @@ namespace LanternExtractor
         public bool ExportGltfVertexColors { get; private set; }
 
         /// <summary>
+        /// Exports glTF models in .GLB file format. GLB packages the .glTF json, the
+        /// associated .bin, and all of the model's texture images into one file. This will
+        /// take up more space since textures can't be shared, however, it will make models
+        /// more portable.
+        /// </summary>
+        public bool ExportGltfInGlbFormat { get; private set; }
+
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -188,6 +196,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
             {
                 ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
+            {
+                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

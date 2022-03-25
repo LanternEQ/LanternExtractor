@@ -32,8 +32,11 @@ ExportCharacterToSingleFolder = true
 # This is useful when batch importing into Unity
 ExportEquipmentToSingleFolder = true
 
-# If true, this will dump an OBJ for each animation frame. (OBJ only)
+## (OBJ)
+# If true, this will dump an OBJ for each animation frame.
 # This could use a high amount of disk space.
+## (glTF)
+# If true, skeletal models will export with animations.
 ExportAllAnimationFrames = false
 
 # If true, will *only* export zone files in obj format with their associated objects placed within the zone
@@ -44,6 +47,12 @@ ExportZoneWithObjects = false
 # which will not look right. Only turn this on if you intend to do some post-processing that
 # requires vertex colors being present.
 ExportGltfVertexColors = false
+
+# Export glTF models in .GLB file format.
+# GLB packages the .glTF json, the associated .bin, and all of the model's texture images 
+# into one file. This will take up more space since textures can't be shared, however, 
+it will make models more portable.
+ExportGltfInGlbFormat = false
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
