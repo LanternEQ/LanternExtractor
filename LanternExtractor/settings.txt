@@ -51,7 +51,7 @@ ExportGltfVertexColors = false
 # Export glTF models in .GLB file format.
 # GLB packages the .glTF json, the associated .bin, and all of the model's texture images 
 # into one file. This will take up more space since textures can't be shared, however, 
-it will make models more portable.
+# it will make models more portable.
 ExportGltfInGlbFormat = false
 
 # The minimum verbosity of the logger

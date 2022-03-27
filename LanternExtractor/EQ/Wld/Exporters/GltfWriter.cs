@@ -86,9 +86,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
              "sky"
         };
 
-        private static readonly Matrix4x4 CorrectedWorldMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0))
-            * Matrix4x4.CreateScale(0.1f);
-
+        private static readonly Matrix4x4 MirrorXAxisMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
+        private static readonly Matrix4x4 CorrectedWorldMatrix = MirrorXAxisMatrix * Matrix4x4.CreateScale(0.1f);
+        
         private SharpGLTF.Scenes.SceneBuilder _scene;
         private IMeshBuilder<MaterialBuilder> _combinedMeshBuilder;
         private ISet<string> _meshMaterialsToSkip;
@@ -110,7 +110,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void AddFragmentData(WldFragment fragment)
         {
-            AddFragmentData((Mesh)fragment, ModelGenerationMode.Separate);
+            AddFragmentData(
+                mesh:(Mesh)fragment, 
+                generationMode:ModelGenerationMode.Separate );
         }
 
         public void AddFragmentData(Mesh mesh, SkeletonHierarchy skeleton,
@@ -121,7 +123,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 AddNewSkeleton(skeleton);
             }
 
-            AddFragmentData(mesh, ModelGenerationMode.Combine, true, meshNameOverride, singularBoneIndex);
+            AddFragmentData(
+                mesh: mesh, 
+                generationMode: ModelGenerationMode.Combine, 
+                isSkinned: true, 
+                meshNameOverride: meshNameOverride, 
+                singularBoneIndex: singularBoneIndex);
         }
 
         public void CopyMaterialList(GltfWriter gltfWriter)
@@ -149,10 +156,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                     if (Materials.ContainsKey(materialName)) continue;
 
-                    var imageFileNameWithoutExtension = eqMaterial.GetFirstBitmapNameWithoutExtension();
-
-                    if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
-
                     if (eqMaterial.ShaderType == ShaderType.Boundary)
                     {
                         _meshMaterialsToSkip.Add(materialName);
@@ -163,6 +166,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         Materials.Add(materialName, GetInvisibleMaterial());
                         continue;
                     }
+
+                    var imageFileNameWithoutExtension = eqMaterial.GetFirstBitmapNameWithoutExtension();
+                    if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
 
                     var imagePath = $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}";
                     ImageBuilder imageBuilder;
@@ -231,12 +237,20 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
         }
 
-        public void AddFragmentData(Mesh mesh, ModelGenerationMode generationMode, bool isSkinned = false, string meshNameOverride = null,
-            int singularBoneIndex = -1, ObjectInstance objectInstance = null, int instanceIndex = 0)
+        public void AddFragmentData(
+            Mesh mesh, 
+            ModelGenerationMode generationMode, 
+            bool isSkinned = false, 
+            string meshNameOverride = null,
+            int singularBoneIndex = -1, 
+            ObjectInstance objectInstance = null, 
+            int instanceIndex = 0, 
+            bool isZoneMesh = false)
         {
             var meshName = meshNameOverride ?? FragmentNameCleaner.CleanName(mesh);
             var transformMatrix = objectInstance == null ? Matrix4x4.Identity : CreateTransformMatrixForObjectInstance(objectInstance);
-            
+            transformMatrix = transformMatrix *= isZoneMesh ? CorrectedWorldMatrix : MirrorXAxisMatrix;
+
             var canExportVertexColors = _exportVertexColors &&
                 ((objectInstance?.Colors?.Colors != null && objectInstance.Colors.Colors.Any())
                 || (mesh?.Colors != null && mesh.Colors.Any()));
@@ -246,7 +260,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 if (generationMode == ModelGenerationMode.Separate)
                 {
-                    _scene.AddRigidMesh(existingMesh, transformMatrix * CorrectedWorldMatrix);
+                    _scene.AddRigidMesh(existingMesh, transformMatrix);
                 }
                 return;
             }
@@ -321,7 +335,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
                 else
                 {
-                    _scene.AddRigidMesh(gltfMesh, transformMatrix * CorrectedWorldMatrix);
+                    _scene.AddRigidMesh(gltfMesh, transformMatrix);
                     _sharedMeshes[meshName] = gltfMesh;
                 }              
             }
@@ -380,7 +394,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
         }
 
-        public void AddCombinedMeshToScene(string skeletonModelBase = null, ObjectInstance objectInstance = null, string meshName = null)
+        public void AddCombinedMeshToScene(
+            bool isZoneMesh = false, 
+            string meshName = null, 
+            string skeletonModelBase = null, 
+            ObjectInstance objectInstance = null)
         {
             IMeshBuilder<MaterialBuilder> combinedMesh;
             if (meshName != null && _sharedMeshes.TryGetValue(meshName, out var existingMesh))
@@ -396,11 +414,20 @@ namespace LanternExtractor.EQ.Wld.Exporters
             if (objectInstance != null)
             {
                 worldTransformMatrix *= CreateTransformMatrixForObjectInstance(objectInstance);
+                worldTransformMatrix *= CorrectedWorldMatrix;
+            }
+            else if (isZoneMesh)
+            {
+                worldTransformMatrix *= CorrectedWorldMatrix;
+            }
+            else
+            {
+//                worldTransformMatrix *= Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0));
             }
 
             if (skeletonModelBase == null || !_skeletons.TryGetValue(skeletonModelBase, out var skeleton))
             {
-                _scene.AddRigidMesh(combinedMesh, worldTransformMatrix * CorrectedWorldMatrix);
+                _scene.AddRigidMesh(combinedMesh, worldTransformMatrix);
             }
             else
             {
@@ -421,7 +448,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public void WriteAssetToFile(string fileName, bool useExistingImages, string skeletonModelBase = null)
         {
-            AddCombinedMeshToScene(skeletonModelBase);
+            AddCombinedMeshToScene(false, null, skeletonModelBase);
             var outputFilePath = FixFilePath(fileName);
             var model = _scene.ToGltf2();
             if (_exportFormat == GltfExportFormat.GlTF)
@@ -455,6 +482,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             Materials.Clear();
             _sharedMeshes.Clear();
             _skeletons.Clear();
+            _meshMaterialsToSkip.Clear();
         }
 
         public new int GetExportByteCount() => 0;
@@ -522,6 +550,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v0].ToVector3()),
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v1].ToVector3()),
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v2].ToVector3()));
+            if (isSkinned)
+            {
+//                vertexNormals = (-vertexNormals.v0, vertexNormals.v1, -vertexNormals.v2);
+            }
             (Vector2 v0, Vector2 v1, Vector2 v2) vertexUvs = (
                 mesh.TextureUvCoordinates[vertexIndices.v0].ToVector2(true),
                 mesh.TextureUvCoordinates[vertexIndices.v1].ToVector2(true),
@@ -639,7 +671,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             var node = new NodeBuilder(meshName);
-            node.LocalTransform =  transformMatrix * CorrectedWorldMatrix;
+            node.LocalTransform =  transformMatrix;
 
             var instance = _scene.AddRigidMesh(gltfMesh, node);
             instance.Content.UseMorphing().SetValue(weights.ToArray());
@@ -682,7 +714,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         }
 
         private void ApplyBoneTransformation(NodeBuilder boneNode, DataTypes.BoneTransform boneTransform, 
-            string animationKey, int timeMs, bool staticPose )
+            string animationKey, int timeMs, bool staticPose)
         {
             var scaleVector = new Vector3(boneTransform.Scale);
             var rotationQuaternion = new Quaternion()

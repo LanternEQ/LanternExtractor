@@ -88,9 +88,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (var mesh in zoneMeshes)
             {
-                gltfWriter.AddFragmentData(mesh, ModelGenerationMode.Combine, false, shortName);
+                gltfWriter.AddFragmentData(
+                    mesh: mesh, 
+                    generationMode: ModelGenerationMode.Combine, 
+                    meshNameOverride: shortName,
+                    isZoneMesh: true);
             }
-            gltfWriter.AddCombinedMeshToScene(shortName);
+            gltfWriter.AddCombinedMeshToScene(true, shortName);
 
             foreach (var actor in actors)
             {
@@ -103,7 +107,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     foreach (var instance in instances)
                     {
                         if (instance.Position.z < short.MinValue) continue;
-                        gltfWriter.AddFragmentData(objMesh, ModelGenerationMode.Separate, false, null, -1, instance, instanceIndex++);
+                        gltfWriter.AddFragmentData(
+                            mesh: objMesh, 
+                            generationMode: ModelGenerationMode.Separate,
+                            objectInstance: instance, 
+                            instanceIndex: instanceIndex++,
+                            isZoneMesh: true);
                     }
                 }
                 else if (actor.ActorType == ActorType.Skeletal)
@@ -131,17 +140,23 @@ namespace LanternExtractor.EQ.Wld.Exporters
                                 if (mesh != null)
                                 {
                                     var originalVertices = MeshExportHelper.ShiftMeshVertices(mesh, skeleton, false, "pos", 0, i);
-                                    gltfWriter.AddFragmentData(mesh, ModelGenerationMode.Combine, false,
-                                        combinedMeshName, i, instance, instanceIndex);
+                                    gltfWriter.AddFragmentData(
+                                        mesh: mesh, 
+                                        generationMode: ModelGenerationMode.Combine,
+                                        meshNameOverride: combinedMeshName, 
+                                        singularBoneIndex: i, 
+                                        objectInstance: instance, 
+                                        instanceIndex: instanceIndex,
+                                        isZoneMesh: true);
                                     mesh.Vertices = originalVertices;
                                 }
                             }
 
-                            gltfWriter.AddCombinedMeshToScene(null, instance, combinedMeshName);
+                            gltfWriter.AddCombinedMeshToScene(true, combinedMeshName, null, instance);
                             addedMeshOnce = true;
                         }
 
-                        gltfWriter.AddCombinedMeshToScene(null, instance, combinedMeshName);
+                        gltfWriter.AddCombinedMeshToScene(true, combinedMeshName, null, instance);
                         instanceIndex++;
                     }
                 }
