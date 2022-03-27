@@ -422,7 +422,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
             else
             {
-//                worldTransformMatrix *= Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0));
+                worldTransformMatrix *= Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0));
             }
 
             if (skeletonModelBase == null || !_skeletons.TryGetValue(skeletonModelBase, out var skeleton))
@@ -550,10 +550,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v0].ToVector3()),
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v1].ToVector3()),
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v2].ToVector3()));
-            if (isSkinned)
-            {
-//                vertexNormals = (-vertexNormals.v0, vertexNormals.v1, -vertexNormals.v2);
-            }
             (Vector2 v0, Vector2 v1, Vector2 v2) vertexUvs = (
                 mesh.TextureUvCoordinates[vertexIndices.v0].ToVector2(true),
                 mesh.TextureUvCoordinates[vertexIndices.v1].ToVector2(true),
@@ -571,10 +567,21 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 vertexColors = GetVertexColorVectors(mesh, vertexIndices, objectInstance);
             }
-            primitive.AddTriangle(
-                GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v0, vertexNormals.v0, vertexUvs.v0, vertexColors.v0, isSkinned, boneIndexes.v0),
-                GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v1, vertexNormals.v1, vertexUvs.v1, vertexColors.v1, isSkinned, boneIndexes.v1),
-                GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v2, vertexNormals.v2, vertexUvs.v2, vertexColors.v2, isSkinned, boneIndexes.v2));
+
+            var vertex0 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v0, vertexNormals.v0, vertexUvs.v0, vertexColors.v0, isSkinned, boneIndexes.v0);
+            var vertex1 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v1, vertexNormals.v1, vertexUvs.v1, vertexColors.v1, isSkinned, boneIndexes.v1);
+            var vertex2 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v2, vertexNormals.v2, vertexUvs.v2, vertexColors.v2, isSkinned, boneIndexes.v2);
+            if (isSkinned)
+            {
+                // Normals come out wrong for skinned models unless we add the triangle
+                // vertices in reverse order
+                primitive.AddTriangle(vertex2, vertex1, vertex0);
+            }
+            else
+            {
+                primitive.AddTriangle(vertex0, vertex1, vertex2);
+            }
+
 
             var gltfVpToWldVi = new Dictionary<VertexPositionNormal, int>();
 
@@ -719,13 +726,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var scaleVector = new Vector3(boneTransform.Scale);
             var rotationQuaternion = new Quaternion()
             {
-                X = (float)(boneTransform.Rotation.x * Math.PI * -1)/180,
-                Y = (float)(boneTransform.Rotation.z * Math.PI * -1)/180,
+                X = (float)(boneTransform.Rotation.x * Math.PI)/180,
+                Y = (float)(boneTransform.Rotation.z * Math.PI)/180,
                 Z = (float)(boneTransform.Rotation.y * Math.PI * -1)/180,
                 W = (float)(boneTransform.Rotation.w * Math.PI)/180
             };
             rotationQuaternion = Quaternion.Normalize(rotationQuaternion);
             var translationVector = boneTransform.Translation.ToVector3(true);
+            translationVector.Z = -translationVector.Z;
 
             if (staticPose)
             {
