@@ -343,6 +343,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public void ApplyAnimationToSkeleton(SkeletonHierarchy skeleton, string animationKey, bool isCharacterAnimation, bool staticPose)
         {
+            if (isCharacterAnimation && !staticPose && animationKey == DefaultModelPoseAnimationKey) return;
             if (!_skeletons.TryGetValue(skeleton.ModelBase, out var skeletonNodes))
             {
                 skeletonNodes = AddNewSkeleton(skeleton);
@@ -365,12 +366,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     if (!poseArray.ContainsKey(boneName)) return;
 
-                    var boneTransform = poseArray[boneName].TrackDefFragment.Frames[0];
+                    var poseTransform = poseArray[boneName].TrackDefFragment.Frames[0];
+                    if (poseTransform == null) return;
 
-                    if (boneTransform == null) return;
-
-                    ApplyBoneTransformation(skeletonNodes[i], boneTransform, animationKey,
-                        0, staticPose);
+                    ApplyBoneTransformation(skeletonNodes[i], poseTransform, animationKey, 0, staticPose);
                     continue;
                 }
 
@@ -529,7 +528,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 isSkinned ? typeof(VertexJoints4) : typeof(VertexEmpty));
 
             return (IMeshBuilder<MaterialBuilder>) Activator.CreateInstance(meshBuilderType, meshName);
-
         }
 
         private IDictionary<VertexPositionNormal,int> AddTriangleToMesh<TvG, TvM, TvS>(

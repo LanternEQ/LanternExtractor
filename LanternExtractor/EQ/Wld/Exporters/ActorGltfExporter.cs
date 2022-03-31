@@ -232,11 +232,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 var mesh = bone?.MeshReference?.Mesh;
                 if (mesh != null)
                 {
-                    if (!settings.ExportAllAnimationFrames)
-                    {
-                        MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
-                            wldFile.WldType == WldType.Characters, "pos", 0, i);
-                    }
+                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0, i);
+
                     gltfWriter.AddFragmentData(mesh, skeleton, null, i);
                 }
             }
@@ -244,11 +242,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    if (!settings.ExportAllAnimationFrames)
-                    {
-                        MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
-                            wldFile.WldType == WldType.Characters, "pos", 0);
-                    }
+                    MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0);
+
                     gltfWriter.AddFragmentData(mesh, skeleton);
                 }
 
@@ -258,15 +254,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     var secondaryGltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
                     secondaryGltfWriter.CopyMaterialList(gltfWriter);
                     secondaryGltfWriter.AddFragmentData(skeleton.Meshes[0], skeleton);
-                    if (!settings.ExportAllAnimationFrames)
-                    {
-                        MeshExportHelper.ShiftMeshVertices(secondaryMesh, skeleton,
-                            wldFile.WldType == WldType.Characters, "pos", 0);
-                        secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
-                        secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true); ;
 
-                    }
-                    else
+                    MeshExportHelper.ShiftMeshVertices(secondaryMesh, skeleton,
+                        wldFile.WldType == WldType.Characters, "pos", 0);
+                    secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
+                    secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true);
+
+                    if (settings.ExportAllAnimationFrames)
                     {
                         secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
                         foreach (var animationKey in skeleton.Animations.Keys)
@@ -279,11 +273,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     secondaryGltfWriter.WriteAssetToFile(secondaryExportPath, true, skeleton.ModelBase);
                 }
             }
-            if (!settings.ExportAllAnimationFrames)
-            {
-                gltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true);
-            }
-            else
+
+            gltfWriter.ApplyAnimationToSkeleton(skeleton, "pos", wldFile.WldType == WldType.Characters, true);
+
+            if (settings.ExportAllAnimationFrames)
             {
                 foreach (var animationKey in skeleton.Animations.Keys)
                 {
