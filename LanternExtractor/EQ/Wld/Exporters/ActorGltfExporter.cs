@@ -102,11 +102,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     var objMesh = actor.MeshReference?.Mesh;
                     if (objMesh == null) continue;
+
                     var instances = objects.FindAll(o => objMesh.Name.StartsWith(o.ObjectName, StringComparison.InvariantCultureIgnoreCase));
                     var instanceIndex = 0;
                     foreach (var instance in instances)
                     {
                         if (instance.Position.z < short.MinValue) continue;
+                        // TODO: this could be more nuanced, I think this still exports trees below the zone floor
+
                         gltfWriter.AddFragmentData(
                             mesh: objMesh, 
                             generationMode: ModelGenerationMode.Separate,
@@ -119,6 +122,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     var skeleton = actor.SkeletonReference?.SkeletonHierarchy;
                     if (skeleton == null) continue;
+
                     var instances = objects.FindAll(o => skeleton.Name.StartsWith(o.ObjectName, StringComparison.InvariantCultureIgnoreCase));
                     var instanceIndex = 0;
                     var combinedMeshName = FragmentNameCleaner.CleanName(skeleton);
@@ -151,12 +155,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                                     mesh.Vertices = originalVertices;
                                 }
                             }
-
-                            gltfWriter.AddCombinedMeshToScene(true, combinedMeshName, null, instance);
-                            addedMeshOnce = true;
                         }
 
                         gltfWriter.AddCombinedMeshToScene(true, combinedMeshName, null, instance);
+                        addedMeshOnce = true;
                         instanceIndex++;
                     }
                 }
@@ -289,6 +291,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             // TODO: bother with skin variants? If GLTF can just copy the .gltf and change the
             // corresponding image URIs. If GLB then would have to repackage every variant.
+            // KHR_materials_variants extension is made for this, but no support for it in SharpGLTF
         }
     }
 }

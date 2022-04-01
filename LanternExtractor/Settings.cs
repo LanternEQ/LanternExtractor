@@ -168,14 +168,7 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
                 var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
-                if (exportFormatSetting == ModelExportFormat.Intermediate && ExportZoneWithObjects)
-                {
-                    ModelExportFormat = ModelExportFormat.Obj;
-                }
-                else
-                {
-                    ModelExportFormat = exportFormatSetting;
-                }
+                ModelExportFormat = exportFormatSetting;
             }
 
             if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))

@@ -1,5 +1,4 @@
 ﻿using GlmSharp;
-//using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using SharpGLTF.Geometry;
@@ -54,7 +53,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private readonly ILogger _logger;
 
         private static readonly float MaterialRoughness = 0.9f;
-        private static readonly Vector4 DefaultVertexColor = new Vector4(0f, 0f, 0f, 1f);
+        private static readonly Vector4 DefaultVertexColor = new Vector4(0f, 0f, 0f, 1f); // Black
         private static readonly string MaterialInvisName = "Invis";
         private static readonly string MaterialBlankName = "Blank";
         private static readonly string DefaultModelPoseAnimationKey = "pos";
@@ -89,7 +88,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private static readonly Matrix4x4 MirrorXAxisMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
         private static readonly Matrix4x4 CorrectedWorldMatrix = MirrorXAxisMatrix * Matrix4x4.CreateScale(0.1f);
         
-        private SharpGLTF.Scenes.SceneBuilder _scene;
+        private SceneBuilder _scene;
         private IMeshBuilder<MaterialBuilder> _combinedMeshBuilder;
         private ISet<string> _meshMaterialsToSkip;
         private IDictionary<string, IMeshBuilder<MaterialBuilder>> _sharedMeshes;
@@ -145,10 +144,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (var materialList in materialLists)
             {
-                if (materialList == null)
-                {
-                    continue;
-                }
+                if (materialList == null) continue;
 
                 foreach (var eqMaterial in materialList.Materials)
                 {
@@ -171,6 +167,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
 
                     var imagePath = $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}";
+                    
                     ImageBuilder imageBuilder;
                     if (ShaderTypesThatNeedAlphaAddedToImage.Contains(eqMaterial.ShaderType))
                     {
@@ -284,7 +281,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 gltfMesh = InstantiateMeshBuilder(meshName, isSkinned, canExportVertexColors);
             }
 
+            // Keeping track of vertex indexes for each vertex position in case it's an
+            // animated mesh so we can create morph targets later
             var gltfVertexPositionToWldVertexIndex = new Dictionary<VertexPositionNormal, int>();
+            
             var polygonIndex = 0;
             foreach (var materialGroup in mesh.MaterialGroups)
             {
@@ -332,6 +332,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 if (mesh.AnimatedVerticesReference != null)
                 {
                     AddAnimatedMeshMorphTargets(mesh, gltfMesh, meshName, transformMatrix, gltfVertexPositionToWldVertexIndex);
+                    // mesh added to scene in ^ method
                 }
                 else
                 {
@@ -344,6 +345,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public void ApplyAnimationToSkeleton(SkeletonHierarchy skeleton, string animationKey, bool isCharacterAnimation, bool staticPose)
         {
             if (isCharacterAnimation && !staticPose && animationKey == DefaultModelPoseAnimationKey) return;
+
             if (!_skeletons.TryGetValue(skeleton.ModelBase, out var skeletonNodes))
             {
                 skeletonNodes = AddNewSkeleton(skeleton);
@@ -409,6 +411,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 combinedMesh = _combinedMeshBuilder;
             }
             if (combinedMesh == null) return;
+
             var worldTransformMatrix = Matrix4x4.Identity;
             if (objectInstance != null)
             {
@@ -566,9 +569,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 vertexColors = GetVertexColorVectors(mesh, vertexIndices, objectInstance);
             }
 
-            var vertex0 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v0, vertexNormals.v0, vertexUvs.v0, vertexColors.v0, isSkinned, boneIndexes.v0);
-            var vertex1 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v1, vertexNormals.v1, vertexUvs.v1, vertexColors.v1, isSkinned, boneIndexes.v1);
-            var vertex2 = GetGltfVertexGeneric<TvG, TvM, TvS>(vertexPositions.v2, vertexNormals.v2, vertexUvs.v2, vertexColors.v2, isSkinned, boneIndexes.v2);
+            var vertex0 = GetGltfVertex<TvG, TvM, TvS>(vertexPositions.v0, vertexNormals.v0, vertexUvs.v0, vertexColors.v0, isSkinned, boneIndexes.v0);
+            var vertex1 = GetGltfVertex<TvG, TvM, TvS>(vertexPositions.v1, vertexNormals.v1, vertexUvs.v1, vertexColors.v1, isSkinned, boneIndexes.v1);
+            var vertex2 = GetGltfVertex<TvG, TvM, TvS>(vertexPositions.v2, vertexNormals.v2, vertexUvs.v2, vertexColors.v2, isSkinned, boneIndexes.v2);
             if (isSkinned)
             {
                 // Normals come out wrong for skinned models unless we add the triangle
@@ -590,37 +593,36 @@ namespace LanternExtractor.EQ.Wld.Exporters
             return gltfVpToWldVi;
         }
 
-        private VertexBuilder<TvG, TvM, TvS> GetGltfVertexGeneric<TvG, TvM, TvS>(
+        private IVertexBuilder GetGltfVertex<TvG, TvM, TvS>(
             Vector3 position, Vector3 normal, Vector2 uv, Vector4? color, bool isSkinned, int boneIndex)
                 where TvG : struct, IVertexGeometry
                 where TvM : struct, IVertexMaterial
                 where TvS : struct, IVertexSkinning
         {
-            return (VertexBuilder<TvG, TvM, TvS>)GetGltfVertex(position, normal, uv, color, isSkinned, boneIndex);
-        }
-
-        private IVertexBuilder GetGltfVertex(
-            Vector3 position, Vector3 normal, Vector2 uv, Vector4? color, bool isSkinned, int boneIndex)
-        {
             var exportJoints = boneIndex > -1 && isSkinned;
+            IVertexBuilder vertexBuilder;
             if (color == null && !exportJoints)
             {
-                return new VertexBuilder<VertexPositionNormal, VertexTexture1, VertexEmpty>
+                vertexBuilder = new VertexBuilder<VertexPositionNormal, VertexTexture1, VertexEmpty>
                     ((position, normal), uv);
             }
             else if (color == null && exportJoints)
             {
-                return new VertexBuilder<VertexPositionNormal, VertexTexture1, VertexJoints4>
+                vertexBuilder = new VertexBuilder<VertexPositionNormal, VertexTexture1, VertexJoints4>
                     ((position, normal), uv, new VertexJoints4(boneIndex));
             }
             else if (color != null && !exportJoints)
             {
-                return new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>
+                vertexBuilder = new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexEmpty>
                     ((position, normal), (color.Value, uv));
             }
-            // (color != null && exportJoints)
-            return new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexJoints4>
-                ((position, normal), (color.Value, uv), new VertexJoints4(boneIndex));
+            else // (color != null && exportJoints)
+            {
+                vertexBuilder = new VertexBuilder<VertexPositionNormal, VertexColor1Texture1, VertexJoints4>
+                    ((position, normal), (color.Value, uv), new VertexJoints4(boneIndex));
+            }
+
+            return (VertexBuilder<TvG, TvM, TvS>)vertexBuilder;
         }
 
         private (Vector4 v0, Vector4 v1, Vector4 v2) GetVertexColorVectors(Mesh mesh, 
