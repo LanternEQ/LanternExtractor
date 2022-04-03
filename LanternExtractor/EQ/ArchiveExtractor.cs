@@ -194,7 +194,6 @@ namespace LanternExtractor.EQ
             PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
         {
             var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
-            wldFile.Initialize(rootFolder);
             var exportPath = rootFolder +
                 (settings.ExportEquipmentToSingleFolder &&
                  settings.ModelExportFormat == ModelExportFormat.Intermediate
