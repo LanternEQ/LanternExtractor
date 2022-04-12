@@ -111,15 +111,21 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportAmbientLightColor()
         {
-            var ambientLight = GetFragmentsOfType<GlobalAmbientLight>();
+            WldFragment ambientLight = GetFragmentByName<LightSource>("DEFAULT_LIGHTDEF");
+            var globalAmbientLights = GetFragmentsOfType<GlobalAmbientLight>();
 
-            if (ambientLight.Count == 0)
+            if (ambientLight == null && globalAmbientLights.Count > 0)
+            {
+                ambientLight = globalAmbientLights[0];
+            }
+
+            if (ambientLight == null)
             {
                 return;
             }
 
             AmbientLightColorWriter writer = new AmbientLightColorWriter();
-            writer.AddFragmentData(ambientLight[0]);
+            writer.AddFragmentData(ambientLight);
             writer.WriteAssetToFile(GetExportFolderForWldType() + "/ambient_light.txt");
         }
 
