@@ -22,12 +22,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public ShaderType ShaderType { get; set; }
 
+        public float Brightness { get; set; }
+        public float ScaledAmbient { get; set; }
+
         /// <summary>
         /// If a material has not been handled, we still need to find the corresponding material list
         /// Used for alternate character skins
         /// </summary>
         public bool IsHandled { get; set; }
-        
+
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -44,8 +47,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             byte colorB = Reader.ReadByte();
             byte colorA = Reader.ReadByte();
 
-            float unknownFloat1 = Reader.ReadSingle();
-            float unknownFloat2 = Reader.ReadSingle();
+            Brightness = Reader.ReadSingle();
+            ScaledAmbient = Reader.ReadSingle();
 
             int fragmentReference = Reader.ReadInt32();
 
@@ -146,7 +149,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     filename = filename.Substring(0, filename.Length - 4);
                 }
-                
+
                 bitmapNames.Add(filename);
             }
 
@@ -180,7 +183,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public string GetFullMaterialName()
         {
             return MaterialList.GetMaterialPrefix(ShaderType) +
-                    FragmentNameCleaner.CleanName(this);        
+                    FragmentNameCleaner.CleanName(this);
         }
 
         public void SetBitmapName(int index, string newName)
