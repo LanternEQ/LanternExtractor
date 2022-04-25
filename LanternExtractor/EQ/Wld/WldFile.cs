@@ -234,19 +234,6 @@ namespace LanternExtractor.EQ.Wld
             MaterialFixer.Fix(this);
         }
 
-        /// <summary>
-        /// Writes the files relevant to this WLD type to disk
-        /// </summary>
-        protected virtual void ExportData()
-        {
-            ExportMeshes();
-
-            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
-            {
-                ExportActors();
-                ExportSkeletonAndAnimations();
-            }
-        }
 
         private void ParseStringHash(string decodedHash)
         {
@@ -263,6 +250,19 @@ namespace LanternExtractor.EQ.Wld
             }
         }
 
+        /// <summary>
+        /// Writes the files relevant to this WLD type to disk
+        /// </summary>
+        public virtual void ExportData()
+        {
+            ExportMeshes();
+
+            if (_settings.ModelExportFormat == ModelExportFormat.Intermediate)
+            {
+                ExportActors();
+                ExportSkeletonAndAnimations();
+            }
+        }
         /// <summary>
         /// Returns a mapping of the material name to the shader type
         /// Used in exporting the bitmaps from the PFS archive
@@ -315,9 +315,13 @@ namespace LanternExtractor.EQ.Wld
             {
                 MeshExporter.ExportMeshes(this, _settings, _logger);
             }
-            else
+            else if (_settings.ModelExportFormat == ModelExportFormat.Obj)
             {
                 ActorObjExporter.ExportActors(this, _settings, _logger);
+            }
+            else
+            {
+                ActorGltfExporter.ExportActors(this, _settings, _logger);
             }
         }
 

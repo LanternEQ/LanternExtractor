@@ -254,7 +254,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    ShiftVertices(mesh, skeleton, animation, frameIndex);
+                    _backupVertices[mesh] = MeshExportHelper.ShiftMeshVertices(mesh, skeleton, 
+                        wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter.AddFragmentData(mesh);
                 }
 
@@ -265,7 +266,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
                     meshWriter2.SetIsCharacterModel(true);
                     meshWriter2.AddFragmentData(skeleton.Meshes[0]);
-                    ShiftVertices(m2, skeleton, animation, frameIndex);
+                    _backupVertices[m2] = MeshExportHelper.ShiftMeshVertices(m2, skeleton,
+                        wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter2.AddFragmentData(m2);
                     meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
                 }
@@ -291,51 +293,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
             foreach (var shiftedMesh in _backupVertices)
             {
                 shiftedMesh.Key.Vertices = shiftedMesh.Value;
-            }
-        }
-
-        private static void ShiftVertices(Mesh mesh, SkeletonHierarchy skeleton, string animName, int frame)
-        {
-            if (!skeleton.Animations.ContainsKey(animName))
-            {
-                return;
-            }
-
-            if (mesh.Vertices.Count == 0)
-            {
-                return;
-            }
-
-            _backupVertices[mesh] = new List<vec3>();
-
-            var animation = skeleton.Animations[animName];
-
-            foreach (var mobVertexPiece in mesh.MobPieces)
-            {
-                var boneIndex = mobVertexPiece.Key;
-                var bone = skeleton.Skeleton[boneIndex].CleanedName;
-
-                if (!animation.TracksCleanedStripped.ContainsKey(bone))
-                {
-                    continue;
-                }
-
-                mat4 modelMatrix = skeleton.GetBoneMatrix(boneIndex, animName, frame);
-
-                for (int i = 0; i < mobVertexPiece.Value.Count; ++i)
-                {
-                    int shiftedIndex = i + mobVertexPiece.Value.Start;
-
-                    if (shiftedIndex >= mesh.Vertices.Count)
-                    {
-                        continue;
-                    }
-
-                    var vertex = mesh.Vertices[shiftedIndex];
-                    _backupVertices[mesh].Add(vertex);
-                    var newVertex = modelMatrix * new vec4(vertex, 1f);
-                    mesh.Vertices[i + mobVertexPiece.Value.Start] = newVertex.xyz;
-                }
             }
         }
 

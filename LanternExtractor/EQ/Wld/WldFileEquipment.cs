@@ -13,17 +13,17 @@ namespace LanternExtractor.EQ.Wld
         {
         }
 
+        public override void ExportData()
+        {
+            base.ExportData();
+            ExportParticleSystems();
+        }
+
         protected override void ProcessData()
         {
             base.ProcessData();
             FindUnhandledSkeletons();
             FindAdditionalAnimations();
-        }
-
-        protected override void ExportData()
-        {
-            base.ExportData();
-            ExportParticleSystems();
         }
 
         private void ExportParticleSystems()
