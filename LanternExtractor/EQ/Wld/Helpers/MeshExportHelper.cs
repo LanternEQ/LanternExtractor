@@ -1,6 +1,7 @@
 ﻿using GlmSharp;
 using LanternExtractor.EQ.Wld.Fragments;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace LanternExtractor.EQ.Wld.Helpers
 {

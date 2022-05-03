@@ -3,13 +3,14 @@ using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
+using System.Collections.Generic;
 
 namespace LanternExtractor.EQ.Wld
 {
     public class WldFileEquipment : WldFile
     {
         public WldFileEquipment(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
+            List<WldFile> wldFilesToInject = null) : base(wldFile, zoneName, type, logger, settings, wldFilesToInject)
         {
         }
 

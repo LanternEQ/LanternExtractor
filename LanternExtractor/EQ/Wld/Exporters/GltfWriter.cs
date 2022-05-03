@@ -68,6 +68,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 ShaderType.TransparentAdditiveUnlitSkydome,
                 ShaderType.TransparentSkydome
             };
+        private static readonly ISet<string> ImagesInZoneFoundInObj = new HashSet<string>()
+        {
+            "canwall",
+            "maywall",
+            "kruphse3"
+        };
         private static readonly ISet<string> LoopedAnimationKeys = new HashSet<string>()
         {
              "pos", // name is used for animated objects
@@ -167,6 +173,19 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
 
                     var imagePath = $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}";
+                    if (!File.Exists(imagePath))
+                    {
+                        if (ImagesInZoneFoundInObj.Contains(imageFileNameWithoutExtension))
+                        {
+                            _logger.LogWarning($"Zone material: {materialName} image {imageFileNameWithoutExtension}.png not availible until _obj is processed! Manual correction required.");
+                        }
+                        else
+                        {
+                            _logger.LogError($"Material: {materialName} image not found at '{imagePath}'!");
+                        }
+                        Materials.Add(materialName, GetBlankMaterial(materialName));
+                        continue;
+                    }
                     
                     ImageBuilder imageBuilder;
                     if (ShaderTypesThatNeedAlphaAddedToImage.Contains(eqMaterial.ShaderType))
@@ -506,9 +525,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
             return $"{MaterialList.GetMaterialPrefix(eqMaterial.ShaderType)}{eqMaterial.GetFirstBitmapNameWithoutExtension()}";
         }
 
-        private MaterialBuilder GetBlankMaterial()
+        private MaterialBuilder GetBlankMaterial(string name = null)
         {
-            return new MaterialBuilder(MaterialBlankName)
+            var materialName = name ?? MaterialBlankName;
+            return new MaterialBuilder(materialName)
                 .WithDoubleSide(false)
                 .WithMetallicRoughnessShader()
                 .WithChannelParam(KnownChannel.BaseColor, KnownProperty.RGBA, new Vector4(1, 1, 1, 1));

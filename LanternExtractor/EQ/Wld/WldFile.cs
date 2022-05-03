@@ -81,7 +81,12 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         private bool _isNewWldFormat;
 
-        protected readonly WldFile _wldToInject;
+        /// <summary>
+        /// Initialized flag so we do not initialize more than once
+        /// </summary>
+        private bool _isInitialized;
+
+        protected readonly List<WldFile> _wldFilesToInject;
 
 
         public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
@@ -95,13 +100,24 @@ namespace LanternExtractor.EQ.Wld
         /// <param name="logger">The logger used for debug output</param>
         protected WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile fileToInject)
+            : this(wldFile, zoneName, type, logger, settings, new List<WldFile>() { fileToInject }) { }
+
+        /// <summary>
+        /// Constructor setting data references used during the initialization process
+        /// </summary>
+        /// <param name="wldFile">The WLD file bytes contained in the PFS file</param>
+        /// <param name="zoneName">The shortname of the zone</param>
+        /// <param name="type">The type of WLD - used to determine what to extract</param>
+        /// <param name="logger">The logger used for debug output</param>
+        protected WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+            List<WldFile> wldFilesToInject)
         {
             _wldFile = wldFile;
             _zoneName = zoneName.ToLower();
             _wldType = type;
             _logger = logger;
             _settings = settings;
-            _wldToInject = fileToInject;
+            _wldFilesToInject = wldFilesToInject;
         }
 
         /// <summary>
@@ -109,6 +125,15 @@ namespace LanternExtractor.EQ.Wld
         /// </summary>
         public virtual bool Initialize(string rootFolder, bool exportData = true)
         {
+            if (_isInitialized)
+            {
+                if (exportData)
+                {
+                    ExportData();
+                }
+                return true;
+            }
+
             RootExportFolder = rootFolder;
             _logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
             _logger.LogInfo("-----------------------------------");
@@ -205,6 +230,7 @@ namespace LanternExtractor.EQ.Wld
                 ExportData();
             }
 
+            _isInitialized = true;
             return true;
         }
 
@@ -417,15 +443,15 @@ namespace LanternExtractor.EQ.Wld
 
             if (skeletons.Count == 0)
             {
-                if (_wldToInject == null)
+                if (_wldFilesToInject == null)
                 {
                     _logger.LogWarning("Cannot export animations. No model references.");
                     return;
                 }
 
-                skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
+                _wldFilesToInject.ForEach(w => skeletons.AddRange(w?.GetFragmentsOfType<SkeletonHierarchy>() ?? Enumerable.Empty<SkeletonHierarchy>()));
 
-                if (skeletons == null)
+                if (!skeletons.Any())
                 {
                     _logger.LogWarning("Cannot export animations. No model references.");
                     return;
@@ -469,6 +495,11 @@ namespace LanternExtractor.EQ.Wld
                     skeletonWriter.ClearExportData();
                 }
 
+                if (_settings.ExportAdditionalAnimations &&
+                    !ZoneShortname.StartsWith("global"))
+                {
+                    GlobalReference.CharacterWld.AddAdditionalAnimationsToSkeleton(skeleton);
+                }
 
                 foreach (var animation in skeleton.Animations)
                 {
@@ -505,7 +536,7 @@ namespace LanternExtractor.EQ.Wld
                 skeleton.BuildSkeletonData(_wldType == WldType.Characters);
             }
 
-            (_wldToInject as WldFileCharacters)?.BuildSkeletonData();
+            _wldFilesToInject?.ForEach(w => (w as WldFileCharacters)?.BuildSkeletonData());
         }
     }
 }

@@ -65,6 +65,11 @@ namespace LanternExtractor
                 return;
             }
 
+            if (_settings.ExportAdditionalAnimations && !_settings.RawS3dExtract)
+            {
+                _logger.LogError("Before init");
+                ArchiveExtractor.InitializeSharedCharacterWld("Exports/", _logger, _settings);
+            }
             if (_useMultiProcess && _processCount > 0)
             {
                 List<Task> tasks = new List<Task>();

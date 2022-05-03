@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="EqFileHelper.cs" />
     <Compile Include="EQ\ArchiveExtractor.cs" />
+    <Compile Include="EQ\GlobalReference.cs" />
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
     <Compile Include="EQ\ShortnameHelper.cs" />

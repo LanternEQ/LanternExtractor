@@ -199,6 +199,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (skeleton == null) return;
 
+            if (settings.ExportAdditionalAnimations && wldFile.ZoneShortname != "global")
+            {
+                GlobalReference.CharacterWld.AddAdditionalAnimationsToSkeleton(skeleton);
+            }
+
             var exportFormat = settings.ExportGltfInGlbFormat ? GltfExportFormat.Glb : GltfExportFormat.GlTF;
             var gltfWriter = new GltfWriter(settings.ExportGltfVertexColors, exportFormat, logger);
             

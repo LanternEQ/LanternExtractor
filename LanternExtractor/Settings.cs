@@ -93,6 +93,12 @@ namespace LanternExtractor
         public bool ExportGltfInGlbFormat { get; private set; }
 
         /// <summary>
+        /// For skeletal models, if additional compatible animations are available
+        /// in the global character files, include them in the export
+        /// </summary>
+        public bool ExportAdditionalAnimations { get; private set; }
+
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -194,6 +200,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
             {
                 ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportAdditionalAnimations"))
+            {
+                ExportAdditionalAnimations = Convert.ToBoolean(parsedSettings["ExportAdditionalAnimations"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

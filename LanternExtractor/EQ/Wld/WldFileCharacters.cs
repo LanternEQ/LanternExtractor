@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -14,9 +16,37 @@ namespace LanternExtractor.EQ.Wld
         public Dictionary<string, string> AnimationSources = new Dictionary<string, string>();
         
         public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
+            List<WldFile> wldFilesToInject = null) : base(wldFile, zoneName, type, logger, settings, wldFilesToInject)
         {
             ParseAnimationSources();
+        }
+
+        public void AddAdditionalAnimationsToSkeleton(SkeletonHierarchy skeleton, bool overwriteExisting = false)
+        {
+            if (!AnimationSources.TryGetValue(skeleton.ModelBase, out var alternateSkeletonModel)) return;
+
+            var alternateSkeleton = GetFragmentsOfType<SkeletonHierarchy>()
+                .Where(s => s.ModelBase == alternateSkeletonModel).SingleOrDefault();
+
+            if (alternateSkeleton == null) return;
+
+            foreach (var animationKey in alternateSkeleton.Animations.Keys)
+            {
+                if (!overwriteExisting && skeleton.Animations.ContainsKey(animationKey)) continue;
+
+                // Want the same animation data except for the AnimModelBase name to be
+                // that of the base skeleton. Renaming the existing animation without
+                // making a new instance might cause problems if it's referenced later
+                skeleton.Animations[animationKey] = new Animation()
+                {
+                    AnimModelBase = skeleton.ModelBase,
+                    Tracks = alternateSkeleton.Animations[animationKey].Tracks,
+                    TracksCleaned = alternateSkeleton.Animations[animationKey].TracksCleaned,
+                    TracksCleanedStripped = alternateSkeleton.Animations[animationKey].TracksCleanedStripped,
+                    AnimationTimeMs = alternateSkeleton.Animations[animationKey].AnimationTimeMs,
+                    FrameCount = alternateSkeleton.Animations[animationKey].FrameCount
+                };
+            }
         }
 
         private void ParseAnimationSources()
@@ -122,12 +152,15 @@ namespace LanternExtractor.EQ.Wld
 
             if (skeletons.Count == 0)
             {
-                if (_wldToInject == null)
+                if (_wldFilesToInject == null)
                 {
                     return;
                 }
                 
-                skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
+                foreach (var wldFile in _wldFilesToInject)
+                {
+                    skeletons.AddRange(wldFile.GetFragmentsOfType<SkeletonHierarchy>());
+                }
             }
             
             if (skeletons.Count == 0)

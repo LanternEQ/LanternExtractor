@@ -60,6 +60,17 @@ ExportGltfVertexColors = false
 # (glTF)
 ExportGltfInGlbFormat = false
 
+# Export additional animations
+# For skeletal models, if additional compatible animations are available in the global 
+# character files, include them in the export. Only applicable to OBJ and glTF export
+# if ExportAllAnimationFrames is also true.
+# When using Intermediate export format, this will result in many more (redundant) animation files
+# When using OBJ export format, this will *substantially* increase the number of files created
+# and disk space used
+# When using glTF export format, model file sizes will increase significantly.
+# (Intermediate, OBJ, glTF)
+ExportAdditionalAnimations = false
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
 LoggerVerbosity = 2

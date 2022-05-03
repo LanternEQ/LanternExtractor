@@ -3,6 +3,8 @@ using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -31,7 +33,7 @@ namespace LanternExtractor.EQ.Wld
             base.ProcessData();
             LinkBspReferences();
 
-            if (_wldToInject != null)
+            if (_wldFilesToInject != null)
             {
                 ImportVertexColors();
             }
@@ -67,7 +69,9 @@ namespace LanternExtractor.EQ.Wld
 
         private void ImportVertexColors()
         {
-            var colors = _wldToInject.GetFragmentsOfType<VertexColors>();
+            var colors = new List<VertexColors>();
+            
+            _wldFilesToInject?.ForEach(w => colors.AddRange(w?.GetFragmentsOfType<VertexColors>() ?? Enumerable.Empty<VertexColors>()));
 
             if (colors.Count == 0)
             {

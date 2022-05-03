@@ -165,6 +165,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
+            if (settings.ExportAdditionalAnimations && wldFile.ZoneShortname != "global")
+            {
+                GlobalReference.CharacterWld.AddAdditionalAnimationsToSkeleton(skeleton);
+            }
+
             if (settings.ExportAllAnimationFrames)
             {
                 foreach (var animation in skeleton.Animations)

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using LanternExtractor.EQ.Pfs;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
@@ -19,6 +20,23 @@ namespace LanternExtractor.EQ
                 return;
             }
 
+            // If ExportAdditionalAnimations then global_chr should already be initialized
+            // and we can skip that step
+            if (archiveName == "global_chr" && settings.ExportAdditionalAnimations)
+            {
+                var globalChrWld = GlobalReference.CharacterWld;
+                if (globalChrWld != null)
+                {
+                    var exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
+                                    settings.ModelExportFormat == ModelExportFormat.Intermediate
+                        ? "characters/Textures/"
+                        : ShortnameHelper.GetCorrectZoneShortname("global") + "/Characters/Textures/");
+                        
+                    InitializeWldAndWriteTextures(globalChrWld, rootFolder, exportPath, GlobalReference.CharacterWldPfsArchive, settings, logger);
+
+                    return;
+                }
+            }
 
             string shortName = archiveName.Split('_')[0];
             var s3dArchive = new PfsArchive(path, logger);
@@ -77,6 +95,45 @@ namespace LanternExtractor.EQ
 
             MissingTextureFixer.Fix(archiveName);
 
+        }
+
+        public static void InitializeSharedCharacterWld(string rootFolder, ILogger logger, Settings settings)
+        {
+            var globalChrFileIndices = new List<string>() { "2", "3", "4", "" };
+            var injectibleGlobalChrWlds = new List<WldFile>();
+
+            foreach (var fileIndex in globalChrFileIndices)
+            {
+                var globalChrName = $"global{fileIndex}_chr";
+                var globalChrS3d = Path.Combine(settings.EverQuestDirectory, $"{globalChrName}.s3d");
+
+                var s3dArchive = new PfsArchive(globalChrS3d, logger);
+
+                if (!s3dArchive.Initialize())
+                {
+                    logger.LogError("LanternExtractor: Failed to initialize PFS archive at path: " + globalChrS3d);
+                    return;
+                }
+
+                var wldFileName = globalChrName + LanternStrings.WldFormatExtension;
+                var wldFileInArchive = s3dArchive.GetFile(wldFileName);
+                if (wldFileInArchive == null)
+                {
+                    logger.LogError($"Unable to extract WLD file {wldFileName} from archive: {globalChrS3d}");
+                    return;
+                }
+
+                if (fileIndex != "")
+                {
+                    var injectibleChrWld = new WldFileCharacters(wldFileInArchive, globalChrName, WldType.Characters, logger, settings);
+                    injectibleChrWld.Initialize(rootFolder, false);
+                    injectibleGlobalChrWlds.Add(injectibleChrWld);
+                }
+                else
+                {
+                    GlobalReference.InitCharacterWld(s3dArchive, wldFileInArchive, rootFolder, "global", WldType.Characters, logger, settings, injectibleGlobalChrWlds);
+                }
+            }
         }
 
         private static void ExtractArchiveZone(string path, string rootFolder, ILogger logger, Settings settings,
@@ -171,7 +228,7 @@ namespace LanternExtractor.EQ
             }
 
             var wldFile = new WldFileCharacters(wldFileInArchive, shortName, WldType.Characters,
-                logger, settings, wldFileToInject);
+                logger, settings, new List<WldFile>() { wldFileToInject });
 
             string exportPath = rootFolder + (settings.ExportCharactersToSingleFolder &&
                                               settings.ModelExportFormat == ModelExportFormat.Intermediate
