@@ -496,6 +496,7 @@ namespace LanternExtractor.EQ.Wld
                 }
 
                 if (_settings.ExportAdditionalAnimations &&
+                    _settings.ModelExportFormat == ModelExportFormat.Intermediate &&
                     !ZoneShortname.StartsWith("global"))
                 {
                     GlobalReference.CharacterWld.AddAdditionalAnimationsToSkeleton(skeleton);

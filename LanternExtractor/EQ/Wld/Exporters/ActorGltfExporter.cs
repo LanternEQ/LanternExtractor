@@ -270,7 +270,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (settings.ExportAllAnimationFrames)
                     {
                         secondaryGltfWriter.AddFragmentData(secondaryMesh, skeleton);
-                        foreach (var animationKey in skeleton.Animations.Keys)
+                        foreach (var animationKey in skeleton.Animations.Keys.OrderBy(k => k, new AnimationKeyComparer()))
                         {
                             secondaryGltfWriter.ApplyAnimationToSkeleton(skeleton, animationKey, wldFile.WldType == WldType.Characters, false);
                         }
@@ -285,7 +285,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (settings.ExportAllAnimationFrames)
             {
-                foreach (var animationKey in skeleton.Animations.Keys)
+                foreach (var animationKey in skeleton.Animations.Keys.OrderBy(k => k, new AnimationKeyComparer()))
                 {
                     gltfWriter.ApplyAnimationToSkeleton(skeleton, animationKey, wldFile.WldType == WldType.Characters, false);
                 }
@@ -298,5 +298,36 @@ namespace LanternExtractor.EQ.Wld.Exporters
             // corresponding image URIs. If GLB then would have to repackage every variant.
             // KHR_materials_variants extension is made for this, but no support for it in SharpGLTF
         }
+    }
+
+    public class AnimationKeyComparer : Comparer<string>
+    {
+        public override int Compare(string x, string y)
+        {
+            if ((x ?? string.Empty) == (y ?? string.Empty)) return 0;
+            if (x.ToLower() == y.ToLower()) return 0;
+            if (string.IsNullOrEmpty(x)) return -1;
+            if (string.IsNullOrEmpty(y)) return 1;
+
+            if (x.ToLower() == "pos") return -1;
+            if (y.ToLower() == "pos") return 1;
+
+            if (x.ToLower() == "drf") return -1;
+            if (y.ToLower() == "drf") return 1;
+
+            var animationCharCompare =
+                AnimationSort.IndexOf(x.Substring(0, 1))
+                .CompareTo(
+                AnimationSort.IndexOf(y.Substring(0, 1)));
+
+            if (animationCharCompare != 0) return animationCharCompare;
+
+            return int.Parse(x.Substring(1, 2))
+                .CompareTo(
+                int.Parse(y.Substring(1, 2)));
+        }
+
+        // Passive, Idle, Locomotion, Combat, Damage, Spell/Instrument, Social
+        private const string AnimationSort = "polcdts";
     }
 }

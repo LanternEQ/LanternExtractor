@@ -52,6 +52,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private readonly GltfExportFormat _exportFormat = GltfExportFormat.GlTF;
         private readonly ILogger _logger;
 
+        #region Constants
         private static readonly float MaterialRoughness = 0.9f;
         private static readonly Vector4 DefaultVertexColor = new Vector4(0f, 0f, 0f, 1f); // Black
         private static readonly string MaterialInvisName = "Invis";
@@ -91,9 +92,88 @@ namespace LanternExtractor.EQ.Wld.Exporters
              "sky"
         };
 
+        private static readonly IDictionary<string, string> AnimationDescriptions = new Dictionary<string, string>()
+        {
+            {"c01", "Combat Kick"},
+            {"c02", "Combat Piercing"},
+            {"c03", "Combat 2H Slash"},
+            {"c04", "Combat 2H Blunt"},
+            {"c05", "Combat Throwing"},
+            {"c06", "Combat 1H Slash Left"},
+            {"c07", "Combat Bash"},
+            {"c08", "Combat Hand to Hand"},
+            {"c09", "Combat Archery"},
+            {"c10", "Combat Swim Attack"},
+            {"c11", "Combat Round Kick"},
+            {"d01", "Damage 1"},
+            {"d02", "Damage 2"},
+            {"d03", "Damage from Trap"},
+            {"d04", "Drowning_Burning"},
+            {"d05", "Dying"},
+            {"l01", "Walk"},
+            {"l02", "Run"},
+            {"l03", "Jump (Running)"},
+            {"l04", "Jump (Standing)"},
+            {"l05", "Falling"},
+            {"l06", "Crouch Walk"},
+            {"l07", "Climbing"},
+            {"l08", "Crouching"},
+            {"l09", "Swim Treading"},
+            {"o01", "Idle"},
+            {"s01", "Cheer"},
+            {"s02", "Mourn"},
+            {"s03", "Wave"},
+            {"s04", "Rude"},
+            {"s05", "Yawn"},
+            {"p01", "Stand"},
+            {"p02", "Sit_Stand"},
+            {"p03", "Shuffle Feet"},
+            {"p04", "Float_Walk_Strafe"},
+            {"p05", "Kneel"},
+            {"p06", "Swim"},
+            {"p07", "Sitting"},
+            {"t01", "UNUSED????"},
+            {"t02", "Stringed Instrument"},
+            {"t03", "Wind Instrument"},
+            {"t04", "Cast Pull Back"},
+            {"t05", "Raise and Loop Arms"},
+            {"t06", "Cast Push Forward"},
+            {"t07", "Flying Kick"},
+            {"t08", "Rapid Punches"},
+            {"t09", "Large Punch"},
+            {"s06", "Nod"},
+            {"s07", "Amazed"},
+            {"s08", "Plead"},
+            {"s09", "Clap"},
+            {"s10", "Distress"},
+            {"s11", "Blush"},
+            {"s12", "Chuckle"},
+            {"s13", "Burp"},
+            {"s14", "Duck"},
+            {"s15", "Look Around"},
+            {"s16", "Dance"},
+            {"s17", "Blink"},
+            {"s18", "Glare"},
+            {"s19", "Drool"},
+            {"s20", "Kneel"},
+            {"s21", "Laugh"},
+            {"s22", "Point"},
+            {"s23", "Ponder"},
+            {"s24", "Ready"},
+            {"s25", "Salute"},
+            {"s26", "Shiver"},
+            {"s27", "Tap Foot"},
+            {"s28", "Bow"},
+            {"p08", "Stand (Arms at Sides)"},
+            {"o02", "Idle (Arms at Sides)"},
+            {"o03", "Idle (Sitting)"},
+            {"pos", "Pose"},
+            {"drf", "Pose"}
+        };
         private static readonly Matrix4x4 MirrorXAxisMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
         private static readonly Matrix4x4 CorrectedWorldMatrix = MirrorXAxisMatrix * Matrix4x4.CreateScale(0.1f);
-        
+        #endregion
+
         private SceneBuilder _scene;
         private IMeshBuilder<MaterialBuilder> _combinedMeshBuilder;
         private ISet<string> _meshMaterialsToSkip;
@@ -754,6 +834,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
             rotationQuaternion = Quaternion.Normalize(rotationQuaternion);
             var translationVector = boneTransform.Translation.ToVector3(true);
             translationVector.Z = -translationVector.Z;
+            if (!AnimationDescriptions.TryGetValue(animationKey, out var animationDescription))
+            {
+                animationDescription = animationKey;
+            }
 
             if (staticPose)
             {
@@ -765,13 +849,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             else
             {
                 boneNode
-                    .UseScale(animationKey)
+                    .UseScale(animationDescription)
                     .WithPoint(timeMs/1000f, scaleVector);
                 boneNode
-                    .UseRotation(animationKey)
+                    .UseRotation(animationDescription)
                     .WithPoint(timeMs/1000f, rotationQuaternion);
                 boneNode
-                    .UseTranslation(animationKey)
+                    .UseTranslation(animationDescription)
                     .WithPoint(timeMs/1000f, translationVector);
             }
         }

@@ -168,6 +168,16 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
+            var allTracks = GetFragmentsOfType<TrackFragment>();
+
+            _wldFilesToInject?.ForEach(w =>
+                allTracks.AddRange(w?.GetFragmentsOfType<TrackFragment>() 
+                ?? Enumerable.Empty<TrackFragment>()));
+
+            allTracks.Where(t => !t.IsPoseAnimation && !t.IsNameParsed)
+                .ToList()
+                .ForEach(t => t.ParseTrackData(_logger));
+
             foreach (var skeletonFragment in skeletons)
             {
                 SkeletonHierarchy skeleton = skeletonFragment as SkeletonHierarchy;
@@ -179,29 +189,12 @@ namespace LanternExtractor.EQ.Wld
 
                 string modelBase = skeleton.ModelBase;
                 string alternateModel = GetAnimationModelLink(modelBase);
-                
+
                 // TODO: Alternate model bases
-                foreach (var track in GetFragmentsOfType<TrackFragment>())
-                {
-                    if (track.IsPoseAnimation)
-                    {
-                        continue;
-                    }
-
-                    if (!track.IsNameParsed)
-                    {
-                        track.ParseTrackData(_logger);
-                    }
-                    
-                    string trackModelBase = track.ModelName;
-                    
-                    if (trackModelBase != modelBase && alternateModel != trackModelBase)
-                    {
-                        continue;
-                    }
-
-                    skeleton.AddTrackData(track);
-                }
+                allTracks
+                    .Where(t => t.ModelName == modelBase || t.ModelName == alternateModel)
+                    .ToList()
+                    .ForEach(t => skeleton.AddTrackData(t));
                 
                 // TODO: Split to another function
                 if(GetFragmentsOfType<Mesh>().Count != 0)
