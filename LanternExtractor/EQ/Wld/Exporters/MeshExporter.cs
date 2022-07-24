@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
@@ -26,13 +27,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var collisionMeshWriter = new MeshIntermediateAssetWriter(settings.ExportZoneMeshGroups, true);
             var materialListWriter = new MeshIntermediateMaterialsWriter();
 
-            bool exportCollisionMesh = false;
             bool exportEachPass = wldFile.WldType != WldType.Zone || settings.ExportZoneMeshGroups;
 
             // If it's a zone mesh, we need to ensure we should export a collision mesh.
             // There are some zones with no non solid polygons (e.g. arena). No collision mesh is exported in this case.
             // For objects, it's done for each fragment
-            if (!exportEachPass)
+            bool exportCollisionMesh = !exportEachPass && meshes.Where(m => m.ExportSeparateCollision).Any();
+            /*if (!exportEachPass)
             {
                 foreach (Mesh mesh in meshes)
                 {
@@ -45,7 +46,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     break;
                 }
 
-                /*if (legacyMeshes != null)
+                if (legacyMeshes != null)
                 {
                     foreach (var alternateMesh in legacyMeshes)
                     {
@@ -57,8 +58,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         exportCollisionMesh = true;
                         break;
                     }
-                }*/
-            }
+                }
+            }*/
 
             // Export materials
             if (materialLists != null)

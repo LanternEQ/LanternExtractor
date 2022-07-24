@@ -11,6 +11,7 @@ namespace LanternExtractor
     {
         Intermediate = 0,
         Obj = 1,
+        GlTF = 2
     }
 
     /// <summary>
@@ -74,6 +75,22 @@ namespace LanternExtractor
         /// Exports all OBJ frames for all animations
         /// </summary>
         public bool ExportZoneWithObjects { get; private set; }
+
+        /// <summary>
+        /// Export vertex colors with glTF model. Default behavior of glTF renderers
+        /// is to mix the vertex color with the base color, which will not look right.
+        /// Only turn this on if you intend to do some post-processing that
+        /// requires vertex colors being present.
+        /// </summary>
+        public bool ExportGltfVertexColors { get; private set; }
+
+        /// <summary>
+        /// Exports glTF models in .GLB file format. GLB packages the .glTF json, the
+        /// associated .bin, and all of the model's texture images into one file. This will
+        /// take up more space since textures can't be shared, however, it will make models
+        /// more portable.
+        /// </summary>
+        public bool ExportGltfInGlbFormat { get; private set; }
 
         /// <summary>
         /// The verbosity of the logger
@@ -150,7 +167,8 @@ namespace LanternExtractor
 
             if (parsedSettings.ContainsKey("ModelExportFormat"))
             {
-                ModelExportFormat = ExportZoneWithObjects ? ModelExportFormat.Obj : (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                ModelExportFormat = exportFormatSetting;
             }
 
             if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
@@ -166,6 +184,16 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
             {
                 ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
+            {
+                ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
+            {
+                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
