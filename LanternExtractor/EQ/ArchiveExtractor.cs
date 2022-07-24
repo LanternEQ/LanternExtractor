@@ -118,7 +118,6 @@ namespace LanternExtractor.EQ
             wldFile.Initialize(rootFolder);
             WriteWldTextures(s3dArchive, wldFile, rootFolder + shortName + "/Zone/Textures/", logger);
 
-
             PfsFile lightsFileInArchive = s3dArchive.GetFile("lights" + LanternStrings.WldFormatExtension);
 
             if (lightsFileInArchive != null)

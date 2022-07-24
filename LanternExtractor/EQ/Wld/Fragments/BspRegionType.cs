@@ -82,7 +82,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else if (regionTypeString.StartsWith("drn_"))
             {
-                RegionTypes.Add(RegionType.Unknown);
+                if(regionTypeString.Contains("_s_"))
+                {
+                    RegionTypes.Add(RegionType.Slippery);
+                }
+                else
+                {
+                    RegionTypes.Add(RegionType.Unknown);
+                }
             }
             else if (regionTypeString.StartsWith("sln_"))
             {
@@ -95,6 +102,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else
             {
+                // All trilogy client region types are accounted for
+                // This is here in case newer clients have newer types
+                // tox - "wt_zone' - Possible legacy water zonepoint for boat?
                 RegionTypes.Add(RegionType.Normal);
             }
         }

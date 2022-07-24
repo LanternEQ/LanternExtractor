@@ -9,6 +9,7 @@
         Zoneline = 4,
         WaterBlockLOS = 5,
         FreezingWater = 6,
-        Unknown = 7
+        Slippery = 7,
+        Unknown = 8,
     }
 }

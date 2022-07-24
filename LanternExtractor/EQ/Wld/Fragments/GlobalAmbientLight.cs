@@ -24,12 +24,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Color is in BGRA format. A is always 255.
             var colorBytes = BitConverter.GetBytes(Reader.ReadInt32());
             Color = new Color
-            {
-                R = colorBytes[2],
-                G = colorBytes[1],
-                B = colorBytes[0],
-                A = colorBytes[3]
-            };
+            (
+                colorBytes[2],
+                colorBytes[1],
+                colorBytes[0],
+                colorBytes[3]
+            );
         }
         
         public override void OutputInfo(ILogger logger)
