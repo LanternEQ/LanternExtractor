@@ -370,7 +370,14 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportActors()
         {
-            if (GetFragmentsOfType<Actor>().Count == 0)
+            var actors = GetFragmentsOfType<Actor>();
+
+            if (_wldToInject != null)
+            {
+                actors.AddRange(_wldToInject.GetFragmentsOfType<Actor>());
+            }
+
+            if (actors.Count == 0)
             {
                 return;
             }
@@ -393,7 +400,7 @@ namespace LanternExtractor.EQ.Wld
                 actorWriterSprite2d = new ActorWriter(ActorType.Sprite);
             }
 
-            foreach (var actorFragment in GetFragmentsOfType<Actor>())
+            foreach (var actorFragment in actors)
             {
                 actorWriterStatic.AddFragmentData(actorFragment);
                 actorWriterSkeletal.AddFragmentData(actorFragment);

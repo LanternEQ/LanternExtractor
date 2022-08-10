@@ -71,6 +71,14 @@ namespace LanternExtractor
                     validFiles.Add(mainArchivePath);
                 }
 
+                // Some zones have additional object archives for things added past their initial release
+                // None of them contain fragments that are linked to other related archives.
+                string extensionObjectsArchivePath = directory + archiveName + "_2_obj.s3d";
+                if (File.Exists(extensionObjectsArchivePath))
+                {
+                    validFiles.Add(extensionObjectsArchivePath);
+                }
+
                 string objectsArchivePath = directory + archiveName + "_obj.s3d";
                 if (File.Exists(objectsArchivePath))
                 {
@@ -81,14 +89,6 @@ namespace LanternExtractor
                 if (File.Exists(charactersArchivePath))
                 {
                     validFiles.Add(charactersArchivePath);
-                }
-
-                // Some zones have additional object archives for things added past their initial release
-                // None of them contain fragments that are linked to other related archives.
-                string extensionObjectsArchivePath = directory + archiveName + "_2_obj.s3d";
-                if (File.Exists(extensionObjectsArchivePath))
-                {
-                    validFiles.Add(extensionObjectsArchivePath);
                 }
 
                 // Some zones have additional character archives for things added past their initial release

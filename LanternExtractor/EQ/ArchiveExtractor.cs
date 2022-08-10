@@ -68,7 +68,7 @@ namespace LanternExtractor.EQ
             }
             else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
-                ExtractArchiveObjects(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
+                ExtractArchiveObjects(path, rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
             else
             {
@@ -138,11 +138,23 @@ namespace LanternExtractor.EQ
             ExtractSoundData(shortName, rootFolder, settings);
         }
 
-        private static void ExtractArchiveObjects(string rootFolder, ILogger logger, Settings settings,
+        private static void ExtractArchiveObjects(string path, string rootFolder, ILogger logger, Settings settings,
             PfsFile wldFileInArchive, string shortName, PfsArchive s3dArchive)
         {
-            var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings);
-            InitializeWldAndWriteTextures(wldFile, rootFolder, 
+            // Some zones have a "_2_obj" which needs to be injected into the main zone file
+            var s3dArchiveObj2 = new PfsArchive(path.Replace(shortName + "_obj", shortName + "_2_obj"), logger);
+            WldFileZone wldFileObj2 = null;
+
+            if (s3dArchiveObj2.Initialize())
+            {
+                var obj2WldFileInArchive = s3dArchiveObj2.GetFile(shortName + "_2_obj.wld");
+                wldFileObj2 = new WldFileZone(obj2WldFileInArchive, shortName, WldType.Zone,
+                    logger, settings);
+                wldFileObj2.Initialize(rootFolder, false);
+            }
+
+            var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Objects, logger, settings, wldFileObj2);
+            InitializeWldAndWriteTextures(wldFile, rootFolder,
                 rootFolder + ShortnameHelper.GetCorrectZoneShortname(shortName) + "/Objects/Textures/",
                 s3dArchive, settings, logger);
         }
@@ -212,7 +224,7 @@ namespace LanternExtractor.EQ
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
                 WriteWldTextures(s3dArchive, wldFile, texturePath, logger);
             }
-            else // Exporting to GlTF requires that the texture images already be present 
+            else // Exporting to GlTF requires that the texture images already be present
             {
                 wldFile.Initialize(rootFolder, false);
                 s3dArchive.FilenameChanges = wldFile.FilenameChanges;
