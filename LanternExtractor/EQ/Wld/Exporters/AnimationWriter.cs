@@ -44,21 +44,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             for (int i = 0; i < skeleton.Skeleton.Count; ++i)
             {
-                string boneName = _isCharacterAnimation
-                    ? Animation.CleanBoneAndStripBase(skeleton.BoneMapping[i], skeleton.ModelBase)
-                    : Animation.CleanBoneName(skeleton.BoneMapping[i]);
+                string boneName = Animation.CleanBoneAndStripBase(skeleton.BoneMapping[i], skeleton.ModelBase);
+                string fullPath = skeleton.Skeleton[i].CleanedFullPath;
 
-                string fullPath = _isCharacterAnimation
-                    ? skeleton.Skeleton[i].CleanedFullPath
-                    : Animation.CleanBoneName(skeleton.Skeleton[i].FullPath);
-
-
-                var trackArray = _isCharacterAnimation
-                    ? anim.TracksCleanedStripped
-                    : anim.TracksCleaned;
-                var poseArray = _isCharacterAnimation
-                    ? skeleton.Animations["pos"].TracksCleanedStripped
-                    : skeleton.Animations["pos"].TracksCleaned;
+                var trackArray = anim.TracksCleanedStripped;
+                var poseArray = skeleton.Animations["pos"].TracksCleanedStripped;
 
                 if (!trackArray.ContainsKey(boneName))
                 {
