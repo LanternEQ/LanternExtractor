@@ -123,6 +123,10 @@ namespace LanternExtractor.Infrastructure
             else
             {
                 cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
+                if (image.PixelFormat != PixelFormat.Format8bppIndexed)
+                {
+                    cloneBitmap.MakeTransparent(Color.Magenta);
+                }
             }
 
             cloneBitmap.Save(Path.Combine(filePath, fileName), ImageFormat.Png);
