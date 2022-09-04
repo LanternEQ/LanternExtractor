@@ -34,6 +34,10 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     case "ICE1_MDF":
                         mf.ShaderType = ShaderType.Invisible;
                         break;
+                    case "AIRCLOUD_MDF":
+                    case "NORMALCLOUD_MDF":
+                        mf.ShaderType = ShaderType.TransparentSkydome;
+                        break;
                 }
             }
         }
