@@ -3,6 +3,8 @@ EverQuest Trilogy Client file extractor that exports game data into formats usab
 
 This project is part of the [LanternEQ Project](www.lanterneq.com) which aims to reverse engineer and re-implement classic EverQuest in the Unity Engine.
 
+![image](https://user-images.githubusercontent.com/287216/189057109-d506ba68-0dfc-4d24-aa79-5ce7a039d15b.png)
+
 ## Overview
 There have been many fantastic tools over the years that extract EverQuest content. Sadly, as most of these were written 15+ years ago, they can be hard to find, buggy on modern hardware and sometimes written in legacy programming languages. LanternExtractor fixes this by combining all of this functionality and more into one simple tool.
 
