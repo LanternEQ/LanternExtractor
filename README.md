@@ -1,7 +1,7 @@
 # LanternExtractor
 EverQuest Trilogy Client file extractor that exports game data into formats usable in modern game engines. 
 
-This project is part of the [LanternEQ Project](www.lanterneq.com) which aims to reverse engineer and re-implement classic EverQuest in the Unity Engine.
+This project is part of the [LanternEQ Project](https://www.lanterneq.com) which aims to reverse engineer and re-implement classic EverQuest in the Unity Engine.
 
 ![image](https://user-images.githubusercontent.com/287216/189057109-d506ba68-0dfc-4d24-aa79-5ce7a039d15b.png)
 
