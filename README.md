@@ -1,33 +1,54 @@
 # LanternExtractor
-EverQuest S3D file extractor that exports game data into formats usable in modern game engines.
+EverQuest Trilogy Client file extractor that exports game data into formats usable in modern game engines. 
 
-# Overview
-There have been many fantastic tools over the years that extract S3D archive content, models and zones. Sadly, as most of these tools were written 10+ years ago, they can be hard to find, buggy on modern hardware and sometimes written in languages that are no longer considered standard. LanternExtractor fixes this by combining all of this functionality and more into one simple tool.
+This project is part of the [LanternEQ Project](www.lanterneq.com) which aims to reverse engineer and re-implement classic EverQuest in the Unity Engine.
 
-If you are just interested in binaries, you can find them at: http://www.lanterneq.com/extractor/
+## Overview
+There have been many fantastic tools over the years that extract EverQuest content. Sadly, as most of these were written 15+ years ago, they can be hard to find, buggy on modern hardware and sometimes written in legacy programming languages. LanternExtractor fixes this by combining all of this functionality and more into one simple tool.
 
-# Features
-Extracts:
+Although the extractor supports multiple export formats, the main focus is exporting assets to a human readable intermediate text format which can then be reconstructed in game engines.
+
+The extractor also supports:
+  - Raw archive content extraction
+  - OBJ export
+  - glTF export
+
+## Features
+
+The intermediate format supports:
 - S3D file contents
 - Zone data
   - Textured mesh
   - Collision mesh
+  - Vertex colors
+  - BSP tree (region data)
+  - Ambient light
+  - Light instances
+  - Music instances
+  - Sound instances
 - Object data
   - Textured meshes
   - Collision meshes
-  - Vertex animation meshes
+  - Vertex animations
+  - Skeletal animations
   - Instance list
-- Character data (experimental)
-- Light instances
-- Music and sound instances
+  - Per instance vertex colors
+- Character data
+  - Textured meshes
+  - Skeletal animations
+  - Skins
+- Equipment data
+  - Texture mesh
+  - Skeletal animations
 
-# How To Use
-Run the extractor by invoking it from the command line. The argument is the shortname of the zone you want to extract. For example, `lanternextractor gfaydark` will extract the contents of Greater Faydark.
+## What’s Next
+  - Particle systems
+  - Post Velious zone support
 
-You can customize the output by editing the settings.txt file. Ensure that your EverQuest path is set correctly.
+## How To Use
+Please visit the [wiki](https://github.com/LanternEQ/LanternExtractor/wiki) for more info.
 
-The `ExtractWld` option toggles beteen the simple S3D extraction and the full WLD unpack.
-
-# Thanks
+## Thanks
 - Windcatcher - WLD file format document without which this project wouldn't be possible.
+- Harakiri - Private classic test server.
 - clickclickmoon - S3D (PFS) format documentation
