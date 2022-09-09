@@ -89,7 +89,7 @@ namespace LanternExtractor
                 }
             }
 
-            Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds})s");
+            Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds:.00}s)");
         }
     }
 }
