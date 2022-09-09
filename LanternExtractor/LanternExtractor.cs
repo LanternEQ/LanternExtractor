@@ -31,7 +31,7 @@ namespace LanternExtractor
 
                 foreach (var fileName in zoneFiles)
                 {
-                    Console.WriteLine($"Startined to extract {fileName}");
+                    Console.WriteLine($"Started extracting {fileName}");
                     ArchiveExtractor.Extract(fileName, "Exports/", _logger, _settings);
                     Console.WriteLine($"Finished extracting {fileName}");
                 }
@@ -44,8 +44,6 @@ namespace LanternExtractor
             _settings.Initialize();
             _logger.SetVerbosity((LogVerbosity)_settings.LoggerVerbosity);
 
-            string archiveName;
-
             DateTime start = DateTime.Now;
 
             if (args.Length != 1)
@@ -54,7 +52,7 @@ namespace LanternExtractor
                 return;
             }
 
-            archiveName = args[0];
+            var archiveName = args[0];
 
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
 
