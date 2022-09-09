@@ -273,7 +273,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
             }
 
-            string fileName = string.Empty;
+            string fileName;
 
             if (settings.ExportAllAnimationFrames)
             {

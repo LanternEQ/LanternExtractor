@@ -340,7 +340,8 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return GetRootExportFolder();
                 case WldType.Characters:
-                    if (_settings.ExportCharactersToSingleFolder)
+                    if (_settings.ExportCharactersToSingleFolder && 
+                        _settings.ModelExportFormat == ModelExportFormat.Intermediate)
                     {
                         return GetRootExportFolder();
                     }
