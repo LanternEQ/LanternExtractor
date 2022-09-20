@@ -1,51 +1,59 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x03 - BitmapName
-    /// This fragment contains the name of a bitmap image
-    /// It's theoretically possible for this fragment to have more than one bitmap but it hasn't been seen
+    /// BitmapName (0x03)
+    /// Internal Name: None
+    /// This fragment contains the name of a bitmap image. It supports more than one bitmap but this is never used.
+    /// Fragment end is padded to end on a DWORD boundary.
     /// </summary>
-    class BitmapName : WldFragment
+    public class BitmapName : WldFragment
     {
         /// <summary>
-        /// The bitmap names of this fragment - stored as a list because the client supports more than one
+        /// The filename of the referenced bitmap
         /// </summary>
-        public string Filename { get; private set; }
+        public string Filename { get; set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
+        public override void Initialize(int index, int size, byte[] data,
+            List<WldFragment> fragments,
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
 
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            // The client supports more than one bitmap reference but it doesn't look like it was ever used
-            uint bitmapCount = reader.ReadUInt32();
+            // The client supports more than one bitmap reference but is never used
+            int bitmapCount = Reader.ReadInt32();
 
             if (bitmapCount > 1)
             {
-                logger.LogWarning("0x03: Bitmap count exceeds 1!");
+                logger.LogWarning("BitmapName: Bitmap count exceeds 1.");
             }
 
-            ushort nameLength = reader.ReadUInt16();
+            int nameLength = Reader.ReadInt16();
 
             // Decode the bitmap name and trim the null character (c style strings)
-            Filename = WldStringDecoder.DecodeString(reader.ReadBytes(nameLength)).ToLower();
-            Filename = Filename.Substring(0, Filename.Length - 1);
+            byte[] nameBytes = Reader.ReadBytes(nameLength);
+            Filename = WldStringDecoder.DecodeString(nameBytes);
+            Filename = Filename.ToLower().Substring(0, Filename.Length - 1);
+        }
+
+        public string GetExportFilename()
+        {
+            return GetFilenameWithoutExtension() + ".png";
+        }
+
+        public string GetFilenameWithoutExtension()
+        {
+            return Filename.Substring(0, Filename.Length - 4);
         }
 
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x03: Bitmap filename: " + Filename);
+            logger.LogInfo("BitmapName: Filename: " + Filename);
         }
     }
 }

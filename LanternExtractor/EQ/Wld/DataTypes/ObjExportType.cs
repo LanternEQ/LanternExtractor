@@ -7,9 +7,6 @@ namespace LanternExtractor.EQ.Wld.DataTypes
     public enum ObjExportType
     {
         Textured,
-        Collision,
-        NoSpecialZones,
-        Water,
-        Lava
+        Collision
     }
 }

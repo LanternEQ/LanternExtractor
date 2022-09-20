@@ -8,11 +8,12 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>LanternExtractor</RootNamespace>
     <AssemblyName>LanternExtractor</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -34,78 +35,122 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Costura, Version=1.6.2.0, Culture=neutral, PublicKeyToken=9919ef960d84173d, processorArchitecture=MSIL">
-      <HintPath>..\packages\Costura.Fody.1.6.2\lib\dotnet\Costura.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="DotNetZip, Version=1.10.1.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetZip.1.10.1\lib\net20\DotNetZip.dll</HintPath>
-    </Reference>
-    <Reference Include="GlmSharp, Version=0.9.8.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GlmSharp.0.9.8\lib\Net45\GlmSharp.dll</HintPath>
-    </Reference>
+    <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EqFileHelper.cs" />
+    <Compile Include="EQ\ArchiveExtractor.cs" />
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
+    <Compile Include="EQ\ShortnameHelper.cs" />
     <Compile Include="EQ\Sound\EffSndBnk.cs" />
     <Compile Include="EQ\Sound\EffSounds.cs" />
     <Compile Include="EQ\Sound\EmissionType.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
-    <Compile Include="EQ\Wld\DataTypes\BonePosition.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
+    <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
+    <Compile Include="EQ\Wld\DataTypes\BoneTransform.cs" />
     <Compile Include="EQ\Wld\DataTypes\BspNode.cs" />
     <Compile Include="EQ\Wld\DataTypes\Color.cs" />
+    <Compile Include="EQ\Wld\DataTypes\MaterialType.cs" />
     <Compile Include="EQ\Wld\DataTypes\MobVertexPiece.cs" />
     <Compile Include="EQ\Wld\DataTypes\ObjExportType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Polygon.cs" />
     <Compile Include="EQ\Wld\DataTypes\RegionType.cs" />
     <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
-    <Compile Include="EQ\Wld\DataTypes\SkeletonPiece.cs" />
+    <Compile Include="EQ\Wld\DataTypes\SkeletonBone.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ZonelineInfo.cs" />
+    <Compile Include="EQ\Wld\DataTypes\ZonelineType.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorGltfExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorWriterNew.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorWriterNewGlobal.cs" />
+    <Compile Include="EQ\Wld\Exporters\GltfWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\LegacyMeshIntermediateAssetWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\AmbientLightColorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ActorObjExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ParticleSystemWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshIntermediateAssetWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshIntermediateMaterialsExporter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjMtlWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\ObjectInstanceWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\MeshObjWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\TextAssetWriter.cs" />
+    <Compile Include="EQ\Wld\Exporters\VertexColorsWriter.cs" />
+    <Compile Include="EQ\Wld\Fragments\LegacyMesh.cs" />
     <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
     <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
     <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
     <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
     <Compile Include="EQ\Wld\Fragments\Camera.cs" />
     <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\FirstFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\GlobalAmbientLight.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment06.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment07.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
+    <Compile Include="EQ\Wld\Fragments\ParticleSprite.cs" />
+    <Compile Include="EQ\Wld\Fragments\ParticleSpriteReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\ParticleCloud.cs" />
+    <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />
     <Compile Include="EQ\Wld\Fragments\Generic.cs" />
-    <Compile Include="EQ\Wld\Fragments\LightInfo.cs" />
+    <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSourceReference.cs" />
     <Compile Include="EQ\Wld\Fragments\LightSource.cs" />
     <Compile Include="EQ\Wld\Fragments\Mesh.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshAnimatedVertices.cs" />
     <Compile Include="EQ\Wld\Fragments\MeshReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ModelReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ObjectLocation.cs" />
-    <Compile Include="EQ\Wld\Fragments\RegionFlag.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonPieceTrackReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonPiece.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonTrack.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonTrackReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\Actor.cs" />
+    <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
+    <Compile Include="EQ\Wld\Fragments\BspRegionType.cs" />
+    <Compile Include="EQ\Wld\Fragments\TrackFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\TrackDefFragment.cs" />
+    <Compile Include="EQ\Wld\Fragments\SkeletonHierarchy.cs" />
+    <Compile Include="EQ\Wld\Fragments\SkeletonHierarchyReference.cs" />
     <Compile Include="EQ\Wld\Fragments\Material.cs" />
-    <Compile Include="EQ\Wld\Fragments\TextureInfo.cs" />
-    <Compile Include="EQ\Wld\Fragments\TextureInfoReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\BitmapInfo.cs" />
+    <Compile Include="EQ\Wld\Fragments\BitmapInfoReference.cs" />
     <Compile Include="EQ\Wld\Fragments\MaterialList.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColor.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColorReference.cs" />
+    <Compile Include="EQ\Wld\Fragments\VertexColors.cs" />
+    <Compile Include="EQ\Wld\Fragments\VertexColorsReference.cs" />
     <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
-    <Compile Include="EQ\Wld\Fragments\ZoneUnknown.cs" />
-    <Compile Include="EQ\Wld\SpecialTextures.cs" />
+    <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
+    <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
+    <Compile Include="EQ\Wld\Helpers\CharacterFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\MaterialFixer.cs" />
+    <Compile Include="EQ\Wld\Helpers\MeshExportHelper.cs" />
+    <Compile Include="EQ\Wld\Helpers\MissingTextureFixer.cs" />
     <Compile Include="EQ\Wld\ShaderType.cs" />
     <Compile Include="EQ\Wld\WldFile.cs" />
+    <Compile Include="EQ\Wld\WldFileCharacters.cs" />
+    <Compile Include="EQ\Wld\WldFileLights.cs" />
+    <Compile Include="EQ\Wld\WldFileEquipment.cs" />
+    <Compile Include="EQ\Wld\WldFileZone.cs" />
+    <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
+    <Compile Include="EQ\Wld\WldFragmentBuilder.cs" />
+    <Compile Include="EQ\Wld\WldIdentifier.cs" />
+    <Compile Include="EQ\Wld\WldModifier.cs" />
     <Compile Include="EQ\Wld\WldStringDecoder.cs" />
     <Compile Include="EQ\Wld\WldType.cs" />
     <Compile Include="Infrastructure\BitAnalyzer.cs" />
+    <Compile Include="Infrastructure\FileWriter.cs" />
     <Compile Include="Infrastructure\ImageWriter.cs" />
     <Compile Include="Infrastructure\Logger\ConsoleLogger.cs" />
     <Compile Include="Infrastructure\Logger\EmptyLogger.cs" />
@@ -120,27 +165,39 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="FodyWeavers.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="musictracks.txt">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="ClientData\animationsources.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="ClientData\musictracks.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="settings.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Costura.Fody">
+      <Version>5.1.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="DotNetZip">
+      <Version>1.10.1</Version>
+    </PackageReference>
+    <PackageReference Include="GlmSharp">
+      <Version>0.9.8</Version>
+    </PackageReference>
+    <PackageReference Include="Pfim">
+      <Version>0.10.0</Version>
+    </PackageReference>
+    <PackageReference Include="SharpGLTF.Core">
+      <Version>1.0.0-alpha0025</Version>
+    </PackageReference>
+    <PackageReference Include="SharpGLTF.Toolkit">
+      <Version>1.0.0-alpha0025</Version>
+    </PackageReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Import Project="..\packages\Fody.2.0.0\build\dotnet\Fody.targets" Condition="Exists('..\packages\Fody.2.0.0\build\dotnet\Fody.targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\Fody.2.0.0\build\dotnet\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.2.0.0\build\dotnet\Fody.targets'))" />
-    <Error Condition="!Exists('..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets'))" />
-  </Target>
-  <Import Project="..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.1.6.2\build\dotnet\Costura.Fody.targets')" />
 </Project>

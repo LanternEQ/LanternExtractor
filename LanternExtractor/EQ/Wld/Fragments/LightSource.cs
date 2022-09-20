@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using GlmSharp;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
@@ -7,7 +6,8 @@ using LanternExtractor.Infrastructure.Logger;
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x1B - Light Source
+    /// LightSource (0x1B)
+    /// Internal name: _LIGHTDEF/_LDEF
     /// Defines color information about a light
     /// </summary>
     class LightSource : WldFragment
@@ -31,19 +31,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The attenuation (?) - guess from Windcatcher. Not sure what it is.
         /// </summary>
         public int Attenuation { get; private set; }
+        public float SomeValue { get; private set; }
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
+        public override void Initialize(int index, int size, byte[] data,
+            List<WldFragment> fragments,
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
-
-            var reader = new BinaryReader(new MemoryStream(data));
-
-            Name = stringHash[-reader.ReadInt32()];
-
-            int flags = reader.ReadInt32();
-
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
             var bitAnalyzer = new BitAnalyzer(flags);
 
             if (bitAnalyzer.IsBitSet(1))
@@ -56,32 +52,65 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 IsColoredLight = true;
             }
 
-            // Not sure yet what the purpose of this fragment is in the main zone file
-            // For now, return
             if (!IsPlacedLightSource)
             {
-                int unknown = reader.ReadInt32();
+                if (!IsColoredLight)
+                {
+                    int something1 = Reader.ReadInt32();
+                    SomeValue = Reader.ReadSingle();
+                    return;
+                }
 
-                int unknown6 = reader.ReadInt32();
+                Attenuation = Reader.ReadInt32();
+
+                float alpha = Reader.ReadSingle();
+                float red = Reader.ReadSingle();
+                float green = Reader.ReadSingle();
+                float blue = Reader.ReadSingle();
+                Color = new vec4(red, green, blue, alpha);
+
+                if (Attenuation != 1)
+                {
+                        
+                }
 
                 return;
             }
 
-            int unknown1 = reader.ReadInt32();
+            if (!IsColoredLight)
+            {
+                int something1 = Reader.ReadInt32();
+                float something2 = Reader.ReadSingle();
+                return;
+            }
+            
+            // Not sure yet what the purpose of this fragment is in the main zone file
+            // For now, return
+            if (!IsPlacedLightSource && Name == "DEFAULT_LIGHTDEF")
+            {
+                int unknown = Reader.ReadInt32();
+                float unknown6 = Reader.ReadSingle();
+                return;
+            }
+
+            int unknown1 = Reader.ReadInt32();
 
             if (!IsColoredLight)
             {
-                int unknown = reader.ReadInt32();
+                int unknown = Reader.ReadInt32();
                 Color = new vec4(1.0f);
+                int unknown2 = Reader.ReadInt32();
+                int unknown3 = Reader.ReadInt32();
+
             }
             else
             {
-                Attenuation = reader.ReadInt32();
+                Attenuation = Reader.ReadInt32();
 
-                float alpha = reader.ReadSingle();
-                float red = reader.ReadSingle();
-                float green = reader.ReadSingle();
-                float blue = reader.ReadSingle();
+                float alpha = Reader.ReadSingle();
+                float red = Reader.ReadSingle();
+                float green = Reader.ReadSingle();
+                float blue = Reader.ReadSingle();
 
                 Color = new vec4(red, green, blue, alpha);
             }
@@ -91,13 +120,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x1B: Is a placed light: " + IsPlacedLightSource);
-            logger.LogInfo("0x1B: Is a colored light: " + IsColoredLight);
+            logger.LogInfo("LightSource: Is a placed light: " + IsPlacedLightSource);
+            logger.LogInfo("LightSource: Is a colored light: " + IsColoredLight);
 
             if (IsColoredLight)
             {
-                logger.LogInfo("0x1B: Color: " + Color);
-                logger.LogInfo("0x1B: Attenuation (?): " + Attenuation);
+                logger.LogInfo("LightSource: Color: " + Color);
+                logger.LogInfo("LightSource: Attenuation (?): " + Attenuation);
             }
         }
     }

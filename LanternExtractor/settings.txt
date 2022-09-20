@@ -1,31 +1,65 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-EverQuestDirectory = C:\EverQuest\
+# Window example: C:/EverQuest
+# MacOS example: /Users/your.name/EQ/
+EverQuestDirectory = C:/EverQuest
 
-# Extract the zone file? (e.g. arena.s3d)
-# Contains zone models, object instances and light data
-ExtractZoneFile = true
+# Extract the contents of the S3D archive as is?
+# If true, this will export all contents as they exist in the archives to their original formats.
+# If false, this will extract contents, process WLD files and convert images to .png
+RawS3DExtract = false
 
-# Extract the objects file? (e.g. arena_obj.s3d)
-# Contains object models and textures
-ExtractObjectsFile = true
+# Sets the desired export format for models
+# 0 = Intermediate (Unity importer), 1 = OBJ, 2 = glTF
+ModelExportFormat = 0
 
-# Extract the characters file? (e.g. arena_chr.s3d)
-# Contains character models and textures
-ExtractCharactersFile = true
-
-# Extract the sound file?
-# This contains information about sound instances in the world.
-ExtractSoundFile = true
-
-# Extract the WLD file?
-# If true, this will export all WLD data files (textures, models, data lists)
-# If false, this just extracts the S3D contents
-ExtractWld = true
-
-# Extract the zone mesh with groups
+# Extract the zone mesh with groups?
 # The zone model is made up of smaller BSP region meshes.
-# If enabled, these regions are exports. If disabled, the mesh is combined into one single mesh.
+# If enabled, each region mesh is exported. 
+# If disabled, the mesh is combined into a single mesh.
+# Unity importer only supports single mesh zone.
+# (Intermediate, OBJ)
 ExportZoneMeshGroups = false
 
+# Include hidden geometry (invisible boundaries) in the zone collision export?
+# (Intermediate, OBJ)
+ExportHiddenGeometry = false
+
+# If true, will export all characters to the 'characters' folder
+# This is useful when batch importing into Unity
+# (Intermediate)
+ExportCharacterToSingleFolder = true
+
+# If true, will export all equipment to the 'equipment' folder
+# This is useful when batch importing into Unity
+# (Intermediate)
+ExportEquipmentToSingleFolder = true
+
+# If true and using OBJ export format, this will dump an OBJ for each animation frame.
+# This could use a high amount of disk space.
+# If true and using glTF export format, skeletal models will export with animations.
+# (OBJ, glTF)
+ExportAllAnimationFrames = false
+
+# If true, will export zone files in obj format with their associated objects placed within the zone
+# (OBJ, glTF)
+ExportZoneWithObjects = false
+
+# Export vertex colors
+# Default behavior of glTF renderers is to mix the vertex color with the base color, 
+# which will not look right. Only turn this on if you intend to do some post-processing that
+# requires vertex colors being present.
+# (glTF)
+ExportGltfVertexColors = false
+
+# Export glTF models in .GLB file format.
+# GLB packages the .glTF json, the associated .bin, and all of the model's texture images 
+# into one file. This will take up more space since textures can't be shared, and the export
+# process will likely take longer to complete. However, using GLB will make models more portable.
+# (glTF)
+ExportGltfInGlbFormat = false
+
+# The minimum verbosity of the logger
+# 0 = info, 1 = warnings, 2 = errors
+LoggerVerbosity = 2

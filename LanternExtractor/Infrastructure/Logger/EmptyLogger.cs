@@ -7,6 +7,11 @@ namespace LanternExtractor.Infrastructure.Logger
     {
         public LogVerbosity Verbosity { get; set; }
 
+        public void SetVerbosity(LogVerbosity verbosity)
+        {
+            
+        }
+        
         public void LogInfo(string message)
         {
         }

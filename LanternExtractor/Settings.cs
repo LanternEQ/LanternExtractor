@@ -4,18 +4,27 @@ using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
+
 namespace LanternExtractor
 {
+    public enum ModelExportFormat
+    {
+        Intermediate = 0,
+        Obj = 1,
+        GlTF = 2
+    }
+
     /// <summary>
     /// Simple class that parses settings for the extractor
     /// </summary>
     public class Settings
     {
+
         /// <summary>
         /// The logger reference for debug output
         /// </summary>
         private readonly ILogger _logger;
-        
+
         /// <summary>
         /// The OS path to the settings file
         /// </summary>
@@ -27,35 +36,66 @@ namespace LanternExtractor
         public string EverQuestDirectory { get; private set; }
 
         /// <summary>
-        /// Export the main zone file and geometry
-        /// </summary>
-        public bool ExtractZoneFile { get; private set; }
-
-        /// <summary>
-        /// Export the objects file containing object geometry
-        /// </summary>
-        public bool ExtractObjectsFile { get; private set; }
-
-        /// <summary>
-        /// Export the character models
-        /// </summary>
-        public bool ExtractCharactersFile { get; private set; }
-
-        /// <summary>
-        /// Export the sound and music data
-        /// </summary>
-        public bool ExtractSoundFile { get; private set; }
-
-        /// <summary>
         /// Extract data from the WLD file
         /// If false, we just extract the S3D contents
         /// </summary>
-        public bool ExtractWld { get; private set; }
-        
+        public bool RawS3dExtract { get; private set; }
+
         /// <summary>
         /// Adds group separation in the zone mesh export
         /// </summary>
         public bool ExportZoneMeshGroups { get; private set; }
+
+        /// <summary>
+        /// Exports hidden geometry like zone boundaries
+        /// </summary>
+        public bool ExportHiddenGeometry { get; private set; }
+
+        /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public ModelExportFormat ModelExportFormat { get; private set; }
+
+        /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public bool ExportCharactersToSingleFolder { get; private set; }
+
+        /// <summary>
+        /// Sets the desired model export format
+        /// </summary>
+        public bool ExportEquipmentToSingleFolder { get; private set; }
+
+        /// <summary>
+        /// Exports all OBJ frames for all animations
+        /// </summary>
+        public bool ExportAllAnimationFrames { get; private set; }
+
+        /// <summary>
+        /// Exports all OBJ frames for all animations
+        /// </summary>
+        public bool ExportZoneWithObjects { get; private set; }
+
+        /// <summary>
+        /// Export vertex colors with glTF model. Default behavior of glTF renderers
+        /// is to mix the vertex color with the base color, which will not look right.
+        /// Only turn this on if you intend to do some post-processing that
+        /// requires vertex colors being present.
+        /// </summary>
+        public bool ExportGltfVertexColors { get; private set; }
+
+        /// <summary>
+        /// Exports glTF models in .GLB file format. GLB packages the .glTF json, the
+        /// associated .bin, and all of the model's texture images into one file. This will
+        /// take up more space since textures can't be shared, however, it will make models
+        /// more portable.
+        /// </summary>
+        public bool ExportGltfInGlbFormat { get; private set; }
+
+        /// <summary>
+        /// The verbosity of the logger
+        /// </summary>
+        public int LoggerVerbosity { get; private set; }
 
         /// <summary>
         /// Constructor which caches the settings file path and the logger
@@ -69,13 +109,12 @@ namespace LanternExtractor
             _logger = logger;
 
             EverQuestDirectory = "C:/EverQuest/";
-            ExtractZoneFile = true;
-            ExtractObjectsFile = true;
-            ExtractCharactersFile = true;
-            ExtractSoundFile = false;
-            ExtractWld = true;
+            RawS3dExtract = false;
             ExportZoneMeshGroups = false;
+            ExportHiddenGeometry = false;
+            LoggerVerbosity = 0;
         }
+
 
         public void Initialize()
         {
@@ -101,42 +140,66 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("EverQuestDirectory"))
             {
                 EverQuestDirectory = parsedSettings["EverQuestDirectory"];
-                
+
                 // Ensure the path ends with a /
                 EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + "/");
             }
 
-            if (parsedSettings.ContainsKey("ExtractZoneFile"))
+            if (parsedSettings.ContainsKey("RawS3DExtract"))
             {
-                ExtractZoneFile = Convert.ToBoolean(parsedSettings["ExtractZoneFile"]);
+                RawS3dExtract = Convert.ToBoolean(parsedSettings["RawS3DExtract"]);
             }
 
-            if (parsedSettings.ContainsKey("ExtractObjectsFile"))
-            {
-                ExtractObjectsFile = Convert.ToBoolean(parsedSettings["ExtractObjectsFile"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExtractCharactersFile"))
-            {
-                ExtractCharactersFile = Convert.ToBoolean(parsedSettings["ExtractCharactersFile"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExtractSoundFile"))
-            {
-                ExtractSoundFile = Convert.ToBoolean(parsedSettings["ExtractSoundFile"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExtractWld"))
-            {
-                ExtractWld = Convert.ToBoolean(parsedSettings["ExtractWld"]);
-            }
-            
             if (parsedSettings.ContainsKey("ExportZoneMeshGroups"))
             {
                 ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
             }
 
-            _logger.LogInfo("Settings file successfully loaded!");
+            if (parsedSettings.ContainsKey("ExportHiddenGeometry"))
+            {
+                ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
+            {
+                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
+            }
+
+            if (parsedSettings.ContainsKey("ModelExportFormat"))
+            {
+                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                ModelExportFormat = exportFormatSetting;
+            }
+
+            if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
+            {
+                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportCharacterToSingleFolder"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
+            {
+                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
+            {
+                ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
+            {
+                ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
+            {
+                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
+            }
+
+            if (parsedSettings.ContainsKey("LoggerVerbosity"))
+            {
+                LoggerVerbosity = Convert.ToInt32(parsedSettings["LoggerVerbosity"]);
+            }
         }
     }
 }

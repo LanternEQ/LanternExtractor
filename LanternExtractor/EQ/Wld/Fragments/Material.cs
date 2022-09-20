@@ -1,159 +1,117 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using System.Text.RegularExpressions;
-using LanternExtractor.Infrastructure;
+using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
-    public static class TextureConstants
-    {
-        public static int Diffuse = -2147483647;
-        public static int Transparent = -2147483643;
-        public static int MaskedDiffuse = -2147483629;
-        public static int DiffusePassable = -2147483641;
-        public static int MaskedTransparentLit = -2147483625; // just a guess - lanternglass
-        public static int MaskedTransparentUnlit = -2147483637; // aka blackmask
-        public static int UnknownDiffuse = 1363; // no idea what this does
-        public static int UnknownDiffuse2 = -2147483628; // used for objects - usually bones and body parts
-    }
-    
     /// <summary>
-    /// 0x30 - Material
-    /// Contains information about the material and how it's rendered
+    /// Material (0x30)
+    /// Internal name: _MDF
+    /// Contains information about a material's shader and textures.
     /// </summary>
-    class Material : WldFragment
+    public class Material : WldFragment
     {
         /// <summary>
-        /// Is this material invisible? Used for invisible walls and things that are not rendered. 
+        /// The BitmapInfoReference that this material uses
         /// </summary>
-        public bool IsInvisible { get; private set; }
-
-        /// <summary>
-        /// The TextureInfoReference (0x05) that this material uses
-        /// </summary>
-        public TextureInfoReference TextureInfoReference { get; private set; }
+        public BitmapInfoReference BitmapInfoReference { get; private set; }
 
         /// <summary>
         /// The shader type that this material uses when rendering
         /// </summary>
-        public ShaderType ShaderType { get; private set; }
+        public ShaderType ShaderType { get; set; }
 
-        public string SlotKey { get; set; }
+        public float Brightness { get; set; }
+        public float ScaledAmbient { get; set; }
 
-        public string ExportName { get; set; }
-
+        /// <summary>
+        /// If a material has not been handled, we still need to find the corresponding material list
+        /// Used for alternate character skins
+        /// </summary>
         public bool IsHandled { get; set; }
 
-        public bool IsGlobalMaterial { get; set; }
-
-        public enum CharacterMaterialType
+        public override void Initialize(int index, int size, byte[] data,
+            List<WldFragment> fragments,
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            NormalTexture,
-            CharacterSkin,
-            GlobalSkin,
-        }
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
+            int flags = Reader.ReadInt32();
+            int parameters = Reader.ReadInt32();
 
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
-        {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
+            // Unsure what this color is used for
+            // Referred to as the RGB pen
+            byte colorR = Reader.ReadByte();
+            byte colorG = Reader.ReadByte();
+            byte colorB = Reader.ReadByte();
+            byte colorA = Reader.ReadByte();
 
-            var reader = new BinaryReader(new MemoryStream(data));
+            Brightness = Reader.ReadSingle();
+            ScaledAmbient = Reader.ReadSingle();
 
-            // String reference
-            Name = stringHash[-reader.ReadInt32()];
+            int fragmentReference = Reader.ReadInt32();
 
-            // Flags?
-            int flags = reader.ReadInt32();
-
-            // Params
-            int parameters = reader.ReadInt32();
-
-            int params2 = reader.ReadInt32();
-
-            float params3a = reader.ReadSingle();
-
-            float params3b = reader.ReadSingle();
-
-            int reference6 = reader.ReadInt32();
-
-            if (reference6 != 0)
+            if (fragmentReference != 0)
             {
-                TextureInfoReference = fragments[reference6 - 1] as TextureInfoReference;
-            }
-            else
-            {
-                // Some materials are missing texture references
-                // This may correspond with the 'palette.bmp' texture that is often unused
-                // We consider them invisible
-                IsInvisible = true;
+                BitmapInfoReference = fragments[fragmentReference - 1] as BitmapInfoReference;
             }
 
-            // The bits here determine what kind of shader this uses to render the material
-            var bitAnalyzer = new BitAnalyzer((int)parameters);
-            bool bit0 = bitAnalyzer.IsBitSet(0);
-            bool bit1 = bitAnalyzer.IsBitSet(1);
-            bool bit2 = bitAnalyzer.IsBitSet(2);
-            bool bit3 = bitAnalyzer.IsBitSet(3);
-            bool bit4 = bitAnalyzer.IsBitSet(4);
-            bool bit5 = bitAnalyzer.IsBitSet(5);
-            bool bit6 = bitAnalyzer.IsBitSet(6);
-            bool bit7 = bitAnalyzer.IsBitSet(7);
-            
-            if (parameters == 0)
+            // Thanks to PixelBound for figuring this out
+            MaterialType materialType = (MaterialType) (parameters & ~0x80000000);
+
+            switch (materialType)
             {
-                // Invisible texture (used for things like boundaries that are not rendered)
-                // All bits are 0
-                ShaderType = ShaderType.Invisible;
-                IsInvisible = true;
-            }
-            else if (parameters == TextureConstants.Diffuse)
-            {
-                // Diffuse - Fully opaque, used by most materials
-                ShaderType = ShaderType.Diffuse;
-            }
-            else if (parameters == TextureConstants.Transparent)
-            {
-                // Transparent - Materials that are partly transparent (e.g. water)
-                ShaderType = ShaderType.Transparent;
-            }
-            else if (parameters == TextureConstants.MaskedDiffuse)
-            {
-                // Masked - Opaque materials that have a color (top left) when rendering (e.g. tree leaves, rope)
-                ShaderType = ShaderType.MaskedDiffuse;
-            }
-            else if (parameters == TextureConstants.DiffusePassable)
-            {
-                ShaderType = ShaderType.Diffuse;
-            }
-            else if (parameters == TextureConstants.MaskedTransparentUnlit)
-            {
-                ShaderType = ShaderType.AlphaFromBrightness;
-            }
-            else if (parameters == TextureConstants.MaskedTransparentLit)
-            {
-                ShaderType = ShaderType.AlphaFromBrightness;
-            }
-            else if (parameters == TextureConstants.UnknownDiffuse)
-            {
-                ShaderType = ShaderType.Diffuse;
-                logger.LogError("Dump: " + parameters.ToString("X"));
-            }
-            else if (parameters == TextureConstants.UnknownDiffuse2)
-            {
-                ShaderType = ShaderType.Diffuse;
-                logger.LogError("Dump: " + parameters.ToString("X"));
-            }
-            else
-            {
-                // Unhandled - default to Diffuse
-                ShaderType = ShaderType.Diffuse;
-                logger.LogError("Unable to identify shader type for material: " + Name);
-                logger.LogError("Flag bit dump: " + bit0 + " " + bit1 + " " + bit2 + " " + bit3 + " " + bit4 + " " +
-                                  bit5 + " " + bit6 + " " + bit7);
-                logger.LogError("Param dump: " + parameters);
+                case MaterialType.Boundary:
+                    ShaderType = ShaderType.Boundary;
+                    break;
+                case MaterialType.InvisibleUnknown:
+                case MaterialType.InvisibleUnknown2:
+                case MaterialType.InvisibleUnknown3:
+                    ShaderType = ShaderType.Invisible;
+                    break;
+                case MaterialType.Diffuse:
+                case MaterialType.Diffuse3:
+                case MaterialType.Diffuse4:
+                case MaterialType.Diffuse6:
+                case MaterialType.Diffuse7:
+                case MaterialType.Diffuse8:
+                case MaterialType.Diffuse2:
+                case MaterialType.CompleteUnknown:
+                case MaterialType.TransparentMaskedPassable:
+                    ShaderType = ShaderType.Diffuse;
+                    break;
+                case MaterialType.Transparent25:
+                    ShaderType = ShaderType.Transparent25;
+                    break;
+                case MaterialType.Transparent50:
+                    ShaderType = ShaderType.Transparent50;
+                    break;
+                case MaterialType.Transparent75:
+                    ShaderType = ShaderType.Transparent75;
+                    break;
+                case MaterialType.TransparentAdditive:
+                    ShaderType = ShaderType.TransparentAdditive;
+                    break;
+                case MaterialType.TransparentAdditiveUnlit:
+                    ShaderType = ShaderType.TransparentAdditiveUnlit;
+                    break;
+                case MaterialType.TransparentMasked:
+                case MaterialType.Diffuse5:
+                    ShaderType = ShaderType.TransparentMasked;
+                    break;
+                case MaterialType.DiffuseSkydome:
+                    ShaderType = ShaderType.DiffuseSkydome;
+                    break;
+                case MaterialType.TransparentSkydome:
+                    ShaderType = ShaderType.TransparentSkydome;
+                    break;
+                case MaterialType.TransparentAdditiveUnlitSkydome:
+                    ShaderType = ShaderType.TransparentAdditiveUnlitSkydome;
+                    break;
+                default:
+                    ShaderType = BitmapInfoReference == null ? ShaderType.Invisible : ShaderType.Diffuse;
+                    break;
             }
         }
 
@@ -161,61 +119,81 @@ namespace LanternExtractor.EQ.Wld.Fragments
         {
             base.OutputInfo(logger);
             logger.LogInfo("-----");
-            logger.LogInfo("0x30: Display type: " + ShaderType);
-            logger.LogInfo("0x30: Invisible: " + IsInvisible);
+            logger.LogInfo("Material: Shader type: " + ShaderType);
 
-            if (!IsInvisible)
+            if (ShaderType != ShaderType.Invisible && BitmapInfoReference != null)
             {
-                logger.LogInfo("0x30: Reference: " + (TextureInfoReference.Index + 1));
+                logger.LogInfo("Material: Reference: " + (BitmapInfoReference.Index + 1));
             }
         }
 
-        public List<string> GetAllBitmapNames()
+        /// <summary>
+        /// Returns all bitmap names referenced by this material
+        /// </summary>
+        /// <param name="includeExtension">Should be .bmp extension be included?</param>
+        /// <returns>List of bitmap names</returns>
+        public List<string> GetAllBitmapNames(bool includeExtension = false)
         {
             var bitmapNames = new List<string>();
 
-            if (TextureInfoReference == null)
+            if (BitmapInfoReference == null)
             {
                 return bitmapNames;
             }
 
-            foreach (BitmapName bitmapName in TextureInfoReference.TextureInfo.BitmapNames)
+            foreach (BitmapName bitmapName in BitmapInfoReference.BitmapInfo.BitmapNames)
             {
-                bitmapNames.Add(bitmapName.Filename);
+                string filename = bitmapName.Filename;
+
+                if (!includeExtension)
+                {
+                    filename = filename.Substring(0, filename.Length - 4);
+                }
+
+                bitmapNames.Add(filename);
             }
 
             return bitmapNames;
         }
 
-        public bool GetIsSlotReference()
+        /// <summary>
+        /// Returns the first bitmap name this material uses
+        /// </summary>
+        /// <returns></returns>
+        public string GetFirstBitmapNameWithoutExtension()
         {
-            var materialName = Name.Split('_')[0];
+            if (BitmapInfoReference?.BitmapInfo?.BitmapNames == null || BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
+            {
+                return string.Empty;
+            }
 
-            return Regex.Match(materialName, @"\d{4}$").Success;
+            return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetFilenameWithoutExtension();
         }
 
-        public CharacterMaterialType GetMaterialType()
+        public string GetFirstBitmapExportFilename()
         {
-            string nameWithoutEnding = Name.Split('_')[0];
-
-            // Check first to see if this ends with 4 numbers - if not, it's not a skin
-            if (!Regex.Match(nameWithoutEnding, @"\d{4}$").Success)
+            if (BitmapInfoReference?.BitmapInfo?.BitmapNames == null || BitmapInfoReference.BitmapInfo.BitmapNames.Count == 0)
             {
-                return CharacterMaterialType.NormalTexture;
+                return string.Empty;
             }
 
-            // Ensure that this starts with 5 characters
-            char[] array = nameWithoutEnding.ToCharArray();
+            return BitmapInfoReference.BitmapInfo.BitmapNames[0].GetExportFilename();
+        }
 
-            for (int i = 0; i < 5; ++i)
+        public string GetFullMaterialName()
+        {
+            return MaterialList.GetMaterialPrefix(ShaderType) +
+                    FragmentNameCleaner.CleanName(this);
+        }
+
+        public void SetBitmapName(int index, string newName)
+        {
+            if (BitmapInfoReference == null)
             {
-                if (!char.IsLetter(array[i]))
-                {
-                    return CharacterMaterialType.GlobalSkin;
-                }
+                return;
             }
 
-            return CharacterMaterialType.CharacterSkin;
+            BitmapInfoReference.BitmapInfo.BitmapNames[index].Filename = newName + ".bmp";
         }
     }
 }

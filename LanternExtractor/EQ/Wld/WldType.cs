@@ -1,43 +1,47 @@
 ﻿namespace LanternExtractor.EQ.Wld
 {
-    /// <summary>
-    /// The type of WLD file that is being loaded
-    /// </summary>
     public enum WldType
     {
         /// <summary>
-        /// The main zone WLD containing zone geometry
-        /// arena.s3d, arena.wld
+        /// Contains main zone geometry, BSP tree
+        /// Example: arena.s3d, arena.wld
         /// </summary>
         Zone,
 
         /// <summary>
-        /// The WLD that contains the positional information about the zone objects
-        /// arena.s3d, objects.wld
+        /// Contains the zone object instance data
+        /// Example: arena.s3d, objects.wld
         /// </summary>
         ZoneObjects,
 
         /// <summary>
-        /// The WLD containing all light information
-        /// arena.s3d, lights.wld
+        /// Contains light instances
+        /// Example: arena.s3d, lights.wld
         /// </summary>
         Lights,
 
         /// <summary>
-        /// The WLD containing model geometry
-        /// arena_obj.s3d, arena_obj.wld
+        /// Contains zone object model geometry
+        /// Example: arena_obj.s3d, arena_obj.wld
         /// </summary>
         Objects,
 
         /// <summary>
-        /// The WLD containing information about the sky (only found in sky.s3d)
-        /// sky.s3d, sky.wld
+        /// Contains sky data, models and animations
+        /// Example: sky.s3d, sky.wld
         /// </summary>
         Sky,
 
         /// <summary>
-        /// The WLD containing the character model and information
+        /// Contains zone character models, animations
+        /// Example: arena_chr.s3d, arena_chr.wld
         /// </summary>
-        Characters
+        Characters,
+        
+        /// <summary>
+        /// Contains general models - only a few of these exist
+        /// Example: gequip.s3d
+        /// </summary>
+        Equipment
     }
 }

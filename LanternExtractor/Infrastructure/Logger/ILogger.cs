@@ -11,6 +11,11 @@
         LogVerbosity Verbosity { get; set; }
 
         /// <summary>
+        /// Sets the verbosity of the logger
+        /// </summary>
+        void SetVerbosity(LogVerbosity verbosity);
+        
+        /// <summary>
         /// Logs information as as debug info
         /// </summary>
         void LogInfo(string message);

@@ -1,33 +1,42 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
-    /// 0x2D - Mesh Reference
-    /// Contains a reference to a mesh fragment (0x36)
+    /// MeshReference (0x2D)
+    /// Internal name: None
+    /// Contains a reference to either a Mesh and LegacyMesh fragment.
+    /// This fragment is referenced from a Skeleton fragment.
     /// </summary>
-    class MeshReference : WldFragment
+    public class MeshReference : WldFragment
     {
-        /// <summary>
-        /// The mesh reference
-        /// </summary>
         public Mesh Mesh { get; private set; }
-
-        public override void Initialize(int index, int id, int size, byte[] data,
-            Dictionary<int, WldFragment> fragments,
-            Dictionary<int, string> stringHash, ILogger logger)
+        
+        public LegacyMesh LegacyMesh { get; private set; }
+        
+        public override void Initialize(int index, int size, byte[] data,
+            List<WldFragment> fragments,
+            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
         {
-            base.Initialize(index, id, size, data, fragments, stringHash, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            Name = stringHash[-Reader.ReadInt32()];
+            int reference = Reader.ReadInt32() - 1;
+            Mesh = fragments[reference] as Mesh;
 
-            var reader = new BinaryReader(new MemoryStream(data));
+            if (Mesh != null)
+            {
+                return;
+            }
+            
+            LegacyMesh = fragments[reference] as LegacyMesh;
 
-            Name = stringHash[-reader.ReadInt32()];
-
-            int reference = reader.ReadInt32();
-
-            Mesh = fragments[reference - 1] as Mesh;
+            if (LegacyMesh != null)
+            {
+                return;
+            }
+            
+            logger.LogError("No mesh reference found for id: " + reference);
         }
 
         public override void OutputInfo(ILogger logger)

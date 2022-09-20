@@ -11,13 +11,15 @@ namespace LanternExtractor.Infrastructure.Logger
 
         public LogVerbosity Verbosity { get; set; }
 
-        public TextFileLogger(string logFilePath, LogVerbosity verbosity)
+        public TextFileLogger(string logFilePath)
         {
-            _streamWriter = new StreamWriter(logFilePath);
-            Verbosity = verbosity;
-            _streamWriter.AutoFlush = true;
+            _streamWriter = new StreamWriter(logFilePath) {AutoFlush = true};
         }
 
+        public void SetVerbosity(LogVerbosity verbosity)
+        {
+            Verbosity = verbosity;
+        }
 
         public void LogInfo(string message)
         {
