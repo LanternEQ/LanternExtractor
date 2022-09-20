@@ -153,8 +153,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 int textureIndex = group.MaterialIndex;
                 int polygonCount = group.PolygonCount;
 
-                List<int> activeArray;
-
                 bool shouldExport = true;
 
                 if (mesh.MaterialList.Materials[textureIndex].ShaderType == ShaderType.Boundary ||
@@ -166,7 +164,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                 }
 
-                activeArray = shouldExport ? usedVertices : unusedVertices;
+                var activeArray = shouldExport ? usedVertices : unusedVertices;
 
                 if (textureIndex < 0 || textureIndex >= mesh.MaterialList.Materials.Count)
                 {
@@ -362,11 +360,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             _baseVertex += usedVertices.Count;
-
-            if (mesh.Name.Contains("BAT"))
-            {
-
-            }
         }
 
         private void AddIfNotContained(List<int> list, int element)
