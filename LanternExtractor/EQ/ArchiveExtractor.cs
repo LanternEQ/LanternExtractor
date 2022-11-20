@@ -41,6 +41,13 @@ namespace LanternExtractor.EQ
             if (!s3dArchive.IsWldArchive)
             {
                 WriteS3dTextures(s3dArchive, rootFolder + shortName, logger);
+
+                if (EqFileHelper.IsSoundArchive(archiveName))
+                {
+                    var soundFolder = settings.ExportSoundsToSingleFolder ? "sounds" : shortName;
+                    WriteS3dSounds(s3dArchive, rootFolder + soundFolder, logger);
+                }
+
                 return;
             }
 
@@ -232,6 +239,25 @@ namespace LanternExtractor.EQ
                 wldFile.ExportData();
             }
         }
+
+        /// <summary>
+        /// Writes sounds from the PFS archive to disk
+        /// </summary>
+        /// <param name="s3dArchive"></param>
+        /// <param name="filePath"></param>
+        private static void WriteS3dSounds(PfsArchive s3dArchive, string filePath, ILogger logger)
+        {
+            var allFiles = s3dArchive.GetAllFiles();
+
+            foreach (var file in allFiles)
+            {
+                if (file.Name.EndsWith(".wav"))
+                {
+                    SoundWriter.WriteSoundAsWav(file.Bytes, filePath, file.Name, logger);
+                }
+            }
+        }
+
         /// <summary>
         /// Writes textures from the PFS archive to disk, converting them to PNG
         /// </summary>

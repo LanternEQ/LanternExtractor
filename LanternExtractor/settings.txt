@@ -36,6 +36,10 @@ ExportCharacterToSingleFolder = true
 # (Intermediate)
 ExportEquipmentToSingleFolder = true
 
+# If true, will export all sounds to the 'sounds' folder
+# Note, some sounds with conflicting names will be overwritten
+ExportSoundsToSingleFolder = true
+
 # If true and using OBJ export format, this will dump an OBJ for each animation frame.
 # This could use a high amount of disk space.
 # If true and using glTF export format, skeletal models will export with animations.
