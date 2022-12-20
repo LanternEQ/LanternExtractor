@@ -26,6 +26,11 @@ namespace LanternExtractor
             return archiveName == "sky";
         }
 
+        public static bool IsSoundArchive(string archiveName)
+        {
+            return archiveName.StartsWith("snd");
+        }
+
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {
             archiveName = archiveName.ToLower();

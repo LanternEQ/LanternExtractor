@@ -67,6 +67,11 @@ namespace LanternExtractor
         public bool ExportEquipmentToSingleFolder { get; private set; }
 
         /// <summary>
+        /// Export all sound files to a single folder
+        /// </summary>
+        public bool ExportSoundsToSingleFolder { get; private set; }
+
+        /// <summary>
         /// Exports all OBJ frames for all animations
         /// </summary>
         public bool ExportAllAnimationFrames { get; private set; }
@@ -179,6 +184,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
             {
                 ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportSoundsToSingleFolder"))
+            {
+                ExportSoundsToSingleFolder = Convert.ToBoolean(parsedSettings["ExportSoundsToSingleFolder"]);
             }
 
             if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))

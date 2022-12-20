@@ -55,6 +55,7 @@ namespace LanternExtractor
             var archiveName = args[0];
 
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
+            eqFiles.Sort();
 
             if (eqFiles.Count == 0)
             {
@@ -68,7 +69,7 @@ namespace LanternExtractor
                 List<Task> tasks = new List<Task>();
                 int i = 0;
 
-                // Each process is responsible for n number of files to work through determined by the process count here. 
+                // Each process is responsible for n number of files to work through determined by the process count here.
                 int chunkCount = Math.Max(1, (int)Math.Ceiling((double)(eqFiles.Count / _processCount)));
                 foreach (var chunk in eqFiles.GroupBy(s => i++ / chunkCount).Select(g => g.ToArray()).ToArray())
                 {
