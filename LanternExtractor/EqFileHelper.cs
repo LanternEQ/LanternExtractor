@@ -31,6 +31,11 @@ namespace LanternExtractor
             return archiveName.StartsWith("snd");
         }
 
+        public static bool IsStaticArchive(string archiveName)
+        {
+            return archiveName == "static";
+        }
+
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {
             archiveName = archiveName.ToLower();

@@ -98,6 +98,11 @@ namespace LanternExtractor
         public bool ExportGltfInGlbFormat { get; private set; }
 
         /// <summary>
+        /// Additional files that should be exported when extracting with `all` or `static`
+        /// </summary>
+        public string ExportStaticFiles { get; private set; }
+
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -204,6 +209,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
             {
                 ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
+            }
+
+            if (parsedSettings.ContainsKey("ExportStaticFiles"))
+            {
+                ExportStaticFiles = parsedSettings["ExportStaticFiles"];
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
