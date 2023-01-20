@@ -388,5 +388,26 @@ namespace LanternExtractor.EQ.Wld.Helpers
             skeleton.Skeleton[10].CleanedName = "l_point";
             skeleton.Skeleton[15].CleanedName = "head_point";
         }
+
+        /// <summary>
+        /// Highpass Citizen (Guard) has two head attach points
+        /// This can cause issues with particle emitting from incorrect skeleton point
+        /// </summary>
+        private void FixHighpassMale()
+        {
+            var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("HHM_HS_DEF");
+
+            if (skeleton == null)
+            {
+                return;
+            }
+
+            skeleton.Skeleton[0].Children = new List<int>
+            {
+                1
+            };
+
+            skeleton.Skeleton.RemoveAt(24);
+        }
     }
 }
