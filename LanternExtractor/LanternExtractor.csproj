@@ -59,7 +59,7 @@
     <Compile Include="EQ\Sound\EmissionType.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
-    <Compile Include="EQ\StaticExtractor.cs" />
+    <Compile Include="EQ\ClientDataCopier.cs" />
     <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
     <Compile Include="EQ\Wld\DataTypes\BoneTransform.cs" />

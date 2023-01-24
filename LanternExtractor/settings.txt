@@ -3,7 +3,7 @@
 # EverQuest Installation Path
 # Window example: C:/EverQuest
 # MacOS example: /Users/your.name/EQ/
-EverQuestDirectory = C:/EverQuest
+EverQuestDirectory = C:\EQC\ClientBackup
 
 # Extract the contents of the S3D archive as is?
 # If true, this will export all contents as they exist in the archives to their original formats.
@@ -64,10 +64,10 @@ ExportGltfVertexColors = false
 # (glTF)
 ExportGltfInGlbFormat = false
 
-# Additional files that should be exported when extracting with `all` or `static`
+# Additional files that should be copied when extracting with `all` or `clientdata`
 # Files should be comma separated and relative to `EverQuestDirectory`.
 # (Intermediate)
-ExportStaticFiles = spells.eff,spdat.eff
+ExportClientDataFiles = spells.eff,spdat.eff
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors

@@ -98,9 +98,9 @@ namespace LanternExtractor
         public bool ExportGltfInGlbFormat { get; private set; }
 
         /// <summary>
-        /// Additional files that should be exported when extracting with `all` or `static`
+        /// Additional files that should be exported when extracting with `all` or `clientdata`
         /// </summary>
-        public string ExportStaticFiles { get; private set; }
+        public string ClientDataFiles { get; private set; }
 
         /// <summary>
         /// The verbosity of the logger
@@ -132,7 +132,7 @@ namespace LanternExtractor
 
             try
             {
-                settingsText = System.IO.File.ReadAllText(_settingsFilePath);
+                settingsText = File.ReadAllText(_settingsFilePath);
             }
             catch (Exception e)
             {
@@ -140,7 +140,7 @@ namespace LanternExtractor
                 return;
             }
 
-            Dictionary<string, string> parsedSettings = TextParser.ParseTextToDictionary(settingsText, '=', '#');
+            var parsedSettings = TextParser.ParseTextToDictionary(settingsText, '=', '#');
 
             if (parsedSettings == null)
             {
@@ -211,9 +211,9 @@ namespace LanternExtractor
                 ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
             }
 
-            if (parsedSettings.ContainsKey("ExportStaticFiles"))
+            if (parsedSettings.ContainsKey("ExportClientDataFiles"))
             {
-                ExportStaticFiles = parsedSettings["ExportStaticFiles"];
+                ClientDataFiles = parsedSettings["ExportClientDataFiles"];
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
