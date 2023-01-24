@@ -58,7 +58,7 @@ namespace LanternExtractor.EQ
 
         private static bool IsInvalidName(string fileName)
         {
-            return !EqFileHelper.IsClientDataFile(fileName) && fileName != "clientdata";
+            return !EqFileHelper.IsClientDataFile(fileName) && fileName != "all";
         }
     }
 }
