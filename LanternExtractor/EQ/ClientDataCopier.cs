@@ -4,15 +4,15 @@ using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ
 {
-    public static class StaticExtractor
+    public static class ClientDataCopier
     {
-        public const string StaticDirectory = "static";
+        public const string ClientDataDirectory = "clientdata";
 
-        public static void Extract(string archiveName, string rootFolder, ILogger logger, Settings settings)
+        public static void Copy(string fileName, string rootFolder, ILogger logger, Settings settings)
         {
-            if (settings.ExportStaticFiles == null ||
+            if (settings.ClientDataToCopy == null ||
                 settings.ModelExportFormat != ModelExportFormat.Intermediate ||
-                IsInvalidName(archiveName))
+                IsInvalidName(fileName))
             {
                 return;
             }
@@ -22,9 +22,9 @@ namespace LanternExtractor.EQ
 
         private static void WriteAllFiles(string rootFolder, ILogger logger, Settings settings)
         {
-            Directory.CreateDirectory(rootFolder + StaticDirectory);
+            Directory.CreateDirectory(rootFolder + ClientDataDirectory);
 
-            var filePaths = GetStaticFilePaths(settings);
+            var filePaths = GetClientDataFilePaths(settings);
 
             foreach (var filePath in filePaths)
             {
@@ -34,16 +34,16 @@ namespace LanternExtractor.EQ
             }
         }
 
-        private static List<string> GetStaticFilePaths(Settings settings)
+        private static List<string> GetClientDataFilePaths(Settings settings)
         {
             var paths = new List<string>();
 
-            foreach (var filePath in settings.ExportStaticFiles.Split(','))
+            foreach (var filePath in settings.ClientDataToCopy.Split(','))
             {
-                var staticFilePath = Path.Combine(settings.EverQuestDirectory, filePath.Trim());
-                if (File.Exists(staticFilePath))
+                var clientDataFilePath = Path.Combine(settings.EverQuestDirectory, filePath.Trim());
+                if (File.Exists(clientDataFilePath))
                 {
-                    paths.Add(staticFilePath);
+                    paths.Add(clientDataFilePath);
                 }
             }
 
@@ -53,12 +53,12 @@ namespace LanternExtractor.EQ
         private static string GetDestinationPath(string rootFolder, string sourceFilePath)
         {
             var sourceFileName = Path.GetFileName(sourceFilePath);
-            return Path.Combine(rootFolder + StaticDirectory, sourceFileName);
+            return Path.Combine(rootFolder + ClientDataDirectory, sourceFileName);
         }
 
-        private static bool IsInvalidName(string archiveName)
+        private static bool IsInvalidName(string fileName)
         {
-            return !EqFileHelper.IsStaticArchive(archiveName) && archiveName != "all";
+            return !EqFileHelper.IsClientDataFile(fileName) && fileName != "all";
         }
     }
 }
