@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ
 
         public static void Copy(string fileName, string rootFolder, ILogger logger, Settings settings)
         {
-            if (settings.ClientDataFiles == null ||
+            if (settings.ClientDataToCopy == null ||
                 settings.ModelExportFormat != ModelExportFormat.Intermediate ||
                 IsInvalidName(fileName))
             {
@@ -38,7 +38,7 @@ namespace LanternExtractor.EQ
         {
             var paths = new List<string>();
 
-            foreach (var filePath in settings.ClientDataFiles.Split(','))
+            foreach (var filePath in settings.ClientDataToCopy.Split(','))
             {
                 var clientDataFilePath = Path.Combine(settings.EverQuestDirectory, filePath.Trim());
                 if (File.Exists(clientDataFilePath))
