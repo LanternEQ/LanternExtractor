@@ -9,36 +9,25 @@ namespace LanternExtractor.EQ.Wld.Helpers
     /// </summary>
     public static class MaterialFixer
     {
-        public static void Fix(WldFile wldFile)
+        public static void Fix(WldFile wld)
         {
-            FixShaderAssignment(wldFile);
+            FixShaderAssignment(wld, "TREE20_MDF", ShaderType.TransparentMasked);
+            FixShaderAssignment(wld, "TOP_MDF", ShaderType.TransparentMasked);
+            FixShaderAssignment(wld, "FURPILE1_MDF", ShaderType.TransparentMasked);
+            FixShaderAssignment(wld, "BEARRUG_MDF", ShaderType.TransparentMasked);
+            FixShaderAssignment(wld, "FIRE1_MDF", ShaderType.TransparentAdditiveUnlit);
+            FixShaderAssignment(wld, "ICE1_MDF", ShaderType.Invisible);
+            FixShaderAssignment(wld, "AIRCLOUD_MDF", ShaderType.TransparentSkydome);
+            FixShaderAssignment(wld, "NORMALCLOUD_MDF", ShaderType.TransparentSkydome);
         }
 
-        private static void FixShaderAssignment(WldFile wld)
+        private static void FixShaderAssignment(WldFile wld, string materialName, ShaderType shader)
         {
-            var materialFragments = wld.GetFragmentsOfType<Material>();
+            var material = wld.GetFragmentByName<Material>(materialName);
 
-            foreach (var mf in materialFragments)
+            if (material != null)
             {
-                switch (mf.Name)
-                {
-                    case "TREE20_MDF":
-                    case "TOP_MDF":
-                    case "FURPILE1_MDF":
-                    case "BEARRUG_MDF":
-                        mf.ShaderType = ShaderType.TransparentMasked;
-                        break;
-                    case "FIRE1_MDF":
-                        mf.ShaderType = ShaderType.TransparentAdditiveUnlit;
-                        break;
-                    case "ICE1_MDF":
-                        mf.ShaderType = ShaderType.Invisible;
-                        break;
-                    case "AIRCLOUD_MDF":
-                    case "NORMALCLOUD_MDF":
-                        mf.ShaderType = ShaderType.TransparentSkydome;
-                        break;
-                }
+                material.ShaderType = shader;
             }
         }
     }

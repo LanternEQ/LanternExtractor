@@ -157,6 +157,7 @@
     <Compile Include="Infrastructure\Logger\ILogger.cs" />
     <Compile Include="Infrastructure\Logger\LogVerbosity.cs" />
     <Compile Include="Infrastructure\Logger\TextFileLogger.cs" />
+    <Compile Include="Infrastructure\SoundWriter.cs" />
     <Compile Include="Infrastructure\TextParser.cs" />
     <Compile Include="LanternExtractor.cs" />
     <Compile Include="LanternStrings.cs" />
