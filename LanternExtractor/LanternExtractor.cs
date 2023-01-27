@@ -57,7 +57,7 @@ namespace LanternExtractor
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
             eqFiles.Sort();
 
-            if (eqFiles.Count == 0)
+            if (eqFiles.Count == 0 && !EqFileHelper.IsClientDataFile(archiveName))
             {
                 Console.WriteLine("No valid EQ files found for: '" + archiveName + "' at path: " +
                                   _settings.EverQuestDirectory);
@@ -89,6 +89,7 @@ namespace LanternExtractor
                     ArchiveExtractor.Extract(file, "Exports/", _logger, _settings);
                 }
             }
+            ClientDataCopier.Copy(archiveName, "Exports/", _logger, _settings);
 
             Console.WriteLine($"Extraction complete ({(DateTime.Now - start).TotalSeconds:.00}s)");
         }

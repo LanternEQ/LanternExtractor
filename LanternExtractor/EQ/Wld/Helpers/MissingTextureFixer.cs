@@ -14,22 +14,14 @@ namespace LanternExtractor.EQ.Wld.Helpers
         public static void Fix(string shortname)
         {
             if (shortname == "oasis_obj")
-            {
                 CopyTexture("Exports/oasis/Objects/Textures/canwall1.png",
                     "Exports/oasis/Zone/Textures/canwall1.png");
-            }
-            
-            if (shortname == "fearplane_obj")
-            {
+            else if (shortname == "fearplane_obj")
                 CopyTexture("Exports/fearplane/Objects/Textures/maywall.png",
                     "Exports/fearplane/Zone/Textures/maywall.png");
-            }
-
-            if (shortname == "swampofnohope_obj")
-            {
+            else if (shortname == "swampofnohope_obj")
                 CopyTexture("Exports/swampofnohope/Objects/Textures/kruphse3.png",
                     "Exports/swampofnohope/Zone/Textures/kruphse3.png");
-            }
         }
 
         private static void CopyTexture(string source, string destination)

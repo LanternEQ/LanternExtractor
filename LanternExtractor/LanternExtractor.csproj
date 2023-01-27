@@ -59,6 +59,7 @@
     <Compile Include="EQ\Sound\EmissionType.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
+    <Compile Include="EQ\ClientDataCopier.cs" />
     <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
     <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
     <Compile Include="EQ\Wld\DataTypes\BoneTransform.cs" />
@@ -157,6 +158,7 @@
     <Compile Include="Infrastructure\Logger\ILogger.cs" />
     <Compile Include="Infrastructure\Logger\LogVerbosity.cs" />
     <Compile Include="Infrastructure\Logger\TextFileLogger.cs" />
+    <Compile Include="Infrastructure\SoundWriter.cs" />
     <Compile Include="Infrastructure\TextParser.cs" />
     <Compile Include="LanternExtractor.cs" />
     <Compile Include="LanternStrings.cs" />

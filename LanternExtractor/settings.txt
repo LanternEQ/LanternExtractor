@@ -16,7 +16,7 @@ ModelExportFormat = 0
 
 # Extract the zone mesh with groups?
 # The zone model is made up of smaller BSP region meshes.
-# If enabled, each region mesh is exported. 
+# If enabled, each region mesh is exported.
 # If disabled, the mesh is combined into a single mesh.
 # Unity importer only supports single mesh zone.
 # (Intermediate, OBJ)
@@ -51,18 +51,23 @@ ExportAllAnimationFrames = false
 ExportZoneWithObjects = false
 
 # Export vertex colors
-# Default behavior of glTF renderers is to mix the vertex color with the base color, 
+# Default behavior of glTF renderers is to mix the vertex color with the base color,
 # which will not look right. Only turn this on if you intend to do some post-processing that
 # requires vertex colors being present.
 # (glTF)
 ExportGltfVertexColors = false
 
 # Export glTF models in .GLB file format.
-# GLB packages the .glTF json, the associated .bin, and all of the model's texture images 
+# GLB packages the .glTF json, the associated .bin, and all of the model's texture images
 # into one file. This will take up more space since textures can't be shared, and the export
 # process will likely take longer to complete. However, using GLB will make models more portable.
 # (glTF)
 ExportGltfInGlbFormat = false
+
+# Additional files that should be copied when extracting with `all` or `clientdata`
+# Files should be comma separated and relative to `EverQuestDirectory`.
+# (Intermediate)
+ClientDataToCopy = spells.eff,spdat.eff
 
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
