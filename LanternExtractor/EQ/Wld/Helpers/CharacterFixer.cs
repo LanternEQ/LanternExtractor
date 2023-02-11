@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 
 namespace LanternExtractor.EQ.Wld.Helpers
@@ -9,11 +10,12 @@ namespace LanternExtractor.EQ.Wld.Helpers
     /// As character models are specific to each zone, there are also conflicts with:
     /// 1. Texture names being used for different characters
     /// 2. Zones using different models/skeleton for the same race id
-    /// This code is only run when exporting all characters to a single folder for batch importing
+    /// This code is only run when exporting all characters to a single folder for batch importing.
     /// </summary>
     public class CharacterFixer
     {
         private WldFileCharacters _wld;
+
         public void Fix(WldFileCharacters wld)
         {
             _wld = wld;
@@ -27,6 +29,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
             FixBlackAndWhiteDragon();
             FixGhoulTextures();
             FixHalasFemale();
+            FixHighpassMale();
         }
 
         /// <summary>
@@ -239,37 +242,37 @@ namespace LanternExtractor.EQ.Wld.Helpers
             }
         }
 
+        /// <summary>
+        /// Golem Elemental incorrectly uses (and overwrites) normal Golem material names
+        /// </summary>
         private void FixGolemElemental()
         {
-            var actors = _wld.GetFragmentsOfType<Actor>();
+            var actor = _wld.GetFragmentByName<Actor>("GOM_ACTORDEF");
 
-            foreach (var actor in actors)
+            if (actor == null)
             {
-                if (!actor.Name.StartsWith("GOM"))
-                {
-                    continue;
-                }
+                return;
+            }
 
-                foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
+            foreach (var mesh in actor.SkeletonReference.SkeletonHierarchy.Meshes)
+            {
+                foreach (var material in mesh.MaterialList.Materials)
                 {
-                    foreach (var material in mesh.MaterialList.Materials)
+                    if (!material.Name.StartsWith("GOL"))
                     {
-                        if (!material.Name.StartsWith("GOL"))
-                        {
-                            continue;
-                        }
+                        continue;
+                    }
 
-                        material.Name = material.Name.Replace("GOL", "GOM");
+                    material.Name = material.Name.Replace("GOL", "GOM");
 
-                        var bitmapNames = material.GetAllBitmapNames();
+                    var bitmapNames = material.GetAllBitmapNames();
 
-                        for (var i = 0; i < bitmapNames.Count; i++)
-                        {
-                            string originalName = bitmapNames[i];
-                            string newName = originalName.Replace("gol", "gom");
-                            material.SetBitmapName(i, newName);
-                            _wld.FilenameChanges[newName] = originalName;
-                        }
+                    for (var i = 0; i < bitmapNames.Count; i++)
+                    {
+                        string originalName = bitmapNames[i];
+                        string newName = originalName.Replace("gol", "gom");
+                        material.SetBitmapName(i, newName);
+                        _wld.FilenameChanges[newName] = originalName;
                     }
                 }
             }
@@ -283,7 +286,8 @@ namespace LanternExtractor.EQ.Wld.Helpers
             {
                 if (actor.Name.StartsWith("GSP") && (actor?.MeshReference?.Mesh?.Name ?? null) != null)
                 {
-                    actor.MeshReference.Mesh.Name = actor.MeshReference?.Mesh?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
+                    actor.MeshReference.Mesh.Name =
+                        actor.MeshReference?.Mesh?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
                     actor.MeshReference.Mesh.MaterialList.Name =
                         actor?.MeshReference?.Mesh?.MaterialList?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
                 }
@@ -304,15 +308,15 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     {
                         // Bloated Belly in Iceclad
                         case "OGS_HS_DEF":
-                            {
-                                actor.Name = actor.Name.Replace("PRE", "OGS");
-                                break;
-                            }
+                        {
+                            actor.Name = actor.Name.Replace("PRE", "OGS");
+                            break;
+                        }
                         // Sea King, Golden Maiden, StormBreaker, SirensBane
                         case "PRE_HS_DEF":
-                            {
-                                break;
-                            }
+                        {
+                            break;
+                        }
                     }
                 }
 
@@ -328,16 +332,16 @@ namespace LanternExtractor.EQ.Wld.Helpers
                     {
                         // Icebreaker in Iceclad
                         case "GNS_HS_DEF":
-                            {
-                                actor.Name = actor.Name.Replace("SHIP", "GNS");
-                                break;
-                            }
+                        {
+                            actor.Name = actor.Name.Replace("SHIP", "GNS");
+                            break;
+                        }
                         // Maidens Voyage in Firiona Vie
                         case "ELS_HS_DEF":
-                            {
-                                actor.Name = actor.Name.Replace("SHIP", "ELS");
-                                break;
-                            }
+                        {
+                            actor.Name = actor.Name.Replace("SHIP", "ELS");
+                            break;
+                        }
                     }
                 }
             }
@@ -387,6 +391,27 @@ namespace LanternExtractor.EQ.Wld.Helpers
             skeleton.Skeleton[7].CleanedName = "bi_l";
             skeleton.Skeleton[10].CleanedName = "l_point";
             skeleton.Skeleton[15].CleanedName = "head_point";
+        }
+
+        /// <summary>
+        /// Highpass Citizen (Guard) has two head attach points
+        /// This can cause issues with particle emitting from incorrect skeleton point
+        /// </summary>
+        private void FixHighpassMale()
+        {
+            var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("HHM_HS_DEF");
+
+            if (skeleton == null)
+            {
+                return;
+            }
+
+            skeleton.Skeleton[0].Children = new List<int>
+            {
+                1
+            };
+
+            skeleton.Skeleton.RemoveAt(24);
         }
     }
 }

@@ -98,6 +98,11 @@ namespace LanternExtractor
         public bool ExportGltfInGlbFormat { get; private set; }
 
         /// <summary>
+        /// Additional files that should be copied when extracting with `all` or `clientdata`
+        /// </summary>
+        public string ClientDataToCopy { get; private set; }
+
+        /// <summary>
         /// The verbosity of the logger
         /// </summary>
         public int LoggerVerbosity { get; private set; }
@@ -127,7 +132,7 @@ namespace LanternExtractor
 
             try
             {
-                settingsText = System.IO.File.ReadAllText(_settingsFilePath);
+                settingsText = File.ReadAllText(_settingsFilePath);
             }
             catch (Exception e)
             {
@@ -135,7 +140,7 @@ namespace LanternExtractor
                 return;
             }
 
-            Dictionary<string, string> parsedSettings = TextParser.ParseTextToDictionary(settingsText, '=', '#');
+            var parsedSettings = TextParser.ParseTextToDictionary(settingsText, '=', '#');
 
             if (parsedSettings == null)
             {
@@ -204,6 +209,11 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
             {
                 ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
+            }
+
+            if (parsedSettings.ContainsKey("ClientDataToCopy"))
+            {
+                ClientDataToCopy = parsedSettings["ClientDataToCopy"];
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))
