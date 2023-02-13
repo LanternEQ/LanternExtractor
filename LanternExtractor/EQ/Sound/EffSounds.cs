@@ -38,11 +38,6 @@ namespace LanternExtractor.EQ.Sound
             }
 
             FileStream file = File.Open(_soundFilePath, FileMode.Open);
-
-            string zoneShortName = Path.GetFileNameWithoutExtension(_soundFilePath).Split('_')[0];
-
-            LoadMusicTrackNames(zoneShortName);
-
             var reader = new BinaryReader(file);
             int fileLength = (int)reader.BaseStream.Length;
 
@@ -103,37 +98,10 @@ namespace LanternExtractor.EQ.Sound
                 newSound.FullVolRange = reader.ReadInt32();
                 newSound.UnkRange80 = reader.ReadInt32();
 
-                //if (newSound.SoundIdDay != "" || newSound.SoundIdNight != "")
+                if (newSound.SoundIdDay != 0 || newSound.SoundIdNight != 0)
                 {
                     _soundEntries.Add(newSound);
                 }
-            }
-        }
-
-        private void LoadMusicTrackNames(string zoneShortName)
-        {
-            string[] trackLines = File.ReadAllLines("ClientData/musictracks.txt");
-
-            bool isTargetZone = false;
-
-            foreach (string line in trackLines)
-            {
-                if (!isTargetZone)
-                {
-                    if (line == "#" + zoneShortName)
-                    {
-                        isTargetZone = true;
-                    }
-
-                    continue;
-                }
-
-                if (line == string.Empty)
-                {
-                    break;
-                }
-
-                _musicTrackEntries.Add(line);
             }
         }
 
@@ -143,13 +111,11 @@ namespace LanternExtractor.EQ.Sound
         /// There are also a handful of hardcoded sound ids.
         /// </summary>
         /// <param name="soundIdNight"></param>
-        /// <param name="soundBank">The sound bank in which to look</param>
         /// <param name="soundNameNight"></param>
-        /// <param name="soundType">The emission type</param>
         /// <param name="soundIdDay"></param>
         /// <param name="soundNameDay"></param>
         /// <returns>The name of the sound</returns>
-        private bool TryGetSoundInfo(int soundIdDay, int soundIdNight, EffSndBnk soundBank, out string soundNameDay,
+        private bool TryGetSoundInfo(int soundIdDay, int soundIdNight, out string soundNameDay,
             out string soundNameNight)
         {
             var typeDay = GetEmissionType(soundIdDay);
@@ -242,8 +208,8 @@ namespace LanternExtractor.EQ.Sound
                 }
                 else
                 {
-                    if (!TryGetSoundInfo(entry.SoundIdDay, entry.SoundIdNight, _soundBank, out var soundNameDay,
-                        out var soundNameNight, out var emissionType))
+                    if (!TryGetSoundInfo(entry.SoundIdDay, entry.SoundIdNight, out var soundNameDay,
+                        out var soundNameNight))
                     {
                         continue;
                     }
@@ -292,22 +258,6 @@ namespace LanternExtractor.EQ.Sound
                 Directory.CreateDirectory(exportPath);
                 File.WriteAllText(exportPath + "music_instances.txt", exportHeader.ToString() + musicExport);
             }
-        }
-
-        /// <summary>
-        /// Gets the name of the music track if it exists
-        /// </summary>
-        /// <param name="zoneName">The zone shortname</param>
-        /// <param name="index">The index of the track</param>
-        /// <returns>The name of the track</returns>
-        private string GetMusicTrackName(int index)
-        {
-            if (index < 0 || index >= _musicTrackEntries.Count)
-            {
-                return "Unknown";
-            }
-
-            return _musicTrackEntries[index];
         }
     }
 }
