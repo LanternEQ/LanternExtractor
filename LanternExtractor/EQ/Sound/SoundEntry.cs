@@ -20,8 +20,8 @@
         public int CooldownNight { get; set; }
         public int RandomDelay { get; set; }
         public int Unk44 { get; set; }
-        public string SoundIdDay { get; set; }
-        public string SoundIdNight { get; set; }
+        public int SoundIdDay { get; set; }
+        public int SoundIdNight { get; set; }
         public SoundType SoundType { get; set; }
         public byte UnkPad57 { get; set; }
         public byte UnkPad58 { get; set; }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -16,21 +15,21 @@ namespace LanternExtractor.EQ.Sound
         /// The sound bank referenced for sound names
         /// </summary>
         private readonly EffSndBnk _soundBank;
-        
+
         private readonly string _soundFilePath;
-        
+
         private readonly List<SoundEntry> _soundEntries = new List<SoundEntry>();
-        
+
         private readonly List<string> _musicTrackEntries = new List<string>();
-        
+
         private const int EntryLengthInBytes = 84;
-        
+
         public EffSounds(string soundFilePath, EffSndBnk soundBank)
         {
             _soundFilePath = soundFilePath;
             _soundBank = soundBank;
         }
-        
+
         public void Initialize()
         {
             if (_soundBank == null || !File.Exists(_soundFilePath))
@@ -45,11 +44,11 @@ namespace LanternExtractor.EQ.Sound
             LoadMusicTrackNames(zoneShortName);
 
             var reader = new BinaryReader(file);
-
-            int fileLength = (int) reader.BaseStream.Length;
+            int fileLength = (int)reader.BaseStream.Length;
 
             if (fileLength % EntryLengthInBytes != 0)
             {
+                // File is an incorrect size
                 return;
             }
 
@@ -77,20 +76,20 @@ namespace LanternExtractor.EQ.Sound
                 int soundId2 = reader.ReadInt32();
 
                 byte soundType = reader.ReadByte();
-                newSound.SoundType = (SoundType) soundType;
+                newSound.SoundType = (SoundType)soundType;
 
                 if (soundType == 0 || soundType == 2 || soundType == 3)
                 {
                     // Find the sound names
                     EmissionType newSoundEmissionType = newSound.EmissionType;
-                    newSound.SoundIdDay = GetSoundString(soundId1, _soundBank, ref newSoundEmissionType);
+                    newSound.SoundIdDay = soundId1; //GetSoundString(soundId1, _soundBank, ref newSoundEmissionType);
                     EmissionType soundEmissionType = newSound.EmissionType;
-                    newSound.SoundIdNight = GetSoundString(soundId2, _soundBank, ref soundEmissionType);
+                    newSound.SoundIdNight = soundId2; //GetSoundString(soundId2, _soundBank, ref soundEmissionType);
                 }
                 else
                 {
-                    newSound.SoundIdDay = GetMusicTrackName(soundId1);
-                    newSound.SoundIdNight = GetMusicTrackName(soundId1);
+                    newSound.SoundIdDay = soundId1; //GetMusicTrackName(soundId1);
+                    newSound.SoundIdNight = soundId2; //GetMusicTrackName(soundId1);
                 }
 
                 newSound.UnkPad57 = reader.ReadByte();
@@ -104,19 +103,19 @@ namespace LanternExtractor.EQ.Sound
                 newSound.FullVolRange = reader.ReadInt32();
                 newSound.UnkRange80 = reader.ReadInt32();
 
-                if (newSound.SoundIdDay != "" || newSound.SoundIdNight != "")
+                //if (newSound.SoundIdDay != "" || newSound.SoundIdNight != "")
                 {
                     _soundEntries.Add(newSound);
                 }
             }
         }
-        
+
         private void LoadMusicTrackNames(string zoneShortName)
         {
             string[] trackLines = File.ReadAllLines("ClientData/musictracks.txt");
 
             bool isTargetZone = false;
-            
+
             foreach (string line in trackLines)
             {
                 if (!isTargetZone)
@@ -143,63 +142,82 @@ namespace LanternExtractor.EQ.Sound
         /// The client uses specific integer ranges to identify the type.
         /// There are also a handful of hardcoded sound ids.
         /// </summary>
-        /// <param name="soundId">The id index of the sound</param>
+        /// <param name="soundIdNight"></param>
         /// <param name="soundBank">The sound bank in which to look</param>
+        /// <param name="soundNameNight"></param>
         /// <param name="soundType">The emission type</param>
+        /// <param name="soundIdDay"></param>
+        /// <param name="soundNameDay"></param>
         /// <returns>The name of the sound</returns>
-        private string GetSoundString(int soundId, EffSndBnk soundBank, ref EmissionType soundType)
+        private bool TryGetSoundInfo(int soundIdDay, int soundIdNight, EffSndBnk soundBank, out string soundNameDay,
+            out string soundNameNight)
         {
-            if (soundId == 0)
+            var typeDay = GetEmissionType(soundIdDay);
+            var typeNight = GetEmissionType(soundIdNight);
+            soundNameDay = string.Empty;
+            soundNameNight = string.Empty;
+
+            if (typeDay == EmissionType.None && typeNight == EmissionType.None)
             {
-                return string.Empty;
+                // No sound
+                return false;
             }
 
-            if (soundId >= 1 && soundId < 32 && soundId < soundBank.EmitSounds.Count)
+            if (typeDay != typeNight)
             {
-                soundType = EmissionType.Emit;
-                return soundBank.EmitSounds[soundId - 1];
+                // Two separate emission types
+                return false;
             }
 
-            // Hardcoded client sounds - verified that no other references exist in Trilogy client
-            if (soundId >= 32 && soundId < 162)
+            if (typeDay != EmissionType.None)
             {
-                soundType = EmissionType.Internal;
-
-                switch (soundId)
-                {
-                    case 39:
-                        return "death_me";
-                    case 143:
-                        return "thunder1";
-                    case 144:
-                        return "thunder2";
-                    case 158:
-                        return "wind_lp1";
-                    case 159:
-                        return "rainloop";
-                    case 160:
-                        return "torch_lp";
-                    case 161:
-                        return "watundlp";
-                }
+                soundNameDay = GetSoundName(soundIdDay, typeDay);
             }
 
-            if (soundId < 162 || soundId >= 162 + soundBank.LoopSounds.Count)
+            if (typeNight != EmissionType.None)
             {
-                return string.Empty;
+                soundNameNight = GetSoundName(soundIdDay, typeDay);
             }
-            
-            soundType = EmissionType.Loop;
 
-            return soundBank.LoopSounds[soundId - 161 - 1];
+            return true;
         }
-        
+
+        private string GetSoundName(int soundId, EmissionType type)
+        {
+            switch (type)
+            {
+                case EmissionType.Emit:
+                    return _soundBank.GetEmitSound(soundId - 1);
+                case EmissionType.Loop:
+                    return _soundBank.GetLoopSound(soundId - 162);
+                case EmissionType.Internal:
+                    return ClientSounds.GetClientSound(soundId);
+                default:
+                    return SoundConstants.Unknown;
+            }
+        }
+
+        private EmissionType GetEmissionType(int soundId)
+        {
+            if (soundId <= 0)
+            {
+                return EmissionType.None;
+            }
+
+            if (soundId < 32)
+            {
+                return EmissionType.Emit;
+            }
+
+            return soundId < 162 ? EmissionType.Internal : EmissionType.Loop;
+        }
+
         public void ExportSoundData(string zoneName, string rootFolder)
         {
             var soundExport = new StringBuilder();
             var musicExport = new StringBuilder();
 
-            foreach (SoundEntry entry in _soundEntries)
+            foreach (var entry in _soundEntries)
             {
                 if (entry.SoundType == SoundType.Music)
                 {
@@ -224,6 +242,12 @@ namespace LanternExtractor.EQ.Sound
                 }
                 else
                 {
+                    if (!TryGetSoundInfo(entry.SoundIdDay, entry.SoundIdNight, _soundBank, out var soundNameDay,
+                        out var soundNameNight, out var emissionType))
+                    {
+                        continue;
+                    }
+
                     soundExport.Append((int)entry.SoundType);
                     soundExport.Append(",");
                     soundExport.Append(entry.PosX);
@@ -234,9 +258,9 @@ namespace LanternExtractor.EQ.Sound
                     soundExport.Append(",");
                     soundExport.Append(entry.Radius);
                     soundExport.Append(",");
-                    soundExport.Append(entry.SoundIdDay);
+                    soundExport.Append(soundNameDay);
                     soundExport.Append(",");
-                    soundExport.Append(entry.SoundIdNight);
+                    soundExport.Append(soundNameNight);
                     soundExport.Append(",");
                     soundExport.Append(entry.CooldownDay);
                     soundExport.Append(",");
@@ -247,24 +271,24 @@ namespace LanternExtractor.EQ.Sound
                 }
             }
 
-            string exportPath = rootFolder + zoneName + "/Zone/";
+            string exportPath = Path.Combine(rootFolder, zoneName, "Zone/");
 
-            if (soundExport.Length != 0)
+            if (soundExport.Length > 0)
             {
                 StringBuilder exportHeader = new StringBuilder();
                 exportHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Sound Instances");
-                exportHeader.AppendLine("# Format: SoundType, PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, CooldownDay, CooldownNight, RandomDelay");
-
+                exportHeader.AppendLine(
+                    "# Format: SoundType, PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, CooldownDay, CooldownNight, RandomDelay");
                 Directory.CreateDirectory(exportPath);
                 File.WriteAllText(exportPath + "sound_instances.txt", exportHeader.ToString() + soundExport);
             }
 
-            if (musicExport.Length != 0)
+            if (musicExport.Length > 0)
             {
                 StringBuilder exportHeader = new StringBuilder();
                 exportHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Music Instances");
-                exportHeader.AppendLine("# Format: PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, DayLoopCount, NightLoopCount, FadeOutMs");
-
+                exportHeader.AppendLine(
+                    "# Format: PosX, PosY, PosZ, Radius, MusicIndexDay, MusicIndexNight, DayLoopCount, NightLoopCount, FadeOutMs");
                 Directory.CreateDirectory(exportPath);
                 File.WriteAllText(exportPath + "music_instances.txt", exportHeader.ToString() + musicExport);
             }
@@ -282,7 +306,7 @@ namespace LanternExtractor.EQ.Sound
             {
                 return "Unknown";
             }
-            
+
             return _musicTrackEntries[index];
         }
     }

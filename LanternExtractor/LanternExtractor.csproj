@@ -54,9 +54,11 @@
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
     <Compile Include="EQ\ShortnameHelper.cs" />
+    <Compile Include="EQ\Sound\ClientSounds.cs" />
     <Compile Include="EQ\Sound\EffSndBnk.cs" />
     <Compile Include="EQ\Sound\EffSounds.cs" />
     <Compile Include="EQ\Sound\EmissionType.cs" />
+    <Compile Include="EQ\Sound\SoundConstants.cs" />
     <Compile Include="EQ\Sound\SoundEntry.cs" />
     <Compile Include="EQ\Sound\SoundType.cs" />
     <Compile Include="EQ\ClientDataCopier.cs" />
