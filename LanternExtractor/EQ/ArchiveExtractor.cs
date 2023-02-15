@@ -18,8 +18,7 @@ namespace LanternExtractor.EQ
             {
                 return;
             }
-
-
+            
             string shortName = archiveName.Split('_')[0];
             var s3dArchive = new PfsArchive(path, logger);
 

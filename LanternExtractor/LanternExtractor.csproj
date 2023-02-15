@@ -51,6 +51,7 @@
   <ItemGroup>
     <Compile Include="EqFileHelper.cs" />
     <Compile Include="EQ\ArchiveExtractor.cs" />
+    <Compile Include="EQ\MusicCopier.cs" />
     <Compile Include="EQ\Pfs\PfsArchive.cs" />
     <Compile Include="EQ\Pfs\PfsFile.cs" />
     <Compile Include="EQ\ShortnameHelper.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Infrastructure\TextParser.cs" />
     <Compile Include="LanternExtractor.cs" />
     <Compile Include="LanternStrings.cs" />
+    <Compile Include="ModelExportFormat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
   </ItemGroup>

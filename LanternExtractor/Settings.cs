@@ -1,25 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
-
 namespace LanternExtractor
 {
-    public enum ModelExportFormat
-    {
-        Intermediate = 0,
-        Obj = 1,
-        GlTF = 2
-    }
-
     /// <summary>
     /// Simple class that parses settings for the extractor
     /// </summary>
     public class Settings
     {
-
         /// <summary>
         /// The logger reference for debug output
         /// </summary>
@@ -101,6 +91,11 @@ namespace LanternExtractor
         /// Additional files that should be copied when extracting with `all` or `clientdata`
         /// </summary>
         public string ClientDataToCopy { get; private set; }
+        
+        /// <summary>
+        /// If enabled, XMI files will be copied to the 'Exports/Music' folder
+        /// </summary>
+        public bool CopyMusic { get; private set; }
 
         /// <summary>
         /// The verbosity of the logger
@@ -214,6 +209,16 @@ namespace LanternExtractor
             if (parsedSettings.ContainsKey("ClientDataToCopy"))
             {
                 ClientDataToCopy = parsedSettings["ClientDataToCopy"];
+            }
+            
+            if (parsedSettings.ContainsKey("ClientDataToCopy"))
+            {
+                ClientDataToCopy = parsedSettings["ClientDataToCopy"];
+            }
+            
+            if (parsedSettings.ContainsKey("CopyMusic"))
+            {
+                CopyMusic = Convert.ToBoolean(parsedSettings["CopyMusic"]);
             }
 
             if (parsedSettings.ContainsKey("LoggerVerbosity"))

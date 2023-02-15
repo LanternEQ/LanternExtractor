@@ -35,6 +35,16 @@ namespace LanternExtractor
         {
             return archiveName == "clientdata";
         }
+        
+        public static bool IsMusicFile(string filename)
+        {
+            return filename.EndsWith(".xmi");
+        }
+
+        public static bool IsSpecialCaseExtraction(string archiveName)
+        {
+            return archiveName == "clientdata" || archiveName == "music";
+        }
 
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {

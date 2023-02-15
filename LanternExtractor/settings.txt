@@ -69,6 +69,10 @@ ExportGltfInGlbFormat = false
 # (Intermediate)
 ClientDataToCopy = spells.eff,spdat.eff
 
+# If enabled, client XMI files will be copied to the 'Exports/Music' folder
+# XMI files can be used in the Lantern client
+CopyMusic = true
+
 # The minimum verbosity of the logger
 # 0 = info, 1 = warnings, 2 = errors
 LoggerVerbosity = 2
