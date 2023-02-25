@@ -53,7 +53,6 @@ namespace LanternExtractor
             }
 
             var archiveName = args[0];
-
             List<string> eqFiles = EqFileHelper.GetValidEqFilePaths(_settings.EverQuestDirectory, archiveName);
             eqFiles.Sort();
 

@@ -11,7 +11,7 @@ namespace LanternExtractor
             return archiveName.StartsWith("gequip");
         }
 
-        public static bool IsCharactersArchive(string archiveName)
+        public static bool IsCharacterArchive(string archiveName)
         {
             return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") || archiveName.Contains("_amr");
         }
@@ -49,19 +49,25 @@ namespace LanternExtractor
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {
             archiveName = archiveName.ToLower();
-
             var validFiles = new List<string>();
+            var eqFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);
 
             if (archiveName == "all")
             {
-                validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip") &&
-                                !s.EndsWith("_lit.s3d")).ToList();
+                validFiles = eqFiles.Where(f => (f.EndsWith(".s3d") || f.EndsWith(".pfs")) && !f.Contains("chequip") &&
+                                                !f.EndsWith("_lit.s3d")).ToList();
+            }
+            if (archiveName == "characters")
+            {
+                validFiles = eqFiles.Where(IsCharacterArchive).ToList();
             }
             else if (archiveName == "equipment")
             {
-                validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && s.Contains("gequip")).ToList();
+                validFiles = eqFiles.Where(IsEquipmentArchive).ToList();
+            }
+            else if (archiveName == "sounds")
+            {
+                validFiles = eqFiles.Where(IsSoundArchive).ToList();
             }
             else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
             {

@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ
         public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
-
+            
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
@@ -68,7 +68,7 @@ namespace LanternExtractor.EQ
             {
                 ExtractArchiveSky(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
-            else if (EqFileHelper.IsCharactersArchive(archiveName))
+            else if (EqFileHelper.IsCharacterArchive(archiveName))
             {
                 ExtractArchiveCharacters(path, rootFolder, logger, settings, archiveName, wldFileInArchive, shortName, s3dArchive);
             }
@@ -141,7 +141,7 @@ namespace LanternExtractor.EQ
                 zoneObjectsWldFile.Initialize(rootFolder);
             }
 
-            ExtractSoundData(shortName, rootFolder, settings);
+            ExtractSoundData(shortName, rootFolder, logger, settings);
         }
 
         private static void ExtractArchiveObjects(string path, string rootFolder, ILogger logger, Settings settings,
@@ -307,7 +307,7 @@ namespace LanternExtractor.EQ
             }
         }
 
-        private static void ExtractSoundData(string shortName, string rootFolder, Settings settings)
+        private static void ExtractSoundData(string shortName, string rootFolder,  ILogger logger, Settings settings)
         {
             var sounds = new EffSndBnk(settings.EverQuestDirectory + shortName + "_sndbnk" +
                                        LanternStrings.SoundFormatExtension);
@@ -315,7 +315,7 @@ namespace LanternExtractor.EQ
             var soundEntries =
                 new EffSounds(
                     settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
-            soundEntries.Initialize();
+            soundEntries.Initialize(logger);
             soundEntries.ExportSoundData(shortName, rootFolder);
         }
     }

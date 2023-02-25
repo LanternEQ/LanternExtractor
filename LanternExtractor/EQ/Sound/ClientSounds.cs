@@ -2,7 +2,7 @@
 
 namespace LanternExtractor.EQ.Sound
 {
-    public class ClientSounds
+    public static class ClientSounds
     {
         // Hardcoded client sounds - verified that no other references exist in Trilogy client
         private static Dictionary<int, string> _clientSounds = new Dictionary<int, string>

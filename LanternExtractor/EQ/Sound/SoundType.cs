@@ -3,7 +3,7 @@
     /// <summary>
     /// Describes the way the sound is heard by the player
     /// </summary>
-    public enum SoundType : byte
+    public enum SoundType : int
     {
         /// <summary>
         /// Sounds that play at a constant volume

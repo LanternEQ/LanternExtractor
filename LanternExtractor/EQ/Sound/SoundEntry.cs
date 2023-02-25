@@ -7,7 +7,6 @@
     /// </summary>
     public class SoundEntry
     {
-        public EmissionType EmissionType { get; set; }
         public int UnkRef00 { get; set; }
         public int UnkRef04 { get; set; }
         public int Reserved { get; set; }
@@ -32,5 +31,16 @@
         public int UnkRange72 { get; set; }
         public int FullVolRange { get; set; }
         public int UnkRange80 { get; set; }
+    }
+
+    public class MusicData
+    {
+        public float PosX { get; set; }
+        public float PosY { get; set; }
+        public float PosZ { get; set; }
+        public float Radius { get; set; }
+        public int LoopCountDay { get; set; }
+        public int LoopCountNight { get; set; }
+        public int FadeOutMs { get; set; }
     }
 }
