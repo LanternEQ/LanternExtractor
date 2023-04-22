@@ -30,7 +30,7 @@ namespace LanternExtractor.EQ
 
             if (settings.RawS3dExtract)
             {
-                s3dArchive.WriteAllFiles(Path.Combine(rootFolder + shortName, archiveName));
+                s3dArchive.WriteAllFiles(Path.Combine(rootFolder, archiveName));
                 return;
             }
 
