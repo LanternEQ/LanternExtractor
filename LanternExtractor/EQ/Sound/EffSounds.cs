@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -13,18 +13,15 @@ namespace LanternExtractor.EQ.Sound
     /// </summary>
     public class EffSounds
     {
+        public static int EntryLengthInBytes = 84;
+
         /// <summary>
         /// The sound bank referenced for sound names
         /// </summary>
         private readonly EffSndBnk _soundBank;
-
+        
         private readonly string _soundFilePath;
-
-        private readonly List<SoundEntry> _soundEntries = new List<SoundEntry>();
-
-        private readonly List<string> _musicTrackEntries = new List<string>();
-
-        private const int EntryLengthInBytes = 84;
+        private readonly List<AudioInstance> _audioInstances = new List<AudioInstance>();
 
         public EffSounds(string soundFilePath, EffSndBnk soundBank)
         {
@@ -53,95 +50,65 @@ namespace LanternExtractor.EQ.Sound
 
             for (int i = 0; i < entryCount; ++i)
             {
-                var newSound = new SoundEntry
-                {
-                    UnkRef00 = reader.ReadInt32(),
-                    UnkRef04 = reader.ReadInt32(),
-                    Reserved = reader.ReadInt32(),
-                    Sequence = reader.ReadInt32(),
-                    PosX = reader.ReadSingle(),
-                    PosY = reader.ReadSingle(),
-                    PosZ = reader.ReadSingle(),
-                    Radius = reader.ReadSingle(),
-                    CooldownDay = reader.ReadInt32(),
-                    CooldownNight = reader.ReadInt32(),
-                    RandomDelay = reader.ReadInt32(),
-                    Unk44 = reader.ReadInt32(),
-                    SoundIdDay = reader.ReadInt32(),
-                    SoundIdNight = reader.ReadInt32(),
-                    SoundType = (SoundType)reader.ReadByte(),
-                    UnkPad57 = reader.ReadByte(),
-                    UnkPad58 = reader.ReadByte(),
-                    UnkPad59 = reader.ReadByte(),
-                    AsDistance = reader.ReadInt32(),
-                    UnkRange64 = reader.ReadInt32(),
-                    FadeOutMs = reader.ReadInt32(),
-                    UnkRange72 = reader.ReadInt32(),
-                    FullVolRange = reader.ReadInt32(),
-                    UnkRange80 = reader.ReadInt32()
-                };
-                
-                _soundEntries.Add(newSound);
+                var basePosition = EntryLengthInBytes * i;
+                reader.BaseStream.Position = basePosition + 16;
+                float posX = reader.ReadSingle();
+                float posY = reader.ReadSingle();
+                float posZ = reader.ReadSingle();
+                float radius = reader.ReadSingle();
 
-                if (newSound.SoundType == SoundType.Music && newSound.FullVolRange != 1000 && newSound.FullVolRange != 0)
+                reader.BaseStream.Position = basePosition + 56;
+
+                var typeByte = reader.ReadByte();
+
+                if (!Enum.IsDefined(typeof(AudioType), typeByte))
                 {
-                    
+                    logger.LogError($"Unable to parse sound type: {typeByte}");
+                    continue;
+                }
+
+                var type = (AudioType)typeByte;
+                reader.BaseStream.Position = basePosition + 48;
+                int soundId1 = reader.ReadInt32();
+
+                if (type == AudioType.Music)
+                {
+                    int soundId2 = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 60;
+                    int loopCountDay = reader.ReadInt32();
+                    int loopCountNight = reader.ReadInt32();
+                    int fadeOutMs = reader.ReadInt32();
+                    var musicInstance = new MusicInstance(type, posX, posY, posZ, radius, soundId1, soundId2,
+                        loopCountDay, loopCountNight, fadeOutMs);
+                    _audioInstances.Add(musicInstance);
+                }
+                else if (type == AudioType.Sound2d)
+                {
+                    int soundId2 = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 32;
+                    int cooldown1 = reader.ReadInt32();
+                    int cooldown2 = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 60;
+                    int volume = reader.ReadInt32();
+                    var soundInstance = new SoundInstance2d(type, posX, posY, posZ, radius, volume, soundId1, cooldown1,
+                        soundId2, cooldown2);
+                    _audioInstances.Add(soundInstance);
+                }
+                else
+                {
+                    reader.BaseStream.Position = basePosition + 32;
+                    int cooldown1 = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 60;
+                    int volume = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 72;
+                    int multiplier = reader.ReadInt32();
+                    var soundInstance = new SoundInstance3d(type, posX, posY, posZ, radius, volume, soundId1, cooldown1,
+                        multiplier);
+                    _audioInstances.Add(soundInstance);
                 }
             }
-            
-            var writer = new BinaryWriter(file);
-            file.Position = 0;
-            ModifyMusicData(writer);
         }
 
-        private void ModifyMusicData(BinaryWriter writer)
-        {
-            // MUSIC EXPLORATION
-            /*writer.BaseStream.Position = 16;
-            writer.Write(0f);
-            writer.Write(0f);
-            writer.Write(0f);
-            writer.Write(0);
-            writer.BaseStream.Position = 48;
-            writer.Write(0);
-            writer.Write(4);
-            writer.BaseStream.Position = 60; 
-            writer.Write(3);
-            writer.BaseStream.Position = 68;
-            writer.Write(1000);
-            writer.Write(1000);
-            writer.BaseStream.Position = 76;
-            writer.Write(500);
-            writer.BaseStream.Position = 0;
-            var memoryStream = new MemoryStream();
-            writer.BaseStream.CopyTo(memoryStream);
-            File.WriteAllBytes("arena_sounds.eff", memoryStream.ToArray());*/
-            
-            // SOUND EXPLORATION
-            /*writer.BaseStream.Position = 16;
-            writer.Write(0f);
-            writer.Write(0f);
-            writer.Write(0f);
-            writer.Write(0f);
-            writer.BaseStream.Position = 32;
-            writer.Write(0);
-            writer.Write(0);
-            writer.Write(0);
-            writer.BaseStream.Position = 76;
-            writer.Write(100);
-            writer.BaseStream.Position = 0;
-            var memoryStream = new MemoryStream();
-            writer.BaseStream.CopyTo(memoryStream);
-            writer.BaseStream.CopyTo(memoryStream);
-            writer.BaseStream.CopyTo(memoryStream);
-            File.WriteAllBytes("arena_sounds.eff", memoryStream.ToArray());*/
-            
-            // Sound isolation
-            /*var memoryStream = new MemoryStream();
-            writer.BaseStream.CopyTo(memoryStream);
-            File.WriteAllBytes("arena_sounds.eff", memoryStream.ToArray().Skip(14 * EntryLengthInBytes).Take(EntryLengthInBytes).ToArray());*/
-        }
-        
         private string GetSoundName(int soundId)
         {
             var emissionType = GetEmissionType(soundId);
@@ -180,51 +147,43 @@ namespace LanternExtractor.EQ.Sound
             var soundExport = new StringBuilder();
             var musicExport = new StringBuilder();
 
-            foreach (var entry in _soundEntries)
+            foreach (var entry in _audioInstances)
             {
-                if (entry.SoundType == SoundType.Music)
+                if (entry.AudioType == AudioType.Music)
                 {
-                    musicExport.Append(entry.PosX);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.PosZ);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.PosY);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.Radius);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.SoundIdDay);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.SoundIdNight);
-                    musicExport.Append(",");
-                    musicExport.Append(entry.AsDistance); // Day loop count
-                    musicExport.Append(",");
-                    musicExport.Append(entry.UnkRange64); // Night loop count
-                    musicExport.Append(",");
-                    musicExport.Append(entry.FadeOutMs);
-                    musicExport.AppendLine();
+                    var music = entry as MusicInstance;
+                    if (music == null)
+                    {
+                        continue;
+                    }
+
+                    musicExport.AppendLine(string.Join(",", music.PosX, music.PosY, music.PosZ, music.Radius,
+                        music.TrackIndexDay, music.TrackIndexNight, music.LoopCountDay, music.LoopCountNight,
+                        music.FadeOutMs));
+                }
+                else if (entry.AudioType == AudioType.Sound2d)
+                {
+                    var sound2d = entry as SoundInstance2d;
+                    if (sound2d == null)
+                    {
+                        continue;
+                    }
+
+                    soundExport.AppendLine(string.Join(",", (byte)sound2d.AudioType, sound2d.PosX, sound2d.PosY,
+                        sound2d.PosZ, sound2d.Radius, GetSoundName(sound2d.SoundId1), GetSoundName(sound2d.SoundId2),
+                        sound2d.Cooldown1, sound2d.Cooldown2, sound2d.Cooldown2, sound2d.Volume));
                 }
                 else
                 {
-                    soundExport.Append((int)entry.SoundType);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.PosX);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.PosZ);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.PosY);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.Radius);
-                    soundExport.Append(",");
-                    soundExport.Append(GetSoundName(entry.SoundIdDay));
-                    soundExport.Append(",");
-                    soundExport.Append(GetSoundName(entry.SoundIdNight));
-                    soundExport.Append(",");
-                    soundExport.Append(entry.CooldownDay);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.CooldownNight);
-                    soundExport.Append(",");
-                    soundExport.Append(entry.RandomDelay);
-                    soundExport.AppendLine();
+                    var sound3d = entry as SoundInstance3d;
+                    if (sound3d == null)
+                    {
+                        continue;
+                    }
+
+                    soundExport.AppendLine(string.Join(",", (byte)sound3d.AudioType, sound3d.PosX, sound3d.PosY,
+                        sound3d.PosZ, sound3d.Radius, GetSoundName(sound3d.SoundId1), sound3d.Cooldown1, sound3d.Volume,
+                        sound3d.Multiplier));
                 }
             }
 
