@@ -57,8 +57,8 @@ namespace LanternExtractor.EQ.Wld
             {0x08, () => new Camera()},
             {0x09, () => new CameraReference()},
             {0x16, () => new Fragment16()},
-            {0x17, () => new Fragment17()},
-            {0x18, () => new Fragment18()},
+            {0x17, () => new Polyhedron()},
+            {0x18, () => new PolyhedronReference()},
             {0x06, () => new Fragment06()},
             {0x07, () => new Fragment07()},
         };

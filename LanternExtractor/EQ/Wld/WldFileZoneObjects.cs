@@ -1,4 +1,4 @@
-﻿using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -7,16 +7,16 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZoneObjects : WldFile
     {
-        public WldFileZoneObjects(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile wldToInject = null) : base(
+        public WldFileZoneObjects(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile wldToInject = null) : base(
             wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
-        
+
         public override void ExportData()
         {
             ExportObjectInstanceAndVertexColorList();
         }
-        
+
         /// <summary>
         /// Exports the objects instance list (one file per zone) and vertex color lists (one file per object)
         /// </summary>
@@ -29,10 +29,10 @@ namespace LanternExtractor.EQ.Wld
                 _logger.LogWarning("Cannot export object instance list. No object instances found.");
                 return;
             }
-            
+
             ObjectInstanceWriter instanceWriter = new ObjectInstanceWriter();
             VertexColorsWriter colorWriter = new VertexColorsWriter();
-            
+
             string colorsExportFolder = GetRootExportFolder() + "Objects/VertexColors/";
 
             foreach (var instance in instanceList)
@@ -43,12 +43,12 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
+
                 colorWriter.AddFragmentData(instance.Colors);
                 colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Colors.Index + ".txt");
                 colorWriter.ClearExportData();
             }
-            
+
             if (_wldToInject != null)
             {
                 instanceList = _wldToInject.GetFragmentsOfType<ObjectInstance>();
@@ -61,13 +61,13 @@ namespace LanternExtractor.EQ.Wld
                     {
                         continue;
                     }
-                
+
                     colorWriter.AddFragmentData(instance.Colors);
                     colorWriter.WriteAssetToFile(colorsExportFolder + "vc_" + instance.Colors.Index + ".txt");
                     colorWriter.ClearExportData();
                 }
             }
-            
+
             instanceWriter.WriteAssetToFile(GetExportFolderForWldType() + "object_instances.txt");
         }
     }

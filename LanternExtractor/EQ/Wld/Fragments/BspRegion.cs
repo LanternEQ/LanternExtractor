@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using GlmSharp;
+using LanternExtractor.EQ.Wld.DataTypes;
+using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Wld.Fragments
@@ -21,7 +24,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// </summary>
         public Mesh Mesh { get; private set; }
 
+        public LegacyMesh LegacyMesh { get; private set; }
+
         public BspRegionType RegionType { get; private set; }
+
+        public List<vec3> RegionVertices = new List<vec3>();
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
@@ -31,68 +38,214 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Name = stringHash[-Reader.ReadInt32()];
 
             // Flags
-            // 0x181 - Regions with polygons
-            // 0x81 - Regions without
-            // Bit 5 - PVS is WORDS
-            // Bit 7 - PVS is bytes
             int flags = Reader.ReadInt32();
 
-            if (flags == 0x181)
-            {
-                ContainsPolygons = true;
-            }
+            BitAnalyzer ba = new BitAnalyzer(flags);
+            var hasSphere = ba.IsBitSet(0);
+            var hasReverbVolume = ba.IsBitSet(1);
+            var hasReverbOffset = ba.IsBitSet(2);
+            var regionFog = ba.IsBitSet(3);
+            var enableGoraud2 = ba.IsBitSet(4);
+            var encodedVisibility = ba.IsBitSet(5);
+            var hasLegacyMeshReference = ba.IsBitSet(6);
+            var hasByteEntries = ba.IsBitSet(7);
+            var hasMeshReference = ba.IsBitSet(8);
+
+            ContainsPolygons = hasMeshReference || hasLegacyMeshReference;
 
             // Always 0
-            int unknown1 = Reader.ReadInt32();
-            int data1Size = Reader.ReadInt32();
-            int data2Size = Reader.ReadInt32();
+            int ambientLight = Reader.ReadInt32();
+            int numRegionVertex = Reader.ReadInt32();
+            int numProximalRegions = Reader.ReadInt32();
 
             // Always 0
-            int unknown2 = Reader.ReadInt32();
-            int data3Size = Reader.ReadInt32();
-            int data4Size = Reader.ReadInt32();
+            int numRenderVertices = Reader.ReadInt32();
+            int numWalls = Reader.ReadInt32();
+            int numObstacles = Reader.ReadInt32();
 
             // Always 0
-            int unknown3 = Reader.ReadInt32();
-            int data5Size = Reader.ReadInt32();
-            int data6Size = Reader.ReadInt32();
+            int numCuttingObstacles = Reader.ReadInt32();
+            int numVisNode = Reader.ReadInt32();
+            int numVisList = Reader.ReadInt32();
 
-            // Move past data1 and 2
-            Reader.BaseStream.Position += 12 * data1Size + 12 * data2Size;
-
-            // Move past data3
-            for (int i = 0; i < data3Size; ++i)
+            for (int i = 0; i < numRegionVertex; i++)
             {
-                int data3Flags = Reader.ReadInt32();
-                int data3Size2 = Reader.ReadInt32();
-                Reader.BaseStream.Position += data3Size2 * 4;
+                RegionVertices.Add(new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle()));
             }
 
-            // Move past the data 4
-            for (int i = 0; i < data4Size; ++i)
+            var proximalRegions = new List<(int, float)>();
+            for (int i = 0; i < numProximalRegions; i++)
             {
-                // Unhandled for now
+                proximalRegions.Add((Reader.ReadInt32(), Reader.ReadSingle()));
             }
 
-            // Move past the data5
-            for (int i = 0; i < data5Size; i++)
+            var renderVertices = new List<vec3>();
+            for (int i = 0; i < numRenderVertices; i++)
             {
-                Reader.BaseStream.Position += 7 * 4;
+                renderVertices.Add(new vec3(Reader.ReadSingle(), Reader.ReadSingle(), Reader.ReadSingle()));
             }
 
-            // Get the size of the PVS and allocate memory
-            short pvsSize = Reader.ReadInt16();
-            Reader.BaseStream.Position += pvsSize;
+            var walls = new List<RegionWall>();
+            for (int i = 0; i < numWalls; i++)
+            {
+                var wall = new RegionWall();
 
-            // Move past the unknowns 
-            uint bytes = Reader.ReadUInt32();
-            Reader.BaseStream.Position += 16;
+                wall.Flags = Reader.ReadInt32();
+                var wallBa = new BitAnalyzer(wall.Flags);
+                var isFloor = wallBa.IsBitSet(0);
+                var isRenderable = wallBa.IsBitSet(1);
+
+                wall.NumVertices = Reader.ReadInt32();
+                wall.VertexList = new List<int>();
+                for (int v = 0; v <  wall.NumVertices; v++)
+                {
+                    wall.VertexList.Add(Reader.ReadInt32());
+                }
+
+                if (isRenderable)
+                {
+                    wall.RenderMethod = new RenderMethod
+                    {
+                        Flags = Reader.ReadInt32()
+                    };
+
+                    wall.RenderInfo = RenderInfo.Parse(Reader, fragments);
+                    wall.NormalAbcd = new vec4(
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle()
+                    );
+                }
+
+                walls.Add(wall);
+            }
+
+            var obstacles = new List<RegionObstacle>();
+            for (int i = 0; i < numObstacles; i++)
+            {
+                var obstacle = new RegionObstacle();
+                obstacle.Flags = Reader.ReadInt32();
+
+                var obstacleBa = new BitAnalyzer(obstacle.Flags);
+                var isFloor = obstacleBa.IsBitSet(0);
+                var isGeometryCutting = obstacleBa.IsBitSet(1);
+                var hasUserData = obstacleBa.IsBitSet(2);
+
+                obstacle.NextRegion = Reader.ReadInt32();
+                obstacle.ObstacleType = (RegionObstacleType) Reader.ReadInt32();
+
+                if (obstacle.ObstacleType == RegionObstacleType.EdgePolygon ||
+                    obstacle.ObstacleType == RegionObstacleType.EdgePolygonNormalAbcd)
+                {
+                    obstacle.NumVertices = Reader.ReadInt32();
+                }
+
+                obstacle.VertextList = new List<int>();
+                for (int v = 0; v < obstacle.NumVertices; v++)
+                {
+                    obstacle.VertextList.Add(Reader.ReadInt32());
+                }
+
+                if (obstacle.ObstacleType == RegionObstacleType.EdgePolygonNormalAbcd)
+                {
+                    obstacle.NormalAbcd = new vec4(
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle()
+                    );
+                }
+
+                if (obstacle.ObstacleType == RegionObstacleType.EdgeWall)
+                {
+                    obstacle.EdgeWall = Reader.ReadInt32();
+                }
+
+                if (hasUserData)
+                {
+                    obstacle.UserDataSize = Reader.ReadInt32();
+                    obstacle.UserData = Reader.ReadBytes(obstacle.UserDataSize);
+                }
+
+                obstacles.Add(obstacle);
+            }
+
+            var visNodes = new List<RegionVisNode>();
+            for (int i = 0; i < numVisNode; i++)
+            {
+                var visNode = new RegionVisNode
+                {
+                    NormalAbcd = new vec4(
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle(),
+                        Reader.ReadSingle()
+                    ),
+                    VisListIndex = Reader.ReadInt32(),
+                    FrontTree = Reader.ReadInt32(),
+                    BackTree = Reader.ReadInt32()
+                };
+                visNodes.Add(visNode);
+            }
+
+            var visLists = new List<RegionVisList>();
+            for (int i = 0; i < numVisList; i++)
+            {
+                var visList = new RegionVisList
+                {
+                    RangeCount = Reader.ReadInt16()
+                };
+
+                visList.Ranges = new List<int>();
+                for (int r = 0; r < visList.RangeCount; r++)
+                {
+                    int range = hasByteEntries ? Reader.ReadByte() : Reader.ReadInt16();
+                    visList.Ranges.Add(range);
+                }
+
+                visLists.Add(visList);
+            }
+
+            vec4 sphere;
+            if (hasSphere)
+            {
+                sphere = new vec4(
+                    Reader.ReadSingle(),
+                    Reader.ReadSingle(),
+                    Reader.ReadSingle(),
+                    Reader.ReadSingle()
+                );
+            }
+
+            float reverbVolume;
+            if (hasReverbVolume)
+            {
+                reverbVolume = Reader.ReadSingle();
+            }
+
+            int reverbOffset;
+            if (hasReverbOffset)
+            {
+                reverbOffset = Reader.ReadInt32();
+            }
+
+            var userDataSize = Reader.ReadInt32();
+            var userData = Reader.ReadBytes(userDataSize);
 
             // Get the mesh reference index and link to it
             if (ContainsPolygons)
             {
                 int meshReference = Reader.ReadInt32() - 1;
-                Mesh = fragments[meshReference] as Mesh;
+
+                if (hasMeshReference)
+                {
+                    Mesh = fragments[meshReference] as Mesh;
+                }
+                else if (hasLegacyMeshReference)
+                {
+                    LegacyMesh = fragments[meshReference] as LegacyMesh;
+                }
             }
         }
 
@@ -109,7 +262,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (ContainsPolygons)
             {
-                logger.LogInfo("BspRegion: Mesh index: " + Mesh.Index);
+                int meshIndex = Mesh?.Index ?? LegacyMesh?.Index ?? 0;
+                logger.LogInfo("BspRegion: Mesh index: " + meshIndex);
             }
         }
     }

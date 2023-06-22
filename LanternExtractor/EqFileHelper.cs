@@ -45,15 +45,15 @@ namespace LanternExtractor
             if (archiveName == "all")
             {
                 validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && !s.Contains("chequip") &&
+                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs") || s.EndsWith(".t3d")) && !s.Contains("chequip") &&
                                 !s.EndsWith("_lit.s3d")).ToList();
             }
             else if (archiveName == "equipment")
             {
                 validFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories)
-                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs")) && s.Contains("gequip")).ToList();
+                    .Where(s => (s.EndsWith(".s3d") || s.EndsWith(".pfs") || s.EndsWith(".t3d")) && s.Contains("gequip")).ToList();
             }
-            else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
+            else if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs") || archiveName.EndsWith(".t3d"))
             {
                 string archivePath = directory + archiveName;
 
@@ -65,7 +65,7 @@ namespace LanternExtractor
             else
             {
                 // If it's the shortname of a PFS file, we assume it's standalone - used for sound files
-                string archivePath = directory + archiveName + ".pfs";
+                string archivePath = directory + archiveName + LanternStrings.PfsFormatExtension;
 
                 if (File.Exists(archivePath))
                 {
@@ -74,8 +74,14 @@ namespace LanternExtractor
                     return validFiles;
                 }
 
+                var archiveExtension = LanternStrings.S3dFormatExtension;
+                if (Directory.EnumerateFiles(directory, $"*{LanternStrings.T3dFormatExtension}", SearchOption.AllDirectories).Any())
+                {
+                    archiveExtension = LanternStrings.T3dFormatExtension;
+                }
+
                 // Try and find all associated files with the shortname - can theoretically be a non zone file
-                string mainArchivePath = directory + archiveName + ".s3d";
+                string mainArchivePath = directory + archiveName + archiveExtension;
                 if (File.Exists(mainArchivePath))
                 {
                     validFiles.Add(mainArchivePath);
@@ -83,19 +89,19 @@ namespace LanternExtractor
 
                 // Some zones have additional object archives for things added past their initial release
                 // None of them contain fragments that are linked to other related archives.
-                string extensionObjectsArchivePath = directory + archiveName + "_2_obj.s3d";
+                string extensionObjectsArchivePath = directory + archiveName + "_2_obj" + archiveExtension;
                 if (File.Exists(extensionObjectsArchivePath))
                 {
                     validFiles.Add(extensionObjectsArchivePath);
                 }
 
-                string objectsArchivePath = directory + archiveName + "_obj.s3d";
+                string objectsArchivePath = directory + archiveName + "_obj" + archiveExtension;
                 if (File.Exists(objectsArchivePath))
                 {
                     validFiles.Add(objectsArchivePath);
                 }
 
-                string charactersArchivePath = directory + archiveName + "_chr.s3d";
+                string charactersArchivePath = directory + archiveName + "_chr" + archiveExtension;
                 if (File.Exists(charactersArchivePath))
                 {
                     validFiles.Add(charactersArchivePath);
@@ -104,7 +110,7 @@ namespace LanternExtractor
                 // Some zones have additional character archives for things added past their initial release
                 // None of them contain fragments that are linked to other related archives.
                 // "qeynos" must be excluded because both qeynos and qeynos2 are used as shortnames
-                string extensionCharactersArchivePath = directory + archiveName + "2_chr.s3d";
+                string extensionCharactersArchivePath = directory + archiveName + "2_chr" + archiveExtension;
                 if (File.Exists(extensionCharactersArchivePath) && archiveName != "qeynos")
                 {
                     validFiles.Add(extensionCharactersArchivePath);
@@ -112,6 +118,19 @@ namespace LanternExtractor
             }
 
             return validFiles;
+        }
+
+        public static string ObjArchivePath(string archivePath)
+        {
+            var baseExt = Path.GetExtension(archivePath);
+            var lastDotIndex = archivePath.LastIndexOf('.');
+
+            if (lastDotIndex >= 0)
+            {
+                return $"{archivePath.Substring(0, lastDotIndex)}_obj{baseExt}";
+            }
+
+            return archivePath;
         }
     }
 }
