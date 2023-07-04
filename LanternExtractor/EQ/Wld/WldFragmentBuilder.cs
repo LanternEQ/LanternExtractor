@@ -23,6 +23,7 @@ namespace LanternExtractor.EQ.Wld
             // Meshes
             {0x36, () => new Mesh()},
             {0x37, () => new MeshAnimatedVertices()},
+            {0x2E, () => new LegacyMeshAnimatedVertices()},
             {0x2F, () => new MeshAnimatedVerticesReference()},
             {0x2D, () => new MeshReference()},
             {0x2C, () => new LegacyMesh()},

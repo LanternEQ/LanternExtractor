@@ -26,6 +26,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public MaterialList MaterialList;
         public PolyhedronReference PolyhedronReference;
         public Dictionary<int, MobVertexPiece> MobPieces { get; private set; }
+        /// <summary>
+        /// The animated vertex fragment (0x2E or 0x37) reference
+        /// </summary>
+        public MeshAnimatedVerticesReference AnimatedVerticesReference { get; private set; }
 
         /// <summary>
         /// Set to true if there are non solid polygons in the mesh
@@ -62,7 +66,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int fragment1maybe = Reader.ReadInt16();
             int vertexPieceCount = Reader.ReadInt32(); // -1
             MaterialList = fragments[Reader.ReadInt32() - 1] as MaterialList;
-            int fragment3 = Reader.ReadInt32();
+            int meshAnimation = Reader.ReadInt32();
+
+            // Vertex animation only
+            if (meshAnimation != 0)
+            {
+                AnimatedVerticesReference = fragments[meshAnimation - 1] as MeshAnimatedVerticesReference;
+            }
+
             float something1 = Reader.ReadSingle();
 
             // This might also be able to take a sphere (0x16) or sphere list (0x1a) collision volume
@@ -227,6 +238,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             // TODO: Research: Instead of controlling the presence, the fields might be zeroed if the bit isn't set
             // in highkeep, seems to only be set on HANGLANT, TIKI, TORCHPOINT (but not on brazier1)
+            // I think this might be the position of the lightdef; for a light pole the third float is like 7.66 which seems like a reasonable height
             if (ba.IsBitSet(13))
             {
                 var params3_1 = Reader.ReadSingle();

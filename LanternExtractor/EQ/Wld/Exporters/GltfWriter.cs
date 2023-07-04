@@ -81,13 +81,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
              "p03", // rotating
              "p06", // swim
              "p07", // sitting
-             "p08", // stand (arms at sides) 
+             "p08", // stand (arms at sides)
              "sky"
         };
 
         private static readonly Matrix4x4 MirrorXAxisMatrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
         private static readonly Matrix4x4 CorrectedWorldMatrix = MirrorXAxisMatrix * Matrix4x4.CreateScale(0.1f);
-        
+
         private SceneBuilder _scene;
         private IMeshBuilder<MaterialBuilder> _combinedMeshBuilder;
         private ISet<string> _meshMaterialsToSkip;
@@ -110,7 +110,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public override void AddFragmentData(WldFragment fragment)
         {
             AddFragmentData(
-                mesh:(Mesh)fragment, 
+                mesh:(Mesh)fragment,
                 generationMode:ModelGenerationMode.Separate );
         }
 
@@ -123,10 +123,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             AddFragmentData(
-                mesh: mesh, 
-                generationMode: ModelGenerationMode.Combine, 
-                isSkinned: true, 
-                meshNameOverride: meshNameOverride, 
+                mesh: mesh,
+                generationMode: ModelGenerationMode.Combine,
+                isSkinned: true,
+                meshNameOverride: meshNameOverride,
                 singularBoneIndex: singularBoneIndex);
         }
 
@@ -167,7 +167,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
 
                     var imagePath = $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}";
-                    
+
                     ImageBuilder imageBuilder;
                     if (ShaderTypesThatNeedAlphaAddedToImage.Contains(eqMaterial.ShaderType))
                     {
@@ -187,7 +187,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         var imageName = Path.GetFileNameWithoutExtension(imagePath);
                         imageBuilder = ImageBuilder.From(new MemoryImage(imagePath), imageName);
                     }
-                    
+
                     var gltfMaterial = new MaterialBuilder(materialName)
                         .WithDoubleSide(false)
                         .WithMetallicRoughnessShader()
@@ -235,13 +235,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
         }
 
         public void AddFragmentData(
-            Mesh mesh, 
-            ModelGenerationMode generationMode, 
-            bool isSkinned = false, 
+            Mesh mesh,
+            ModelGenerationMode generationMode,
+            bool isSkinned = false,
             string meshNameOverride = null,
-            int singularBoneIndex = -1, 
-            ObjectInstance objectInstance = null, 
-            int instanceIndex = 0, 
+            int singularBoneIndex = -1,
+            ObjectInstance objectInstance = null,
+            int instanceIndex = 0,
             bool isZoneMesh = false)
         {
             var meshName = meshNameOverride ?? FragmentNameCleaner.CleanName(mesh);
@@ -251,8 +251,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var canExportVertexColors = _exportVertexColors &&
                 ((objectInstance?.Colors?.Colors != null && objectInstance.Colors.Colors.Any())
                 || (mesh?.Colors != null && mesh.Colors.Any()));
-            
-            if (mesh.AnimatedVerticesReference != null && !canExportVertexColors && objectInstance != null && 
+
+            if (mesh.AnimatedVerticesReference != null && !canExportVertexColors && objectInstance != null &&
                 _sharedMeshes.TryGetValue(meshName, out var existingMesh))
             {
                 if (generationMode == ModelGenerationMode.Separate)
@@ -284,7 +284,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             // Keeping track of vertex indexes for each vertex position in case it's an
             // animated mesh so we can create morph targets later
             var gltfVertexPositionToWldVertexIndex = new Dictionary<VertexPositionNormal, int>();
-            
+
             var polygonIndex = 0;
             foreach (var materialGroup in mesh.MaterialGroups)
             {
@@ -338,7 +338,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     _scene.AddRigidMesh(gltfMesh, transformMatrix);
                     _sharedMeshes[meshName] = gltfMesh;
-                }              
+                }
             }
         }
 
@@ -355,9 +355,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var poseArray = isCharacterAnimation
                 ? skeleton.Animations[DefaultModelPoseAnimationKey].TracksCleanedStripped
                 : skeleton.Animations[DefaultModelPoseAnimationKey].TracksCleaned;
-            
+
             if (poseArray == null) return;
-            
+
             for (var i = 0; i < skeleton.Skeleton.Count; i++)
             {
                 var boneName = isCharacterAnimation
@@ -396,9 +396,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
         }
 
         public void AddCombinedMeshToScene(
-            bool isZoneMesh = false, 
-            string meshName = null, 
-            string skeletonModelBase = null, 
+            bool isZoneMesh = false,
+            string meshName = null,
+            string skeletonModelBase = null,
             ObjectInstance objectInstance = null)
         {
             IMeshBuilder<MaterialBuilder> combinedMesh;
@@ -625,7 +625,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             return (VertexBuilder<TvG, TvM, TvS>)vertexBuilder;
         }
 
-        private (Vector4 v0, Vector4 v1, Vector4 v2) GetVertexColorVectors(Mesh mesh, 
+        private (Vector4 v0, Vector4 v1, Vector4 v2) GetVertexColorVectors(Mesh mesh,
             (int v0, int v1, int v2) vertexIndices, ObjectInstance objectInstance = null)
         {
             var objInstanceColors = objectInstance?.Colors?.Colors ?? new List<WldColor>();
@@ -659,11 +659,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             var frameTimes = new List<float>();
             var weights = new List<float>();
-            var frameDelay = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Delay/1000f;
+            var animatedVertices = mesh.AnimatedVerticesReference.GetAnimatedVertices();
+            var frameDelay = animatedVertices.Delay/1000f;
 
-            for (var frame = 0; frame < mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count; frame++)
+            for (var frame = 0; frame < animatedVertices.Frames.Count; frame++)
             {
-                var vertexPositionsForFrame = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[frame];
+                var vertexPositionsForFrame = animatedVertices.Frames[frame];
                 var morphTarget = gltfMesh.UseMorphTarget(frame);
 
                 foreach (var vertexGeometry in gltfVertexPositionToWldVertexIndex.Keys)
@@ -720,7 +721,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             return skeletonNodes;
         }
 
-        private void ApplyBoneTransformation(NodeBuilder boneNode, DataTypes.BoneTransform boneTransform, 
+        private void ApplyBoneTransformation(NodeBuilder boneNode, DataTypes.BoneTransform boneTransform,
             string animationKey, int timeMs, bool staticPose)
         {
             var scaleVector = new Vector3(boneTransform.Scale);

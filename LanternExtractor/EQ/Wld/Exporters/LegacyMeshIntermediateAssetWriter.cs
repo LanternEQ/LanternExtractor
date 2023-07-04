@@ -1,4 +1,5 @@
 ﻿using System;
+using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -161,6 +162,32 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export.Append(",");
                 _export.Append(bone.Value.Count);
                 _export.AppendLine();
+            }
+
+            var animatedVertices = am.AnimatedVerticesReference?.GetAnimatedVertices();
+            if (animatedVertices != null && !_isCollisionMesh)
+            {
+                _export.Append("ad");
+                _export.Append(",");
+                _export.Append(animatedVertices.Delay);
+                _export.AppendLine();
+
+                for (var i = 0; i < animatedVertices.Frames.Count; i++)
+                {
+                    foreach (vec3 position in animatedVertices.Frames[i])
+                    {
+                        _export.Append("av");
+                        _export.Append(",");
+                        _export.Append(i);
+                        _export.Append(",");
+                        _export.Append(position.x + am.Center.x);
+                        _export.Append(",");
+                        _export.Append(position.z + am.Center.z);
+                        _export.Append(",");
+                        _export.Append(position.y + am.Center.y);
+                        _export.AppendLine();
+                    }
+                }
             }
 
             if (!_useGroups)
