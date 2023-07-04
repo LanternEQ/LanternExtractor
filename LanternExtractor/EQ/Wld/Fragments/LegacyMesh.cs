@@ -123,7 +123,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int flag = Reader.ReadInt16();
 
                 int unk1 = Reader.ReadInt16();
-                int materialIndexMaybe = Reader.ReadInt16();
+                int materialIndex = Reader.ReadInt16();
                 int unk3 = Reader.ReadInt16();
                 int unk4 = Reader.ReadInt16();
 
@@ -135,7 +135,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     IsSolid = true,
                     Vertex1 = i1,
                     Vertex2 = i2,
-                    Vertex3 = i3
+                    Vertex3 = i3,
+                    MaterialIndex = materialIndex
                 });
             }
 

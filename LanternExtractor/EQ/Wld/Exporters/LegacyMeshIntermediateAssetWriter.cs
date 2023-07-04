@@ -35,8 +35,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            int currentPolygon = 0;
-
             if (_isCollisionMesh && am.PolyhedronReference != null)
             {
                 var polyhedron = am.PolyhedronReference.Polyhedron;
@@ -114,7 +112,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 _export.AppendLine();
             }
 
-            currentPolygon = 0;
+            int currentPolygon = 0;
             for (var i = 0; i < am.RenderGroups.Count; i++)
             {
                 var renderGroup = am.RenderGroups[i];
@@ -126,6 +124,23 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append("i");
                     _export.Append(",");
                     _export.Append(renderGroup.MaterialIndex);
+                    _export.Append(",");
+                    _export.Append(_currentBaseIndex + polygon.Vertex1);
+                    _export.Append(",");
+                    _export.Append(_currentBaseIndex + polygon.Vertex2);
+                    _export.Append(",");
+                    _export.Append(_currentBaseIndex + polygon.Vertex3);
+                    _export.AppendLine();
+                }
+            }
+
+            if (am.RenderGroups.Count == 0)
+            {
+                foreach (var polygon in am.Polygons)
+                {
+                    _export.Append("i");
+                    _export.Append(",");
+                    _export.Append(polygon.MaterialIndex);
                     _export.Append(",");
                     _export.Append(_currentBaseIndex + polygon.Vertex1);
                     _export.Append(",");
