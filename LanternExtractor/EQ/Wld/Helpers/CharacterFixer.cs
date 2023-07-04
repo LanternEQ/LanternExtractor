@@ -29,6 +29,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
             FixBlackAndWhiteDragon();
             FixGhoulTextures();
             FixHalasFemale();
+            FixBetaBeetle();
             FixHighpassMale();
         }
 
@@ -387,6 +388,29 @@ namespace LanternExtractor.EQ.Wld.Helpers
             RenameBone(skeleton, 7, "bi_l");
             RenameBone(skeleton, 10, "l_point");
             RenameBone(skeleton, 15, "head_point");
+        }
+
+        /// <summary>
+        /// Early beta beetles have SPI named bones
+        /// </summary>
+        private void FixBetaBeetle()
+        {
+            var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("BET_HS_DEF");
+
+            if (skeleton == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < skeleton.Skeleton.Count; i++)
+            {
+                var bone = skeleton.Skeleton[i];
+                var boneName = bone.CleanedName;
+                if (boneName.StartsWith("spi"))
+                {
+                    RenameBone(skeleton, i, boneName.Substring(3));
+                }
+            }
         }
 
         /// <summary>
