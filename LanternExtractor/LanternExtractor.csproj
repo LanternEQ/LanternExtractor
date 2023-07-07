@@ -1,178 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{00229605-0107-4EEE-B523-9982A7738572}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>LanternExtractor</RootNamespace>
-    <AssemblyName>LanternExtractor</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net6.0</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <LangVersion>7</LangVersion>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <NoWarn>CA1416</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '6.0'))">
+    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup Condition="!$([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '6.0'))">
+    <Arch>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)</Arch>
+    <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(Windows))' ">win-$(Arch.ToLower())</RuntimeIdentifier>
+    <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(Linux))' ">linux-$(Arch.ToLower())</RuntimeIdentifier>
+    <RuntimeIdentifier Condition=" '$([MSBuild]::IsOSPlatform(OSX))' ">osx-$(Arch.ToLower())</RuntimeIdentifier>
   </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="mscorlib" />
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.IO.Compression.FileSystem" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="EqFileHelper.cs" />
-    <Compile Include="EQ\ArchiveExtractor.cs" />
-    <Compile Include="EQ\MusicCopier.cs" />
-    <Compile Include="EQ\Pfs\PfsArchive.cs" />
-    <Compile Include="EQ\Pfs\PfsFile.cs" />
-    <Compile Include="EQ\ShortnameHelper.cs" />
-    <Compile Include="EQ\Sound\ClientSounds.cs" />
-    <Compile Include="EQ\Sound\EffSndBnk.cs" />
-    <Compile Include="EQ\Sound\EffSounds.cs" />
-    <Compile Include="EQ\Sound\EmissionType.cs" />
-    <Compile Include="EQ\Sound\SoundConstants.cs" />
-    <Compile Include="EQ\Sound\AudioInstance.cs" />
-    <Compile Include="EQ\Sound\AudioType.cs" />
-    <Compile Include="EQ\ClientDataCopier.cs" />
-    <Compile Include="EQ\Sound\SoundTest.cs" />
-    <Compile Include="EQ\Wld\DataTypes\ActorType.cs" />
-    <Compile Include="EQ\Wld\DataTypes\Animation.cs" />
-    <Compile Include="EQ\Wld\DataTypes\BoneTransform.cs" />
-    <Compile Include="EQ\Wld\DataTypes\BspNode.cs" />
-    <Compile Include="EQ\Wld\DataTypes\Color.cs" />
-    <Compile Include="EQ\Wld\DataTypes\MaterialType.cs" />
-    <Compile Include="EQ\Wld\DataTypes\MobVertexPiece.cs" />
-    <Compile Include="EQ\Wld\DataTypes\ObjExportType.cs" />
-    <Compile Include="EQ\Wld\DataTypes\Polygon.cs" />
-    <Compile Include="EQ\Wld\DataTypes\RegionType.cs" />
-    <Compile Include="EQ\Wld\DataTypes\RenderGroup.cs" />
-    <Compile Include="EQ\Wld\DataTypes\SkeletonBone.cs" />
-    <Compile Include="EQ\Wld\DataTypes\ZonelineInfo.cs" />
-    <Compile Include="EQ\Wld\DataTypes\ZonelineType.cs" />
-    <Compile Include="EQ\Wld\Exporters\ActorGltfExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ActorWriterNew.cs" />
-    <Compile Include="EQ\Wld\Exporters\ActorWriterNewGlobal.cs" />
-    <Compile Include="EQ\Wld\Exporters\GltfWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\LegacyMeshIntermediateAssetWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\AnimationWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\BspTreeWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\AmbientLightColorWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\LightInstancesWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ActorWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ActorObjExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ParticleSystemWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\SkeletonHierarchyWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshIntermediateAssetWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshIntermediateMaterialsExporter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshObjMtlWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\ObjectInstanceWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\MeshObjWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\TextAssetWriter.cs" />
-    <Compile Include="EQ\Wld\Exporters\VertexColorsWriter.cs" />
-    <Compile Include="EQ\Wld\Fragments\LegacyMesh.cs" />
-    <Compile Include="EQ\Wld\Fragments\AmbientLight.cs" />
-    <Compile Include="EQ\Wld\Fragments\BitmapName.cs" />
-    <Compile Include="EQ\Wld\Fragments\BspRegion.cs" />
-    <Compile Include="EQ\Wld\Fragments\BspTree.cs" />
-    <Compile Include="EQ\Wld\Fragments\Camera.cs" />
-    <Compile Include="EQ\Wld\Fragments\CameraReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\GlobalAmbientLight.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment06.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment07.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment17.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment18.cs" />
-    <Compile Include="EQ\Wld\Fragments\ParticleSprite.cs" />
-    <Compile Include="EQ\Wld\Fragments\ParticleSpriteReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\ParticleCloud.cs" />
-    <Compile Include="EQ\Wld\Fragments\MeshAnimatedVerticesReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\Generic.cs" />
-    <Compile Include="EQ\Wld\Fragments\LightInstance.cs" />
-    <Compile Include="EQ\Wld\Fragments\LightSourceReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\LightSource.cs" />
-    <Compile Include="EQ\Wld\Fragments\Mesh.cs" />
-    <Compile Include="EQ\Wld\Fragments\MeshAnimatedVertices.cs" />
-    <Compile Include="EQ\Wld\Fragments\MeshReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\Actor.cs" />
-    <Compile Include="EQ\Wld\Fragments\ObjectInstance.cs" />
-    <Compile Include="EQ\Wld\Fragments\BspRegionType.cs" />
-    <Compile Include="EQ\Wld\Fragments\TrackFragment.cs" />
-    <Compile Include="EQ\Wld\Fragments\TrackDefFragment.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonHierarchy.cs" />
-    <Compile Include="EQ\Wld\Fragments\SkeletonHierarchyReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\Material.cs" />
-    <Compile Include="EQ\Wld\Fragments\BitmapInfo.cs" />
-    <Compile Include="EQ\Wld\Fragments\BitmapInfoReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\MaterialList.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColors.cs" />
-    <Compile Include="EQ\Wld\Fragments\VertexColorsReference.cs" />
-    <Compile Include="EQ\Wld\Fragments\WldFragment.cs" />
-    <Compile Include="EQ\Wld\Fragments\Fragment16.cs" />
-    <Compile Include="EQ\Wld\Helpers\FragmentNameCleaner.cs" />
-    <Compile Include="EQ\Wld\Helpers\CharacterFixer.cs" />
-    <Compile Include="EQ\Wld\Helpers\MaterialFixer.cs" />
-    <Compile Include="EQ\Wld\Helpers\MeshExportHelper.cs" />
-    <Compile Include="EQ\Wld\Helpers\MissingTextureFixer.cs" />
-    <Compile Include="EQ\Wld\ShaderType.cs" />
-    <Compile Include="EQ\Wld\WldFile.cs" />
-    <Compile Include="EQ\Wld\WldFileCharacters.cs" />
-    <Compile Include="EQ\Wld\WldFileLights.cs" />
-    <Compile Include="EQ\Wld\WldFileEquipment.cs" />
-    <Compile Include="EQ\Wld\WldFileZone.cs" />
-    <Compile Include="EQ\Wld\WldFileZoneObjects.cs" />
-    <Compile Include="EQ\Wld\WldFragmentBuilder.cs" />
-    <Compile Include="EQ\Wld\WldIdentifier.cs" />
-    <Compile Include="EQ\Wld\WldModifier.cs" />
-    <Compile Include="EQ\Wld\WldStringDecoder.cs" />
-    <Compile Include="EQ\Wld\WldType.cs" />
-    <Compile Include="Infrastructure\BitAnalyzer.cs" />
-    <Compile Include="Infrastructure\FileWriter.cs" />
-    <Compile Include="Infrastructure\ImageWriter.cs" />
-    <Compile Include="Infrastructure\Logger\ConsoleLogger.cs" />
-    <Compile Include="Infrastructure\Logger\EmptyLogger.cs" />
-    <Compile Include="Infrastructure\Logger\ILogger.cs" />
-    <Compile Include="Infrastructure\Logger\LogVerbosity.cs" />
-    <Compile Include="Infrastructure\Logger\TextFileLogger.cs" />
-    <Compile Include="Infrastructure\SoundWriter.cs" />
-    <Compile Include="Infrastructure\TextParser.cs" />
-    <Compile Include="LanternExtractor.cs" />
-    <Compile Include="LanternStrings.cs" />
-    <Compile Include="ModelExportFormat.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Settings.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
   <ItemGroup>
     <Content Include="ClientData\animationsources.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -182,26 +27,19 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Costura.Fody">
-      <Version>5.1.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="DotNetZip">
-      <Version>1.10.1</Version>
-    </PackageReference>
     <PackageReference Include="GlmSharp">
       <Version>0.9.8</Version>
     </PackageReference>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Pfim">
       <Version>0.10.0</Version>
-    </PackageReference>
-    <PackageReference Include="SharpGLTF.Core">
-      <Version>1.0.0-alpha0025</Version>
     </PackageReference>
     <PackageReference Include="SharpGLTF.Toolkit">
       <Version>1.0.0-alpha0025</Version>
     </PackageReference>
+    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
+    <PackageReference Include="DotNetZip" Version="1.16.0" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
