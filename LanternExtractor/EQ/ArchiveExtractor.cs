@@ -13,12 +13,12 @@ namespace LanternExtractor.EQ
         public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
-            
+
             if (string.IsNullOrEmpty(archiveName))
             {
                 return;
             }
-            
+
             string shortName = archiveName.Split('_')[0];
             var s3dArchive = new PfsArchive(path, logger);
 
@@ -307,14 +307,17 @@ namespace LanternExtractor.EQ
             }
         }
 
-        private static void ExtractSoundData(string shortName, string rootFolder,  ILogger logger, Settings settings)
+        private static void ExtractSoundData(string shortName, string rootFolder, ILogger logger, Settings settings)
         {
+            var envAudio = EnvAudio.Instance;
+            envAudio.Load(Path.Combine(settings.EverQuestDirectory, "defaults.dat"));
             var sounds = new EffSndBnk(settings.EverQuestDirectory + shortName + "_sndbnk" +
                                        LanternStrings.SoundFormatExtension);
             sounds.Initialize();
             var soundEntries =
                 new EffSounds(
-                    settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
+                    settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension,
+                    sounds, envAudio);
             soundEntries.Initialize(logger);
             soundEntries.ExportSoundData(shortName, rootFolder);
         }

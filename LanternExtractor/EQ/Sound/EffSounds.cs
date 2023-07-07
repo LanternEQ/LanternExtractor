@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -19,14 +19,15 @@ namespace LanternExtractor.EQ.Sound
         /// The sound bank referenced for sound names
         /// </summary>
         private readonly EffSndBnk _soundBank;
-        
+        private readonly EnvAudio _envAudio;
         private readonly string _soundFilePath;
         private readonly List<AudioInstance> _audioInstances = new List<AudioInstance>();
 
-        public EffSounds(string soundFilePath, EffSndBnk soundBank)
+        public EffSounds(string soundFilePath, EffSndBnk soundBank, EnvAudio envAudio)
         {
             _soundFilePath = soundFilePath;
             _soundBank = soundBank;
+            _envAudio = envAudio;
         }
 
         public void Initialize(ILogger logger)
@@ -125,6 +126,12 @@ namespace LanternExtractor.EQ.Sound
                 default:
                     return SoundConstants.Unknown;
             }
+        }
+
+        private float GetEalSoundVolume(int soundId)
+        {
+            var soundName = GetSoundName(soundId);
+            return _envAudio.GetVolumeLinear(soundName);
         }
 
         private EmissionType GetEmissionType(int soundId)
