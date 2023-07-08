@@ -31,8 +31,6 @@ namespace LanternExtractor.Infrastructure
         private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate,
             ILogger logger)
         {
-            var byteStream = new MemoryStream(bytes);
-
             if (string.IsNullOrEmpty(filePath))
             {
                 return;
@@ -40,11 +38,12 @@ namespace LanternExtractor.Infrastructure
 
             Directory.CreateDirectory(filePath);
 
-            Bitmap image;
+            EqBmp image;
+            var byteStream = new MemoryStream(bytes);
 
             try
             {
-                image = new Bitmap(byteStream);
+                image = new EqBmp(byteStream);
             }
             catch (Exception e)
             {
@@ -60,76 +59,21 @@ namespace LanternExtractor.Infrastructure
                 fileName = "canwall1.png";
             }
 
-            Bitmap cloneBitmap;
-
-            if (isMasked)
+            switch (image.PixelFormat)
             {
-                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height),
-                    PixelFormat.Format8bppIndexed);
-
-                int paletteIndex = GetPaletteIndex(fileName);
-                var palette = cloneBitmap.Palette;
-
-                if (Environment.OSVersion.Platform != PlatformID.MacOSX &&
-                    Environment.OSVersion.Platform != PlatformID.Unix)
-                {
-                    palette.Entries[paletteIndex] = Color.FromArgb(0, 0, 0, 0);
-                    cloneBitmap.Palette = palette;
-                }
-                else
-                {
-                    // Due to a bug with the MacOS implementation of System.Drawing, setting a color palette value to
-                    // transparent does not work. The workaround is to ensure that the first palette value (the transparent
-                    // key) is unique and then use MakeTransparent()
-                    Color transparencyColor = palette.Entries[paletteIndex];
-                    bool isUnique = false;
-                    
-                    while (!isUnique)
+                case PixelFormat.Format8bppIndexed:
+                    if (isMasked)
                     {
-                        isUnique = true;
-
-                        for (var i = 1; i < cloneBitmap.Palette.Entries.Length; i++)
-                        {
-                            Color paletteValue = cloneBitmap.Palette.Entries[i];
-
-                            if (paletteValue == transparencyColor)
-                            {
-                                Random random = new Random();
-                                transparencyColor = Color.FromArgb(random.Next(256), random.Next(256), random.Next(256));
-                                isUnique = false;
-                                break;
-                            }
-                        }
+                        var paletteIndex = GetPaletteIndex(fileName);
+                        image.MakePaletteTransparent(paletteIndex);
                     }
-
-                    palette.Entries[paletteIndex] = transparencyColor;
-                    cloneBitmap.Palette = palette;
-                    cloneBitmap.MakeTransparent(transparencyColor);
-
-                    // For some reason, this now has to be done to ensure the pixels are actually set to transparent
-                    // Another head scratching MacOS bug
-                    for (int i = 0; i < cloneBitmap.Width; ++i)
-                    {
-                        for (int j = 0; j < cloneBitmap.Height; ++j)
-                        {
-                            if (cloneBitmap.GetPixel(i, j) == transparencyColor)
-                            {
-                                cloneBitmap.SetPixel(i, j, Color.FromArgb(0, 0, 0, 0));
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                cloneBitmap = image.Clone(new Rectangle(0, 0, image.Width, image.Height), PixelFormat.Format32bppArgb);
-                if (image.PixelFormat != PixelFormat.Format8bppIndexed)
-                {
-                    cloneBitmap.MakeTransparent(Color.Magenta);
-                }
+                    break;
+                default:
+                    image.MakeMagentaTransparent();
+                    break;
             }
 
-            cloneBitmap.Save(Path.Combine(filePath, fileName), ImageFormat.Png);
+            image.WritePng(Path.Combine(filePath, fileName));
         }
 
         private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName)
