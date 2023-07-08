@@ -92,7 +92,9 @@ namespace LanternExtractor.EQ.Pfs
                         inflatedSize += inflatedLength;
                     }
 
-                    if (crc == 0x61580AC9)
+                    // EQZip saved archives use 0xFFFFFFFFU for filenames
+                    // https://github.com/Shendare/EQZip/blob/b181ec7658ea9880984d58271cbab924ab8dd702/EQArchive.cs#L517
+                    if (crc == 0x61580AC9 || (crc == 0xFFFFFFFFU && fileNames.Count == 0))
                     {
                         var dictionaryStream = new MemoryStream(fileBytes);
                         var dictionary = new BinaryReader(dictionaryStream);
