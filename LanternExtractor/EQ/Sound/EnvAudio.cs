@@ -39,7 +39,9 @@ namespace LanternExtractor.EQ.Sound
                 return false;
             }
 
-            _ealFile = new EalFile(_ealFilePath);
+            // Allow other threads to open the same file for reading
+            _ealFile = new EalFile(new FileStream(
+                _ealFilePath, FileMode.Open, FileAccess.Read, FileShare.Read));
 
             if (!_ealFile.Initialize())
             {
