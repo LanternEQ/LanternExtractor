@@ -40,30 +40,34 @@
 
     public abstract class SoundInstance : AudioInstance
     {
-        public int Volume { get; }
-        public int SoundId1 { get; }
+        public string Sound1 { get; }
+        public float Volume1 { get; }
         public int Cooldown1 { get; }
+        public int CooldownRandom { get; }
 
-        protected SoundInstance(AudioType type, float posX, float posY, float posZ, float radius, int volume,
-            int soundId1, int cooldown1) : base(type, posX, posY, posZ, radius)
+        protected SoundInstance(AudioType type, float posX, float posY, float posZ, float radius, float volume1,
+            string sound1, int cooldown1, int cooldownRandom) : base(type, posX, posY, posZ, radius)
         {
-            Volume = volume;
-            SoundId1 = soundId1;
+            Sound1 = sound1;
+            Volume1 = volume1;
             Cooldown1 = cooldown1;
+            CooldownRandom = cooldownRandom;
         }
     }
 
     public class SoundInstance2d : SoundInstance
     {
-        public int SoundId2 { get; }
+        public string Sound2 { get; }
+        public float Volume2 { get; }
         public int Cooldown2 { get; }
 
-        public SoundInstance2d(AudioType type, float posX, float posY, float posZ, float radius, int volume,
-            int soundId1, int cooldown1, int soundId2, int cooldown2) : base(type, posX, posY, posZ, radius, volume,
-            soundId1, cooldown1)
+        public SoundInstance2d(AudioType type, float posX, float posY, float posZ, float radius, float volume1,
+            string sound1, int cooldown1, string sound2, int cooldown2,  int cooldownRandom, float volume2) : base(type, posX, posY, posZ, radius, volume1,
+            sound1, cooldown1, cooldownRandom)
         {
-            SoundId2 = soundId2;
+            Sound2 = sound2;
             Cooldown2 = cooldown2;
+            Volume2 = volume2;
         }
     }
 
@@ -71,9 +75,9 @@
     {
         public int Multiplier;
 
-        public SoundInstance3d(AudioType type, float posX, float posY, float posZ, float radius, int volume,
-            int soundId1, int cooldown1, int multiplier) : base(type, posX, posY, posZ, radius, volume, soundId1,
-            cooldown1)
+        public SoundInstance3d(AudioType type, float posX, float posY, float posZ, float radius, float volume,
+            string sound1, int cooldown1, int cooldownRandom, int multiplier) : base(type, posX, posY, posZ, radius, volume, sound1,
+            cooldown1, cooldownRandom)
         {
             Multiplier = multiplier;
         }

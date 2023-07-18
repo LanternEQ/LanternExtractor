@@ -19,6 +19,7 @@ namespace LanternExtractor.EQ.Sound
         /// The sound bank referenced for sound names
         /// </summary>
         private readonly EffSndBnk _soundBank;
+
         private readonly EnvAudio _envAudio;
         private readonly string _soundFilePath;
         private readonly List<AudioInstance> _audioInstances = new List<AudioInstance>();
@@ -71,6 +72,7 @@ namespace LanternExtractor.EQ.Sound
                 var type = (AudioType)typeByte;
                 reader.BaseStream.Position = basePosition + 48;
                 int soundId1 = reader.ReadInt32();
+                string sound1 = GetSoundName(soundId1);
 
                 if (type == AudioType.Music)
                 {
@@ -86,25 +88,33 @@ namespace LanternExtractor.EQ.Sound
                 else if (type == AudioType.Sound2d)
                 {
                     int soundId2 = reader.ReadInt32();
+                    string sound2 = GetSoundName(soundId2);
                     reader.BaseStream.Position = basePosition + 32;
                     int cooldown1 = reader.ReadInt32();
                     int cooldown2 = reader.ReadInt32();
+                    int cooldownRandom = reader.ReadInt32();
                     reader.BaseStream.Position = basePosition + 60;
-                    int volume = reader.ReadInt32();
-                    var soundInstance = new SoundInstance2d(type, posX, posY, posZ, radius, volume, soundId1, cooldown1,
-                        soundId2, cooldown2);
+                    int volume1Raw = reader.ReadInt32();
+                    float volume1 = GetEalSoundVolume(sound1, volume1Raw);
+                    int volume2Raw = reader.ReadInt32();
+                    float volume2 = GetEalSoundVolume(sound2, volume2Raw);
+                    var soundInstance = new SoundInstance2d(type, posX, posY, posZ, radius, volume1, sound1, cooldown1,
+                        sound2, cooldown2, cooldownRandom, volume2);
                     _audioInstances.Add(soundInstance);
                 }
                 else
                 {
                     reader.BaseStream.Position = basePosition + 32;
                     int cooldown1 = reader.ReadInt32();
+                    reader.BaseStream.Position = basePosition + 40;
+                    int cooldownRandom = reader.ReadInt32();
                     reader.BaseStream.Position = basePosition + 60;
-                    int volume = reader.ReadInt32();
+                    int volumeRaw = reader.ReadInt32();
+                    float volume = GetEalSoundVolume(sound1, volumeRaw);
                     reader.BaseStream.Position = basePosition + 72;
                     int multiplier = reader.ReadInt32();
-                    var soundInstance = new SoundInstance3d(type, posX, posY, posZ, radius, volume, soundId1, cooldown1,
-                        multiplier);
+                    var soundInstance = new SoundInstance3d(type, posX, posY, posZ, radius, volume, sound1,
+                        cooldown1, cooldownRandom, multiplier);
                     _audioInstances.Add(soundInstance);
                 }
             }
@@ -128,10 +138,14 @@ namespace LanternExtractor.EQ.Sound
             }
         }
 
-        private float GetEalSoundVolume(int soundId)
+        private float GetEalSoundVolume(string soundName, int volumeRaw)
         {
-            var soundName = GetSoundName(soundId);
-            return _envAudio.GetVolumeLinear(soundName);
+            if (volumeRaw > 0)
+            {
+                volumeRaw = -volumeRaw;
+            }
+
+            return volumeRaw == 0 ? _envAudio.GetVolumeLinear(soundName) : _envAudio.GetVolumeLinear(volumeRaw);
         }
 
         private EmissionType GetEmissionType(int soundId)
@@ -151,15 +165,15 @@ namespace LanternExtractor.EQ.Sound
 
         public void ExportSoundData(string zoneName, string rootFolder)
         {
-            var soundExport = new StringBuilder();
+            var sound2dExport = new StringBuilder();
+            var sound3dExport = new StringBuilder();
             var musicExport = new StringBuilder();
 
             foreach (var entry in _audioInstances)
             {
                 if (entry.AudioType == AudioType.Music)
                 {
-                    var music = entry as MusicInstance;
-                    if (music == null)
+                    if (!(entry is MusicInstance music))
                     {
                         continue;
                     }
@@ -170,41 +184,29 @@ namespace LanternExtractor.EQ.Sound
                 }
                 else if (entry.AudioType == AudioType.Sound2d)
                 {
-                    var sound2d = entry as SoundInstance2d;
-                    if (sound2d == null)
+                    if (!(entry is SoundInstance2d sound2d))
                     {
                         continue;
                     }
 
-                    soundExport.AppendLine(string.Join(",", (byte)sound2d.AudioType, sound2d.PosX, sound2d.PosY,
-                        sound2d.PosZ, sound2d.Radius, GetSoundName(sound2d.SoundId1), GetSoundName(sound2d.SoundId2),
-                        sound2d.Cooldown1, sound2d.Cooldown2, sound2d.Cooldown2, sound2d.Volume));
+                    sound2dExport.AppendLine(string.Join(",", sound2d.PosX, sound2d.PosY,
+                        sound2d.PosZ, sound2d.Radius, sound2d.Sound1, sound2d.Sound2,
+                        sound2d.Cooldown1, sound2d.Cooldown2, sound2d.CooldownRandom, sound2d.Volume1, sound2d.Volume2));
                 }
                 else
                 {
-                    var sound3d = entry as SoundInstance3d;
-                    if (sound3d == null)
+                    if (!(entry is SoundInstance3d sound3d))
                     {
                         continue;
                     }
 
-                    soundExport.AppendLine(string.Join(",", (byte)sound3d.AudioType, sound3d.PosX, sound3d.PosY,
-                        sound3d.PosZ, sound3d.Radius, GetSoundName(sound3d.SoundId1), sound3d.Cooldown1, sound3d.Volume,
+                    sound3dExport.AppendLine(string.Join(",", sound3d.PosX, sound3d.PosY,
+                        sound3d.PosZ, sound3d.Radius, sound3d.Sound1, sound3d.Cooldown1, sound3d.CooldownRandom, sound3d.Volume1,
                         sound3d.Multiplier));
                 }
             }
 
             string exportPath = Path.Combine(rootFolder, zoneName, "Zone/");
-
-            if (soundExport.Length > 0)
-            {
-                StringBuilder exportHeader = new StringBuilder();
-                exportHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Sound Instances");
-                exportHeader.AppendLine(
-                    "# Format: SoundType, PosX, PosY, PosZ, Radius, SoundIdDay, SoundIdNight, CooldownDay, CooldownNight, RandomDelay");
-                Directory.CreateDirectory(exportPath);
-                File.WriteAllText(exportPath + "sound_instances.txt", exportHeader.ToString() + soundExport);
-            }
 
             if (musicExport.Length > 0)
             {
@@ -214,6 +216,26 @@ namespace LanternExtractor.EQ.Sound
                     "# Format: PosX, PosY, PosZ, Radius, MusicIndexDay, MusicIndexNight, LoopCountDay, LoopCountNight, FadeOutMs");
                 Directory.CreateDirectory(exportPath);
                 File.WriteAllText(exportPath + "music_instances.txt", exportHeader.ToString() + musicExport);
+            }
+
+            if (sound2dExport.Length > 0)
+            {
+                StringBuilder exportHeader = new StringBuilder();
+                exportHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Sound 2D Instances");
+                exportHeader.AppendLine(
+                    "# Format: PosX, PosY, PosZ, Radius, SoundNameDay, SoundNameNight, CooldownDay, CooldownNight, CooldownRandom, VolumeDay, VolumeNight");
+                Directory.CreateDirectory(exportPath);
+                File.WriteAllText(exportPath + "sound2d_instances.txt", exportHeader.ToString() + sound2dExport);
+            }
+
+            if (sound3dExport.Length > 0)
+            {
+                StringBuilder exportHeader = new StringBuilder();
+                exportHeader.AppendLine(LanternStrings.ExportHeaderTitle + "Sound 3D Instances");
+                exportHeader.AppendLine(
+                    "# Format: PosX, PosY, PosZ, Radius, SoundName, Cooldown, CooldownRandom, Volume, Multiplier");
+                Directory.CreateDirectory(exportPath);
+                File.WriteAllText(exportPath + "sound3d_instances.txt", exportHeader.ToString() + sound3dExport);
             }
         }
     }

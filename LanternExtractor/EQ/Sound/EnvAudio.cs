@@ -63,7 +63,7 @@ namespace LanternExtractor.EQ.Sound
             return true;
         }
 
-        public int GetVolumeEq(string soundFile)
+        private int GetVolumeEq(string soundFile)
         {
             var volume = 0;
             _sourceLevels?.TryGetValue(soundFile, out volume);
@@ -73,7 +73,12 @@ namespace LanternExtractor.EQ.Sound
         public float GetVolumeLinear(string soundFile)
         {
             var volumeEq = GetVolumeEq(soundFile);
-            var linear = MathF.Pow(10.0f, volumeEq / 2000.0f);
+            return GetVolumeLinear(volumeEq);
+        }
+
+        public float GetVolumeLinear(int directAudioLevel)
+        {
+            var linear = MathF.Pow(10.0f, directAudioLevel / 2000.0f);
             return Math.Clamp(linear, 0f, 1f);
         }
     }
