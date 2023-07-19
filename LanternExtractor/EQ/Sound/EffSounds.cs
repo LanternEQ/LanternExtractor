@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Sound
 
             if (fileLength % EntryLengthInBytes != 0)
             {
-                logger.LogError($"Incorrect .eff file - size must be multiple of {EntryLengthInBytes}");
+                logger.LogError($"Invalid .eff file - size must be multiple of {EntryLengthInBytes}");
                 return;
             }
 
@@ -178,7 +178,7 @@ namespace LanternExtractor.EQ.Sound
                         continue;
                     }
 
-                    musicExport.AppendLine(string.Join(",", music.PosX, music.PosY, music.PosZ, music.Radius,
+                    musicExport.AppendLine(string.Join(",", music.PosX, music.PosZ, music.PosY, music.Radius,
                         music.TrackIndexDay, music.TrackIndexNight, music.LoopCountDay, music.LoopCountNight,
                         music.FadeOutMs));
                 }
@@ -189,8 +189,8 @@ namespace LanternExtractor.EQ.Sound
                         continue;
                     }
 
-                    sound2dExport.AppendLine(string.Join(",", sound2d.PosX, sound2d.PosY,
-                        sound2d.PosZ, sound2d.Radius, sound2d.Sound1, sound2d.Sound2,
+                    sound2dExport.AppendLine(string.Join(",", sound2d.PosX, sound2d.PosZ,
+                        sound2d.PosY, sound2d.Radius, sound2d.Sound1, sound2d.Sound2,
                         sound2d.Cooldown1, sound2d.Cooldown2, sound2d.CooldownRandom, sound2d.Volume1, sound2d.Volume2));
                 }
                 else
@@ -200,8 +200,8 @@ namespace LanternExtractor.EQ.Sound
                         continue;
                     }
 
-                    sound3dExport.AppendLine(string.Join(",", sound3d.PosX, sound3d.PosY,
-                        sound3d.PosZ, sound3d.Radius, sound3d.Sound1, sound3d.Cooldown1, sound3d.CooldownRandom, sound3d.Volume1,
+                    sound3dExport.AppendLine(string.Join(",", sound3d.PosX, sound3d.PosZ,
+                        sound3d.PosY, sound3d.Radius, sound3d.Sound1, sound3d.Cooldown1, sound3d.CooldownRandom, sound3d.Volume1,
                         sound3d.Multiplier));
                 }
             }

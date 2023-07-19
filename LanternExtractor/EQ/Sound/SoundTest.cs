@@ -10,19 +10,23 @@ namespace LanternExtractor.EQ.Sound
     {
         public static void OutputSingleInstance(BinaryWriter writer, int index, string fileName)
         {
+            writer.BaseStream.Position = 0;
             var memoryStream = new MemoryStream();
             writer.BaseStream.CopyTo(memoryStream);
-            File.WriteAllBytes(fileName,
-                memoryStream.ToArray().Skip(index * EffSounds.EntryLengthInBytes).Take(EffSounds.EntryLengthInBytes).ToArray());
+            var bytes = memoryStream.ToArray().Skip(index * EffSounds.EntryLengthInBytes)
+                .Take(EffSounds.EntryLengthInBytes).ToArray();
+            File.WriteAllBytes(fileName, bytes);
         }
         
-        public static void ModifyInstance(BinaryWriter writer, int index, string fileName)
+        public static void ModifyInstance(BinaryWriter writer, string fileName)
         {
             writer.BaseStream.Position = 16; // positions
             writer.Write(0f);
             writer.Write(0f);
             writer.Write(50f);
             
+            
+            writer.BaseStream.Position = 0;
             var memoryStream = new MemoryStream();
             writer.BaseStream.CopyTo(memoryStream);
             File.WriteAllBytes(fileName, memoryStream.ToArray());
