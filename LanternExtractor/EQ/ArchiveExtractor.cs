@@ -310,10 +310,16 @@ namespace LanternExtractor.EQ
         private static void ExtractSoundData(string shortName, string rootFolder, ILogger logger, Settings settings)
         {
             var envAudio = EnvAudio.Instance;
-            envAudio.Load(Path.Combine(settings.EverQuestDirectory, "defaults.dat"));
+            var ealFilePath = Path.Combine(settings.EverQuestDirectory, "defaults.dat");
+            if (!envAudio.Load(ealFilePath))
+            {
+                envAudio.Load(Path.ChangeExtension(ealFilePath, ".eal"));
+            }
+
             var sounds = new EffSndBnk(settings.EverQuestDirectory + shortName + "_sndbnk" +
                                        LanternStrings.SoundFormatExtension);
             sounds.Initialize();
+
             var soundEntries =
                 new EffSounds(
                     settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension,

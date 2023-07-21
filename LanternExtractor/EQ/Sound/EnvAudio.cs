@@ -13,6 +13,7 @@ namespace LanternExtractor.EQ.Sound
 
         public EalData Data { get; private set; }
 
+        private bool _loaded;
         private string _ealFilePath;
         private EalFile _ealFile;
         private Dictionary<string, int> _sourceLevels;
@@ -29,15 +30,15 @@ namespace LanternExtractor.EQ.Sound
         {
             if (_ealFilePath == ealFilePath)
             {
+                return _loaded;
+            }
+
+            if (ealFilePath == null || !File.Exists(ealFilePath))
+            {
                 return false;
             }
 
             _ealFilePath = ealFilePath;
-
-            if (_ealFilePath == null || !File.Exists(_ealFilePath))
-            {
-                return false;
-            }
 
             // Allow other threads to open the same file for reading
             _ealFile = new EalFile(new FileStream(
@@ -60,7 +61,9 @@ namespace LanternExtractor.EQ.Sound
                 s => s.SourceAttributes.EaxAttributes.DirectPathLevel
             );
 
-            return true;
+            _loaded = true;
+
+            return _loaded;
         }
 
         private int GetVolumeEq(string soundFile)
