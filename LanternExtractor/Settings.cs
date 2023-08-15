@@ -45,20 +45,11 @@ namespace LanternExtractor
         /// Sets the desired model export format
         /// </summary>
         public ModelExportFormat ModelExportFormat { get; private set; }
-
-        /// <summary>
-        /// Sets the desired model export format
-        /// </summary>
+        
         public bool ExportCharactersToSingleFolder { get; private set; }
-
-        /// <summary>
-        /// Sets the desired model export format
-        /// </summary>
+        
         public bool ExportEquipmentToSingleFolder { get; private set; }
-
-        /// <summary>
-        /// Export all sound files to a single folder
-        /// </summary>
+        
         public bool ExportSoundsToSingleFolder { get; private set; }
 
         /// <summary>
@@ -142,88 +133,88 @@ namespace LanternExtractor
                 return;
             }
 
-            if (parsedSettings.ContainsKey("EverQuestDirectory"))
+            if (parsedSettings.TryGetValue("EverQuestDirectory", out var setting))
             {
-                EverQuestDirectory = parsedSettings["EverQuestDirectory"];
+                EverQuestDirectory = setting;
 
                 // Ensure the path ends with a /
                 EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + "/");
             }
 
-            if (parsedSettings.ContainsKey("RawS3DExtract"))
+            if (parsedSettings.TryGetValue("RawS3DExtract", out var parsedSetting))
             {
-                RawS3dExtract = Convert.ToBoolean(parsedSettings["RawS3DExtract"]);
+                RawS3dExtract = Convert.ToBoolean(parsedSetting);
             }
 
-            if (parsedSettings.ContainsKey("ExportZoneMeshGroups"))
+            if (parsedSettings.TryGetValue("ExportZoneMeshGroups", out var setting1))
             {
-                ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
+                ExportZoneMeshGroups = Convert.ToBoolean(setting1);
             }
 
-            if (parsedSettings.ContainsKey("ExportHiddenGeometry"))
+            if (parsedSettings.TryGetValue("ExportHiddenGeometry", out var parsedSetting1))
             {
-                ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
+                ExportHiddenGeometry = Convert.ToBoolean(parsedSetting1);
             }
 
-            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
+            if (parsedSettings.TryGetValue("ExportZoneWithObjects", out var setting2))
             {
-                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
+                ExportZoneWithObjects = Convert.ToBoolean(setting2);
             }
 
-            if (parsedSettings.ContainsKey("ModelExportFormat"))
+            if (parsedSettings.TryGetValue("ModelExportFormat", out var parsedSetting2))
             {
-                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSetting2);
                 ModelExportFormat = exportFormatSetting;
             }
 
-            if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
+            if (parsedSettings.TryGetValue("ExportCharacterToSingleFolder", out var setting3))
             {
-                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportCharacterToSingleFolder"]);
+                ExportCharactersToSingleFolder = Convert.ToBoolean(setting3);
             }
 
-            if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
+            if (parsedSettings.TryGetValue("ExportEquipmentToSingleFolder", out var parsedSetting3))
             {
-                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExportSoundsToSingleFolder"))
-            {
-                ExportSoundsToSingleFolder = Convert.ToBoolean(parsedSettings["ExportSoundsToSingleFolder"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
-            {
-                ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
-            {
-                ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
-            }
-
-            if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
-            {
-                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
-            }
-
-            if (parsedSettings.ContainsKey("ClientDataToCopy"))
-            {
-                ClientDataToCopy = parsedSettings["ClientDataToCopy"];
+                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSetting3);
             }
             
-            if (parsedSettings.ContainsKey("ClientDataToCopy"))
+            if (parsedSettings.TryGetValue("ExportSoundsToSingleFolder", out var setting4))
             {
-                ClientDataToCopy = parsedSettings["ClientDataToCopy"];
-            }
-            
-            if (parsedSettings.ContainsKey("CopyMusic"))
-            {
-                CopyMusic = Convert.ToBoolean(parsedSettings["CopyMusic"]);
+                ExportSoundsToSingleFolder = Convert.ToBoolean(setting4);
             }
 
-            if (parsedSettings.ContainsKey("LoggerVerbosity"))
+            if (parsedSettings.TryGetValue("ExportAllAnimationFrames", out var parsedSetting4))
             {
-                LoggerVerbosity = Convert.ToInt32(parsedSettings["LoggerVerbosity"]);
+                ExportAllAnimationFrames = Convert.ToBoolean(parsedSetting4);
+            }
+
+            if (parsedSettings.TryGetValue("ExportGltfVertexColors", out var setting5))
+            {
+                ExportGltfVertexColors = Convert.ToBoolean(setting5);
+            }
+
+            if (parsedSettings.TryGetValue("ExportGltfInGlbFormat", out var parsedSetting5))
+            {
+                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSetting5);
+            }
+
+            if (parsedSettings.TryGetValue("ClientDataToCopy", out var setting6))
+            {
+                ClientDataToCopy = setting6;
+            }
+            
+            if (parsedSettings.TryGetValue("ClientDataToCopy", out var parsedSetting6))
+            {
+                ClientDataToCopy = parsedSetting6;
+            }
+            
+            if (parsedSettings.TryGetValue("CopyMusic", out var setting7))
+            {
+                CopyMusic = Convert.ToBoolean(setting7);
+            }
+
+            if (parsedSettings.TryGetValue("LoggerVerbosity", out var parsedSetting7))
+            {
+                LoggerVerbosity = Convert.ToInt32(parsedSetting7);
             }
         }
     }

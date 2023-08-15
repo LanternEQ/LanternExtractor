@@ -24,11 +24,6 @@ namespace LanternExtractor.EQ.Wld
         public WldType WldType => _wldType;
 
         /// <summary>
-        /// The link between fragment types and fragment classes
-        /// </summary>
-        private Dictionary<int, Func<WldFragment>> _fragmentBuilder;
-
-        /// <summary>
         /// A link of indices to fragments
         /// </summary>
         protected List<WldFragment> _fragments;
@@ -158,8 +153,6 @@ namespace LanternExtractor.EQ.Wld
             byte[] stringHash = reader.ReadBytes((int)stringHashSize);
 
             ParseStringHash(WldStringDecoder.DecodeString(stringHash));
-
-            long readPosition = 0;
 
             for (int i = 0; i < fragmentCount; ++i)
             {

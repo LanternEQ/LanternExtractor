@@ -6,8 +6,8 @@
 EverQuestDirectory = C:/EverQuest
 
 # Extract the contents of the S3D archive as is?
-# If true, this will export all contents as they exist in the archives to their original formats.
-# If false, this will extract contents, process WLD files and convert images to .png
+# If true, this will export all contents as they exist in the archives in their original formats.
+# If false, this will extract contents, process WLD files and convert images to PNG.
 RawS3DExtract = false
 
 # Sets the desired export format for models
@@ -37,7 +37,7 @@ ExportCharacterToSingleFolder = true
 ExportEquipmentToSingleFolder = true
 
 # If true, will export all sounds to the 'sounds' folder
-# Note, some sounds with conflicting names will be overwritten
+# Some sounds with conflicting names will be overwritten
 ExportSoundsToSingleFolder = true
 
 # If true and using OBJ export format, this will dump an OBJ for each animation frame.
