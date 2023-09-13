@@ -19,7 +19,6 @@ namespace LanternExtractor.EQ
                 return;
             }
 
-
             string shortName = archiveName.Split('_')[0];
             var s3dArchive = new PfsArchive(path, logger);
 
@@ -31,21 +30,21 @@ namespace LanternExtractor.EQ
 
             if (settings.RawS3dExtract)
             {
-                s3dArchive.WriteAllFiles(Path.Combine(rootFolder + shortName, archiveName));
+                s3dArchive.WriteAllFiles(Path.Combine(rootFolder, archiveName));
                 return;
             }
 
             // For non WLD files, we can just extract their contents
             // Used for pure texture archives (e.g. bmpwad.s3d) and sound archives (e.g. snd1.pfs)
-            // The difference between this and the raw export is that it will convert images to .png
+            // The difference between this and the raw export is that it will convert images to PNG
             if (!s3dArchive.IsWldArchive)
             {
                 WriteS3dTextures(s3dArchive, rootFolder + shortName, logger);
 
-                if (EqFileHelper.IsSoundArchive(archiveName))
+                if (EqFileHelper.IsUsedSoundArchive(archiveName))
                 {
-                    var soundFolder = settings.ExportSoundsToSingleFolder ? "sounds" : shortName;
-                    WriteS3dSounds(s3dArchive, rootFolder + soundFolder, logger);
+                    WriteS3dSounds(s3dArchive,
+                        Path.Combine(rootFolder, settings.ExportSoundsToSingleFolder ? "sounds" : shortName), logger);
                 }
 
                 return;
@@ -69,9 +68,10 @@ namespace LanternExtractor.EQ
             {
                 ExtractArchiveSky(rootFolder, logger, settings, wldFileInArchive, shortName, s3dArchive);
             }
-            else if (EqFileHelper.IsCharactersArchive(archiveName))
+            else if (EqFileHelper.IsCharacterArchive(archiveName))
             {
-                ExtractArchiveCharacters(path, rootFolder, logger, settings, archiveName, wldFileInArchive, shortName, s3dArchive);
+                ExtractArchiveCharacters(path, rootFolder, logger, settings, archiveName, wldFileInArchive, shortName,
+                    s3dArchive);
             }
             else if (EqFileHelper.IsObjectsArchive(archiveName))
             {
@@ -83,7 +83,6 @@ namespace LanternExtractor.EQ
             }
 
             MissingTextureFixer.Fix(archiveName);
-
         }
 
         private static void ExtractArchiveZone(string path, string rootFolder, ILogger logger, Settings settings,
@@ -105,7 +104,8 @@ namespace LanternExtractor.EQ
                 if (litWldLightsFileInArchive != null)
                 {
                     var lightsWldFile =
-                        new WldFileLights(litWldLightsFileInArchive, shortName, WldType.Lights, logger, settings, wldFileLit);
+                        new WldFileLights(litWldLightsFileInArchive, shortName, WldType.Lights, logger, settings,
+                            wldFileLit);
                     lightsWldFile.Initialize(rootFolder);
                 }
             }
@@ -121,6 +121,7 @@ namespace LanternExtractor.EQ
                 wldFile.RootFolder = rootFolder;
                 wldFile.ShortName = shortName;
             }
+
             InitializeWldAndWriteTextures(wldFile, rootFolder, rootFolder + shortName + "/Zone/Textures/",
                 s3dArchive, settings, logger);
 
@@ -142,7 +143,7 @@ namespace LanternExtractor.EQ
                 zoneObjectsWldFile.Initialize(rootFolder);
             }
 
-            ExtractSoundData(shortName, rootFolder, settings);
+            ExtractSoundData(shortName, rootFolder, logger, settings);
         }
 
         private static void ExtractArchiveObjects(string path, string rootFolder, ILogger logger, Settings settings,
@@ -201,7 +202,8 @@ namespace LanternExtractor.EQ
                 s3dArchive, settings, logger);
         }
 
-        private static void ExtractArchiveSky(string rootFolder, ILogger logger, Settings settings, PfsFile wldFileInArchive,
+        private static void ExtractArchiveSky(string rootFolder, ILogger logger, Settings settings,
+            PfsFile wldFileInArchive,
             string shortName, PfsArchive s3dArchive)
         {
             var wldFile = new WldFileZone(wldFileInArchive, shortName, WldType.Sky, logger, settings);
@@ -214,10 +216,10 @@ namespace LanternExtractor.EQ
         {
             var wldFile = new WldFileEquipment(wldFileInArchive, shortName, WldType.Equipment, logger, settings);
             var exportPath = rootFolder +
-                (settings.ExportEquipmentToSingleFolder &&
-                 settings.ModelExportFormat == ModelExportFormat.Intermediate
-                    ? "equipment/Textures/"
-                    : shortName + "/Textures/");
+                             (settings.ExportEquipmentToSingleFolder &&
+                              settings.ModelExportFormat == ModelExportFormat.Intermediate
+                                 ? "equipment/Textures/"
+                                 : shortName + "/Textures/");
 
             InitializeWldAndWriteTextures(wldFile, rootFolder, exportPath, s3dArchive, settings, logger);
         }
@@ -308,15 +310,24 @@ namespace LanternExtractor.EQ
             }
         }
 
-        private static void ExtractSoundData(string shortName, string rootFolder, Settings settings)
+        private static void ExtractSoundData(string shortName, string rootFolder, ILogger logger, Settings settings)
         {
+            var envAudio = EnvAudio.Instance;
+            var ealFilePath = Path.Combine(settings.EverQuestDirectory, "defaults.dat");
+            if (!envAudio.Load(ealFilePath))
+            {
+                envAudio.Load(Path.ChangeExtension(ealFilePath, ".eal"));
+            }
+
             var sounds = new EffSndBnk(settings.EverQuestDirectory + shortName + "_sndbnk" +
                                        LanternStrings.SoundFormatExtension);
             sounds.Initialize();
+
             var soundEntries =
                 new EffSounds(
-                    settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension, sounds);
-            soundEntries.Initialize();
+                    settings.EverQuestDirectory + shortName + "_sounds" + LanternStrings.SoundFormatExtension,
+                    sounds, envAudio);
+            soundEntries.Initialize(logger);
             soundEntries.ExportSoundData(shortName, rootFolder);
         }
     }
