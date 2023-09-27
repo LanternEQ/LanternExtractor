@@ -1,25 +1,15 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
-
 namespace LanternExtractor
 {
-    public enum ModelExportFormat
-    {
-        Intermediate = 0,
-        Obj = 1,
-        GlTF = 2
-    }
-
     /// <summary>
     /// Simple class that parses settings for the extractor
     /// </summary>
     public class Settings
     {
-
         /// <summary>
         /// The logger reference for debug output
         /// </summary>
@@ -55,20 +45,11 @@ namespace LanternExtractor
         /// Sets the desired model export format
         /// </summary>
         public ModelExportFormat ModelExportFormat { get; private set; }
-
-        /// <summary>
-        /// Sets the desired model export format
-        /// </summary>
+        
         public bool ExportCharactersToSingleFolder { get; private set; }
-
-        /// <summary>
-        /// Sets the desired model export format
-        /// </summary>
+        
         public bool ExportEquipmentToSingleFolder { get; private set; }
-
-        /// <summary>
-        /// Export all sound files to a single folder
-        /// </summary>
+        
         public bool ExportSoundsToSingleFolder { get; private set; }
 
         /// <summary>
@@ -101,6 +82,11 @@ namespace LanternExtractor
         /// Additional files that should be copied when extracting with `all` or `clientdata`
         /// </summary>
         public string ClientDataToCopy { get; private set; }
+        
+        /// <summary>
+        /// If enabled, XMI files will be copied to the 'Exports/Music' folder
+        /// </summary>
+        public bool CopyMusic { get; private set; }
 
         /// <summary>
         /// The verbosity of the logger
@@ -147,78 +133,88 @@ namespace LanternExtractor
                 return;
             }
 
-            if (parsedSettings.ContainsKey("EverQuestDirectory"))
+            if (parsedSettings.TryGetValue("EverQuestDirectory", out var setting))
             {
-                EverQuestDirectory = parsedSettings["EverQuestDirectory"];
+                EverQuestDirectory = setting;
 
                 // Ensure the path ends with a /
                 EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + "/");
             }
 
-            if (parsedSettings.ContainsKey("RawS3DExtract"))
+            if (parsedSettings.TryGetValue("RawS3DExtract", out var parsedSetting))
             {
-                RawS3dExtract = Convert.ToBoolean(parsedSettings["RawS3DExtract"]);
+                RawS3dExtract = Convert.ToBoolean(parsedSetting);
             }
 
-            if (parsedSettings.ContainsKey("ExportZoneMeshGroups"))
+            if (parsedSettings.TryGetValue("ExportZoneMeshGroups", out var setting1))
             {
-                ExportZoneMeshGroups = Convert.ToBoolean(parsedSettings["ExportZoneMeshGroups"]);
+                ExportZoneMeshGroups = Convert.ToBoolean(setting1);
             }
 
-            if (parsedSettings.ContainsKey("ExportHiddenGeometry"))
+            if (parsedSettings.TryGetValue("ExportHiddenGeometry", out var parsedSetting1))
             {
-                ExportHiddenGeometry = Convert.ToBoolean(parsedSettings["ExportHiddenGeometry"]);
+                ExportHiddenGeometry = Convert.ToBoolean(parsedSetting1);
             }
 
-            if (parsedSettings.ContainsKey("ExportZoneWithObjects"))
+            if (parsedSettings.TryGetValue("ExportZoneWithObjects", out var setting2))
             {
-                ExportZoneWithObjects = Convert.ToBoolean(parsedSettings["ExportZoneWithObjects"]);
+                ExportZoneWithObjects = Convert.ToBoolean(setting2);
             }
 
-            if (parsedSettings.ContainsKey("ModelExportFormat"))
+            if (parsedSettings.TryGetValue("ModelExportFormat", out var parsedSetting2))
             {
-                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSettings["ModelExportFormat"]);
+                var exportFormatSetting = (ModelExportFormat)Convert.ToInt32(parsedSetting2);
                 ModelExportFormat = exportFormatSetting;
             }
 
-            if (parsedSettings.ContainsKey("ExportCharacterToSingleFolder"))
+            if (parsedSettings.TryGetValue("ExportCharacterToSingleFolder", out var setting3))
             {
-                ExportCharactersToSingleFolder = Convert.ToBoolean(parsedSettings["ExportCharacterToSingleFolder"]);
+                ExportCharactersToSingleFolder = Convert.ToBoolean(setting3);
             }
 
-            if (parsedSettings.ContainsKey("ExportEquipmentToSingleFolder"))
+            if (parsedSettings.TryGetValue("ExportEquipmentToSingleFolder", out var parsedSetting3))
             {
-                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSettings["ExportEquipmentToSingleFolder"]);
+                ExportEquipmentToSingleFolder = Convert.ToBoolean(parsedSetting3);
+            }
+            
+            if (parsedSettings.TryGetValue("ExportSoundsToSingleFolder", out var setting4))
+            {
+                ExportSoundsToSingleFolder = Convert.ToBoolean(setting4);
             }
 
-            if (parsedSettings.ContainsKey("ExportSoundsToSingleFolder"))
+            if (parsedSettings.TryGetValue("ExportAllAnimationFrames", out var parsedSetting4))
             {
-                ExportSoundsToSingleFolder = Convert.ToBoolean(parsedSettings["ExportSoundsToSingleFolder"]);
+                ExportAllAnimationFrames = Convert.ToBoolean(parsedSetting4);
             }
 
-            if (parsedSettings.ContainsKey("ExportAllAnimationFrames"))
+            if (parsedSettings.TryGetValue("ExportGltfVertexColors", out var setting5))
             {
-                ExportAllAnimationFrames = Convert.ToBoolean(parsedSettings["ExportAllAnimationFrames"]);
+                ExportGltfVertexColors = Convert.ToBoolean(setting5);
             }
 
-            if (parsedSettings.ContainsKey("ExportGltfVertexColors"))
+            if (parsedSettings.TryGetValue("ExportGltfInGlbFormat", out var parsedSetting5))
             {
-                ExportGltfVertexColors = Convert.ToBoolean(parsedSettings["ExportGltfVertexColors"]);
+                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSetting5);
             }
 
-            if (parsedSettings.ContainsKey("ExportGltfInGlbFormat"))
+            if (parsedSettings.TryGetValue("ClientDataToCopy", out var setting6))
             {
-                ExportGltfInGlbFormat = Convert.ToBoolean(parsedSettings["ExportGltfInGlbFormat"]);
+                ClientDataToCopy = setting6;
+            }
+            
+            if (parsedSettings.TryGetValue("ClientDataToCopy", out var parsedSetting6))
+            {
+                ClientDataToCopy = parsedSetting6;
+            }
+            
+            if (parsedSettings.TryGetValue("CopyMusic", out var setting7))
+            {
+                CopyMusic = Convert.ToBoolean(setting7);
             }
 
-            if (parsedSettings.ContainsKey("ClientDataToCopy"))
+            if (parsedSettings.TryGetValue("LoggerVerbosity", out var parsedSetting7))
             {
-                ClientDataToCopy = parsedSettings["ClientDataToCopy"];
-            }
-
-            if (parsedSettings.ContainsKey("LoggerVerbosity"))
-            {
-                LoggerVerbosity = Convert.ToInt32(parsedSettings["LoggerVerbosity"]);
+                LoggerVerbosity = Convert.ToInt32(parsedSetting7);
             }
         }
     }

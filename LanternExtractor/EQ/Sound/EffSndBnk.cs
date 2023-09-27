@@ -10,11 +10,9 @@ namespace LanternExtractor.EQ.Sound
     /// </summary>
     public class EffSndBnk
     {
-        public readonly List<string> EmitSounds = new List<string>();
-        
-        public readonly List<string> LoopSounds = new List<string>();
-        
-        private readonly string _soundFilePath;
+        private List<string> _emitSounds = new List<string>();
+        private List<string> _loopSounds = new List<string>();
+        private string _soundFilePath;
         
         public EffSndBnk(string soundFilePath)
         {
@@ -23,15 +21,14 @@ namespace LanternExtractor.EQ.Sound
         
         public void Initialize()
         {
-            List<string> currentList = null;
-
             if (!File.Exists(_soundFilePath))
             {
                 return;
             }
+            
+            List<string> currentList = null;
 
             string fileText = File.ReadAllText(_soundFilePath);
-
             List<string> parsedLines = TextParser.ParseTextByNewline(fileText);
 
             if (parsedLines == null || parsedLines.Count == 0)
@@ -41,21 +38,44 @@ namespace LanternExtractor.EQ.Sound
 
             foreach (var line in parsedLines)
             {
+                if (string.IsNullOrEmpty(line))
+                {
+                    continue;
+                }
+
                 switch (line)
                 {
-                    case "":
+                    case SoundConstants.Emit:
+                        currentList = _emitSounds;
                         continue;
-                    case "EMIT":
-                        currentList = EmitSounds;
-                        continue;
-                    case "LOOP":
-                        currentList = LoopSounds;
+                    case SoundConstants.Loop:
+                        currentList = _loopSounds;
                         continue;
                     default:
                         currentList?.Add(line);
                         break;
                 }
             }
+        }
+
+        private string GetValueFromList(int index, ref List<string> list)
+        {
+            if (index < 0 || index >= list.Count)
+            {
+                return SoundConstants.Unknown;
+            }
+
+            return list[index];
+        }
+
+        public string GetEmitSound(int index)
+        {
+            return GetValueFromList(index, ref _emitSounds);
+        }
+
+        public string GetLoopSound(int index)
+        {
+            return GetValueFromList(index, ref _loopSounds);
         }
     }
 }

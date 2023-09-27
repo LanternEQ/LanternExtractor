@@ -5,7 +5,7 @@ namespace LanternExtractor
     /// </summary>
     public static class LanternStrings
     {
-        public const string ExportHeaderTitle = "# Lantern Extractor 0.2 - ";
+        public const string ExportHeaderTitle = "# Lantern Extractor 0.1.7 - ";
         public const string ExportHeaderFormat = "# Format: ";
 
         public const string ObjMaterialHeader = "mtllib ";
