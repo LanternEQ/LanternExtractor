@@ -9,6 +9,12 @@ namespace LanternExtractor
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {
             archiveName = archiveName.ToLower();
+
+            if (!Directory.Exists(directory))
+            {
+                return new List<string>();
+            }
+
             var eqFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);
             List<string> validFiles;
 
@@ -77,7 +83,8 @@ namespace LanternExtractor
             }
             else
             {
-                string archivePath = Path.Combine(directory, archiveName, LanternStrings.PfsFormatExtension);
+                string archivePath =
+                    Path.Combine(directory, string.Concat(archiveName, LanternStrings.PfsFormatExtension));
 
                 if (File.Exists(archivePath))
                 {
@@ -86,13 +93,14 @@ namespace LanternExtractor
                 }
 
                 var archiveExtension = LanternStrings.S3dFormatExtension;
-                if (Directory.EnumerateFiles(directory, $"*{LanternStrings.T3dFormatExtension}", SearchOption.AllDirectories).Any())
+                if (Directory.EnumerateFiles(directory, $"*{LanternStrings.T3dFormatExtension}",
+                        SearchOption.AllDirectories).Any())
                 {
                     archiveExtension = LanternStrings.T3dFormatExtension;
                 }
 
                 // Try and find all associated files with the shortname - can theoretically be a non-zone file
-                string mainArchivePath = Path.Combine(directory, archiveName, archiveExtension);
+                string mainArchivePath = Path.Combine(directory, string.Concat(archiveName, archiveExtension));
                 if (File.Exists(mainArchivePath))
                 {
                     validFiles.Add(mainArchivePath);
@@ -100,19 +108,22 @@ namespace LanternExtractor
 
                 // Some zones have additional object archives for things added past their initial release
                 // No archives contain cross archive fragment references
-                string extensionObjectsArchivePath = Path.Combine(directory, $"{archiveName}_2_obj", archiveExtension);
+                string extensionObjectsArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_2_obj", archiveExtension));
                 if (File.Exists(extensionObjectsArchivePath))
                 {
                     validFiles.Add(extensionObjectsArchivePath);
                 }
 
-                string objectsArchivePath = Path.Combine(directory, $"{archiveName}_obj", archiveExtension);
+                string objectsArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_obj", archiveExtension));
                 if (File.Exists(objectsArchivePath))
                 {
                     validFiles.Add(objectsArchivePath);
                 }
 
-                string charactersArchivePath = Path.Combine(directory, $"{archiveName}_chr", archiveExtension);
+                string charactersArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_chr", archiveExtension));
                 if (File.Exists(charactersArchivePath))
                 {
                     validFiles.Add(charactersArchivePath);
@@ -121,7 +132,8 @@ namespace LanternExtractor
                 // Some zones have additional character archives for things added past their initial release
                 // None of them contain fragments that are linked to other related archives.
                 // "qeynos" must be excluded because both qeynos and qeynos2 are used as shortnames
-                string extensionCharactersArchivePath = Path.Combine(directory, $"{archiveName}2_chr", archiveExtension);
+                string extensionCharactersArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}2_chr", archiveExtension));
                 if (File.Exists(extensionCharactersArchivePath) && archiveName != "qeynos")
                 {
                     validFiles.Add(extensionCharactersArchivePath);
@@ -164,7 +176,7 @@ namespace LanternExtractor
         public static bool IsCharacterArchive(string archiveName)
         {
             return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") ||
-                                                   archiveName.Contains("_amr");
+                   archiveName.Contains("_amr");
         }
 
         public static bool IsObjectsArchive(string archiveName)
