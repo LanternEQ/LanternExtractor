@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -158,8 +158,14 @@ namespace LanternExtractor
 
         private static bool IsValidArchive(string archiveName)
         {
-            return archiveName.EndsWith(".s3d") || archiveName.EndsWith(".t3d") || archiveName.EndsWith(".pfs")
-                && !archiveName.Contains("chequip") && !archiveName.EndsWith("_lit.s3d");
+            // chequip contains broken/conflicting data.
+            // _lit archives get injected later during archive extraction
+            if (archiveName.Contains("chequip") || archiveName.EndsWith("_lit.s3d"))
+            {
+                return false;
+            }
+
+            return archiveName.EndsWith(".s3d") || archiveName.EndsWith(".t3d") || archiveName.EndsWith(".pfs");
         }
 
         private static bool IsZoneArchive(string archiveName)
