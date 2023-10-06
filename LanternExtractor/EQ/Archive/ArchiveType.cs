@@ -2,8 +2,8 @@ namespace LanternExtractor.EQ.Archive
 {
     public enum ArchiveType
     {
-        Unknown,
-        Pfs,
-        T3d
+        Unknown = 0,
+        Pfs = 1,
+        T3d = 2
     }
 }
