@@ -181,6 +181,12 @@ namespace LanternExtractor
 
         public static bool IsCharacterArchive(string archiveName)
         {
+            // chequip contains broken/conflicting data.
+            if (archiveName.Contains("chequip"))
+            {
+                return false;
+            }
+
             return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") ||
                    archiveName.Contains("_amr");
         }
