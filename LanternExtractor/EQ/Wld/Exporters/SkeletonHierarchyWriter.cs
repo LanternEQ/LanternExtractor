@@ -33,6 +33,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
+                _export.AppendLine();
+
+                _export.Append("secondary_meshes");
                 foreach (var mesh in skeleton.SecondaryMeshes)
                 {
                     _export.Append(",");
@@ -46,6 +49,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 _export.Append("meshes");
                 foreach (var mesh in skeleton.AlternateMeshes)
+                {
+                    _export.Append(",");
+                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                }
+                _export.AppendLine();
+
+                _export.Append("secondary_meshes");
+                foreach (var mesh in skeleton.SecondaryAlternateMeshes)
                 {
                     _export.Append(",");
                     _export.Append(FragmentNameCleaner.CleanName(mesh));

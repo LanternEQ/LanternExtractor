@@ -34,6 +34,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public float BoundingRadius;
 
         public List<Mesh> SecondaryMeshes = new List<Mesh>();
+        public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
 
         private bool _hasBuiltData;
 
@@ -437,6 +438,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             SecondaryMeshes.Add(mesh);
             SecondaryMeshes = SecondaryMeshes.OrderBy(x => x.Name).ToList();
+        }
+
+        public void AddAdditionalAlternateMesh(LegacyMesh mesh)
+        {
+            if (AlternateMeshes.Any(x => x.Name == mesh.Name)
+                || SecondaryAlternateMeshes.Any(x => x.Name == mesh.Name))
+            {
+                return;
+            }
+
+            if (mesh.MobPieces.Count == 0)
+            {
+                return;
+            }
+
+            SecondaryAlternateMeshes.Add(mesh);
+            SecondaryAlternateMeshes = SecondaryAlternateMeshes.OrderBy(x => x.Name).ToList();
         }
 
         public bool IsValidSkeleton(string trackName, out string boneName)
