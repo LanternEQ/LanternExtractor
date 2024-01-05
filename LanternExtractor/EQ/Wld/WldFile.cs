@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
@@ -62,9 +62,9 @@ namespace LanternExtractor.EQ.Wld
         protected readonly WldType _wldType;
 
         /// <summary>
-        /// The WLD file found in the PFS archive
+        /// The WLD file found in the archive
         /// </summary>
-        private readonly PfsFile _wldFile;
+        private readonly ArchiveFile _wldFile;
 
         /// <summary>
         /// Cached settings
@@ -88,7 +88,7 @@ namespace LanternExtractor.EQ.Wld
         /// <param name="zoneName">The shortname of the zone</param>
         /// <param name="type">The type of WLD - used to determine what to extract</param>
         /// <param name="logger">The logger used for debug output</param>
-        protected WldFile(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+        protected WldFile(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile fileToInject)
         {
             _wldFile = wldFile;
@@ -333,7 +333,7 @@ namespace LanternExtractor.EQ.Wld
                 case WldType.Sky:
                     return GetRootExportFolder();
                 case WldType.Characters:
-                    if (_settings.ExportCharactersToSingleFolder && 
+                    if (_settings.ExportCharactersToSingleFolder &&
                         _settings.ModelExportFormat == ModelExportFormat.Intermediate)
                     {
                         return GetRootExportFolder();
@@ -428,7 +428,7 @@ namespace LanternExtractor.EQ.Wld
 
                 if (skeletons == null)
                 {
-                    _logger.LogWarning("Cannot export animations. No model references.");
+                    _logger.LogWarning("Cannot export animations 2. No model references.");
                     return;
                 }
             }

@@ -1,4 +1,4 @@
-﻿using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
@@ -8,7 +8,7 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZone : WldFile
     {
-        public WldFileZone(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+        public WldFileZone(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
@@ -16,7 +16,7 @@ namespace LanternExtractor.EQ.Wld
         public string BasePath { get; set; } = "";
         public string RootFolder { get; set; } = "";
         public string ShortName { get; set; } = "";
-        public PfsArchive BaseS3DArchive { get; set; } = null;
+        public ArchiveBase BaseS3DArchive { get; set; } = null;
         public WldFile WldFileToInject { get; set; } = null;
 
         public override void ExportData()

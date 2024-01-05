@@ -1,7 +1,7 @@
 # Lantern Extractor Settings
 
 # EverQuest Installation Path
-# Window example: C:/EverQuest
+# Windows example: C:/EverQuest
 # MacOS example: /Users/your.name/EQ/
 EverQuestDirectory = C:/EverQuest
 

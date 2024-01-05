@@ -268,11 +268,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
             }
 
             int frameCount = 1;
+            var animatedVertices = mesh.AnimatedVerticesReference?.GetAnimatedVertices();
 
             // We end up with OOM errors trying to concat frames of exported zones with objects, i.e. when we have associatedObject
-            if (associatedObject == null && mesh.AnimatedVerticesReference != null)
+            if (associatedObject == null && animatedVertices != null)
             {
-                frameCount += mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames.Count;
+                frameCount += animatedVertices.Frames.Count;
             }
 
             for (int i = 0; i < frameCount; ++i)
@@ -294,12 +295,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
                     else
                     {
-                        if (mesh.AnimatedVerticesReference == null)
+                        if (mesh.AnimatedVerticesReference == null || animatedVertices == null)
                         {
                             continue;
                         }
 
-                        vertex = mesh.AnimatedVerticesReference.MeshAnimatedVertices.Frames[i - 1][usedVertex];
+                        vertex = animatedVertices.Frames[i - 1][usedVertex];
                     }
 
                     // Apply transformation for scale

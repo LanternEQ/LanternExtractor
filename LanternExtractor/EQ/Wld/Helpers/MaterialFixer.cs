@@ -11,24 +11,47 @@ namespace LanternExtractor.EQ.Wld.Helpers
     {
         public static void Fix(WldFile wld)
         {
-            FixShaderAssignment(wld, "TREE20_MDF", ShaderType.TransparentMasked);
-            FixShaderAssignment(wld, "TOP_MDF", ShaderType.TransparentMasked);
-            FixShaderAssignment(wld, "FURPILE1_MDF", ShaderType.TransparentMasked);
-            FixShaderAssignment(wld, "BEARRUG_MDF", ShaderType.TransparentMasked);
-            FixShaderAssignment(wld, "FIRE1_MDF", ShaderType.TransparentAdditiveUnlit);
-            FixShaderAssignment(wld, "ICE1_MDF", ShaderType.Invisible);
-            FixShaderAssignment(wld, "AIRCLOUD_MDF", ShaderType.TransparentSkydome);
-            FixShaderAssignment(wld, "NORMALCLOUD_MDF", ShaderType.TransparentSkydome);
+            var materials = wld.GetFragmentsOfType<Material>();
+
+            foreach (var material in materials)
+            {
+                switch (material.Name)
+                {
+                    case "TREE7_MDF":
+                    case "TREE9B1_MDF":
+                    case "TREE16_MDF":
+                    case "TREE16B1_MDF":
+                    case "TREE17_MDF":
+                    case "TREE18_MDF":
+                    case "TREE18B1_MDF":
+                    case "TREE20_MDF":
+                    case "TREE20B1_MDF":
+                    case "TREE21_MDF":
+                    case "TREE22_MDF":
+                    case "TREE22B1_MDF":
+                    case "TOP_MDF":
+                    case "TOPB_MDF":
+                    case "FURPILE1_MDF":
+                    case "BEARRUG_MDF":
+                        FixShaderAssignment(material, ShaderType.TransparentMasked);
+                        break;
+                    case "FIRE1_MDF":
+                        FixShaderAssignment(material, ShaderType.TransparentAdditiveUnlit);
+                        break;
+                    case "ICE1_MDF":
+                        FixShaderAssignment(material, ShaderType.Invisible);
+                        break;
+                    case "AIRCLOUD_MDF":
+                    case "NORMALCLOUD_MDF":
+                        FixShaderAssignment(material, ShaderType.TransparentSkydome);
+                        break;
+                }
+            }
         }
 
-        private static void FixShaderAssignment(WldFile wld, string materialName, ShaderType shader)
+        private static void FixShaderAssignment(Material material, ShaderType shader)
         {
-            var material = wld.GetFragmentByName<Material>(materialName);
-
-            if (material != null)
-            {
-                material.ShaderType = shader;
-            }
+            material.ShaderType = shader;
         }
     }
 }

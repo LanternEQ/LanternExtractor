@@ -9,7 +9,8 @@
                 IsSolid = this.IsSolid,
                 Vertex1 = this.Vertex1,
                 Vertex2 = this.Vertex2,
-                Vertex3 = this.Vertex3
+                Vertex3 = this.Vertex3,
+                MaterialIndex = this.MaterialIndex
             };
         }
 
@@ -17,5 +18,6 @@
         public int Vertex1 { get; set; }
         public int Vertex2 { get; set; }
         public int Vertex3 { get; set; }
+        public int MaterialIndex { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -9,6 +9,12 @@ namespace LanternExtractor
         public static List<string> GetValidEqFilePaths(string directory, string archiveName)
         {
             archiveName = archiveName.ToLower();
+
+            if (!Directory.Exists(directory))
+            {
+                return new List<string>();
+            }
+
             var eqFiles = Directory.GetFiles(directory, "*.*", SearchOption.AllDirectories);
             List<string> validFiles;
 
@@ -67,7 +73,7 @@ namespace LanternExtractor
         private static List<string> GetValidFiles(string archiveName, string directory)
         {
             var validFiles = new List<string>();
-            if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs"))
+            if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs") || archiveName.EndsWith(".t3d"))
             {
                 string archivePath = Path.Combine(directory, archiveName);
                 if (File.Exists(archivePath))
@@ -77,7 +83,8 @@ namespace LanternExtractor
             }
             else
             {
-                string archivePath = Path.Combine(directory, $"{archiveName}.pfs");
+                string archivePath =
+                    Path.Combine(directory, string.Concat(archiveName, LanternStrings.PfsFormatExtension));
 
                 if (File.Exists(archivePath))
                 {
@@ -85,8 +92,15 @@ namespace LanternExtractor
                     return validFiles;
                 }
 
+                var archiveExtension = LanternStrings.S3dFormatExtension;
+                if (Directory.EnumerateFiles(directory, $"*{LanternStrings.T3dFormatExtension}",
+                        SearchOption.AllDirectories).Any())
+                {
+                    archiveExtension = LanternStrings.T3dFormatExtension;
+                }
+
                 // Try and find all associated files with the shortname - can theoretically be a non-zone file
-                string mainArchivePath = Path.Combine(directory, $"{archiveName}.s3d");
+                string mainArchivePath = Path.Combine(directory, string.Concat(archiveName, archiveExtension));
                 if (File.Exists(mainArchivePath))
                 {
                     validFiles.Add(mainArchivePath);
@@ -94,19 +108,22 @@ namespace LanternExtractor
 
                 // Some zones have additional object archives for things added past their initial release
                 // No archives contain cross archive fragment references
-                string extensionObjectsArchivePath = Path.Combine(directory, $"{archiveName}_2_obj.s3d");
+                string extensionObjectsArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_2_obj", archiveExtension));
                 if (File.Exists(extensionObjectsArchivePath))
                 {
                     validFiles.Add(extensionObjectsArchivePath);
                 }
 
-                string objectsArchivePath = Path.Combine(directory, $"{archiveName}_obj.s3d");
+                string objectsArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_obj", archiveExtension));
                 if (File.Exists(objectsArchivePath))
                 {
                     validFiles.Add(objectsArchivePath);
                 }
 
-                string charactersArchivePath = Path.Combine(directory, $"{archiveName}_chr.s3d");
+                string charactersArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}_chr", archiveExtension));
                 if (File.Exists(charactersArchivePath))
                 {
                     validFiles.Add(charactersArchivePath);
@@ -115,7 +132,8 @@ namespace LanternExtractor
                 // Some zones have additional character archives for things added past their initial release
                 // None of them contain fragments that are linked to other related archives.
                 // "qeynos" must be excluded because both qeynos and qeynos2 are used as shortnames
-                string extensionCharactersArchivePath = Path.Combine(directory, $"{archiveName}2_chr.s3d");
+                string extensionCharactersArchivePath =
+                    Path.Combine(directory, string.Concat($"{archiveName}2_chr", archiveExtension));
                 if (File.Exists(extensionCharactersArchivePath) && archiveName != "qeynos")
                 {
                     validFiles.Add(extensionCharactersArchivePath);
@@ -125,10 +143,29 @@ namespace LanternExtractor
             return validFiles;
         }
 
+        public static string ObjArchivePath(string archivePath)
+        {
+            var baseExt = Path.GetExtension(archivePath);
+            var lastDotIndex = archivePath.LastIndexOf('.');
+
+            if (lastDotIndex >= 0)
+            {
+                return $"{archivePath.Substring(0, lastDotIndex)}_obj{baseExt}";
+            }
+
+            return archivePath;
+        }
+
         private static bool IsValidArchive(string archiveName)
         {
-            return archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs") && !archiveName.Contains("chequip") &&
-                !archiveName.EndsWith("_lit.s3d");
+            // chequip contains broken/conflicting data.
+            // _lit archives get injected later during archive extraction
+            if (archiveName.Contains("chequip") || archiveName.EndsWith("_lit.s3d"))
+            {
+                return false;
+            }
+
+            return archiveName.EndsWith(".s3d") || archiveName.EndsWith(".t3d") || archiveName.EndsWith(".pfs");
         }
 
         private static bool IsZoneArchive(string archiveName)
@@ -144,8 +181,14 @@ namespace LanternExtractor
 
         public static bool IsCharacterArchive(string archiveName)
         {
+            // chequip contains broken/conflicting data.
+            if (archiveName.Contains("chequip"))
+            {
+                return false;
+            }
+
             return archiveName.Contains("_chr") || archiveName.StartsWith("chequip") ||
-                                                   archiveName.Contains("_amr");
+                   archiveName.Contains("_amr");
         }
 
         public static bool IsObjectsArchive(string archiveName)

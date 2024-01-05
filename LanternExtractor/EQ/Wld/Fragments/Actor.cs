@@ -17,17 +17,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// Mesh reference (optional)
         /// </summary>
         public MeshReference MeshReference { get; private set; }
-        
+
         /// <summary>
         /// Skeleton track reference (optional)
         /// </summary>
         public SkeletonHierarchyReference SkeletonReference { get; private set; }
-        
+
         /// <summary>
         /// Camera reference (optional)
         /// </summary>
         public CameraReference CameraReference { get; private set; }
-        
+
         /// <summary>
         /// Camera reference (optional)
         /// </summary>
@@ -36,9 +36,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public Fragment07 Fragment07;
 
         public ActorType ActorType;
-        
+
         public string ReferenceName;
-        
+
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
             Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
@@ -48,17 +48,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int flags = Reader.ReadInt32();
 
             BitAnalyzer ba = new BitAnalyzer(flags);
-            
+
             bool params1Exist = ba.IsBitSet(0);
             bool params2Exist = ba.IsBitSet(1);
             bool fragment2MustContainZero = ba.IsBitSet(7);
-            
+
             // Is an index in the string hash
             int fragment1 = Reader.ReadInt32();
 
             // For objects, SPRITECALLBACK - and it's the same reference value
             string stringValue = stringHash[-fragment1];
-            
+
             // 1 for both static and animated objects
             int size1 = Reader.ReadInt32();
 
@@ -78,7 +78,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 Reader.BaseStream.Position += 7 * sizeof(int);
             }
-            
+
             // Size 1 entries
             for (int i = 0; i < size1; ++i)
             {
@@ -86,7 +86,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 int dataPairCount = Reader.ReadInt32();
 
                 // Unknown purpose
-                // Always 0 and 1.00000002E+30 
+                // Always 0 and 1.00000002E+30
                 for (int j = 0; j < dataPairCount; ++j)
                 {
                     int value = Reader.ReadInt32();
@@ -99,13 +99,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 logger.LogWarning("Actor: More than one component references");
             }
-            
+
             // Can contain either a skeleton reference (animated), mesh reference (static) or a camera reference
             for (int i = 0; i < componentCount; ++i)
             {
                 int fragmentIndex = Reader.ReadInt32() - 1;
-                
-                SkeletonReference = fragments[fragmentIndex] as SkeletonHierarchyReference;
+                var fragment = fragments[fragmentIndex];
+
+                SkeletonReference = fragment as SkeletonHierarchyReference;
 
                 if (SkeletonReference != null)
                 {
@@ -113,37 +114,41 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     break;
                 }
 
-                MeshReference = fragments[fragmentIndex] as MeshReference;
+                MeshReference = fragment as MeshReference;
 
-                // Why would the mesh reference be null?
                 if (MeshReference != null && MeshReference.Mesh != null)
                 {
                     MeshReference.Mesh.IsHandled = true;
                     break;
                 }
-                
+
+                if (MeshReference != null && MeshReference.LegacyMesh != null)
+                {
+                    break;
+                }
+
                 // This only exists in the main zone WLD
-                CameraReference = fragments[fragmentIndex - 1] as CameraReference;
+                CameraReference = fragment as CameraReference;
 
                 if (CameraReference != null)
                 {
                     break;
                 }
-                
-                ParticleSpriteReference = fragments[fragmentIndex - 1] as ParticleSpriteReference;
+
+                ParticleSpriteReference = fragment as ParticleSpriteReference;
 
                 if (ParticleSpriteReference != null)
                 {
                     break;
                 }
-                
-                Fragment07 = fragments[fragmentIndex - 1] as Fragment07;
+
+                Fragment07 = fragment as Fragment07;
 
                 if (Fragment07 != null)
                 {
                     break;
                 }
-                
+
                 logger.LogError($"Actor: Cannot link fragment with index {fragmentIndex}");
             }
 
@@ -188,7 +193,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 logger.LogError("Cannot determine actor type!");
             }
         }
-        
+
         public override void OutputInfo(ILogger logger)
         {
             base.OutputInfo(logger);
@@ -201,7 +206,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 SkeletonHierarchy = skeleton
             };
-            
+
             CalculateActorType(logger);
             skeleton.IsAssigned = true;
         }

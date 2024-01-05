@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
@@ -12,8 +12,8 @@ namespace LanternExtractor.EQ.Wld
     public class WldFileCharacters : WldFile
     {
         public Dictionary<string, string> AnimationSources = new Dictionary<string, string>();
-        
-        public WldFileCharacters(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+
+        public WldFileCharacters(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
             ParseAnimationSources();
@@ -27,7 +27,7 @@ namespace LanternExtractor.EQ.Wld
                 _logger.LogError("WldFileCharacters: No animationsources.txt file found.");
                 return;
             }
-            
+
             string fileText = File.ReadAllText(filename);
             List<List<string>> parsedText = TextParser.ParseTextByDelimitedLines(fileText, ',', '#');
 
@@ -37,11 +37,11 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
+
                 AnimationSources[line[0].ToLower()] = line[1].ToLower();
-            }        
+            }
         }
-        
+
         private string GetAnimationModelLink(string modelName)
         {
             return !AnimationSources.ContainsKey(modelName) ? modelName : AnimationSources[modelName];
@@ -59,13 +59,13 @@ namespace LanternExtractor.EQ.Wld
                 var characterFixer = new CharacterFixer();
                 characterFixer.Fix(this);
             }
-            
+
             foreach (var skeleton in GetFragmentsOfType<SkeletonHierarchy>())
             {
                 skeleton.BuildSkeletonData(_wldType == WldType.Characters);
             }
         }
-        
+
         private void BuildSlotMapping()
         {
             var materialLists = GetFragmentsOfType<MaterialList>();
@@ -106,7 +106,7 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
+
                 _logger.LogWarning("WldFileCharacters: Material not assigned: " + material.Name);
             }
         }
@@ -126,10 +126,10 @@ namespace LanternExtractor.EQ.Wld
                 {
                     return;
                 }
-                
+
                 skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
             }
-            
+
             if (skeletons.Count == 0)
             {
                 return;
@@ -146,7 +146,7 @@ namespace LanternExtractor.EQ.Wld
 
                 string modelBase = skeleton.ModelBase;
                 string alternateModel = GetAnimationModelLink(modelBase);
-                
+
                 // TODO: Alternate model bases
                 foreach (var track in GetFragmentsOfType<TrackFragment>())
                 {
@@ -159,9 +159,9 @@ namespace LanternExtractor.EQ.Wld
                     {
                         track.ParseTrackData(_logger);
                     }
-                    
+
                     string trackModelBase = track.ModelName;
-                    
+
                     if (trackModelBase != modelBase && alternateModel != trackModelBase)
                     {
                         continue;
@@ -169,7 +169,7 @@ namespace LanternExtractor.EQ.Wld
 
                     skeleton.AddTrackData(track);
                 }
-                
+
                 // TODO: Split to another function
                 if(GetFragmentsOfType<Mesh>().Count != 0)
                 {
@@ -185,7 +185,7 @@ namespace LanternExtractor.EQ.Wld
                         string basename = cleanedName;
 
                         bool endsWithNumber = char.IsDigit(cleanedName[cleanedName.Length - 1]);
-                    
+
                         if (endsWithNumber)
                         {
                             int id = Convert.ToInt32(cleanedName.Substring(cleanedName.Length - 2));
@@ -199,7 +199,7 @@ namespace LanternExtractor.EQ.Wld
 
                             basename = cleanedName;
                         }
-                    
+
                         if (basename == modelBase)
                         {
                             skeleton.AddAdditionalMesh(mesh);

@@ -1,4 +1,4 @@
-﻿using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -64,9 +64,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
 
                 // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
-                var objPath = wldFileZone.BasePath.Replace(".s3d", "_obj.s3d");
+                var objPath = EqFileHelper.ObjArchivePath(wldFileZone.BasePath);
                 var objArchive = Path.GetFileNameWithoutExtension(objPath);
-                var s3dObjArchive = new PfsArchive(objPath, logger);
+                var s3dObjArchive = ArchiveFactory.GetArchive(objPath, logger);
                 if (s3dObjArchive.Initialize())
                 {
                     string wldFileName = objArchive + LanternStrings.WldFormatExtension;

@@ -59,18 +59,14 @@ namespace LanternExtractor.Infrastructure
                 fileName = "canwall1.png";
             }
 
-            switch (image.PixelFormat)
+            if (image.PixelFormat == PixelFormat.Format8bppIndexed && isMasked)
             {
-                case PixelFormat.Format8bppIndexed:
-                    if (isMasked)
-                    {
-                        var paletteIndex = GetPaletteIndex(fileName);
-                        image.MakePaletteTransparent(paletteIndex);
-                    }
-                    break;
-                default:
-                    image.MakeMagentaTransparent();
-                    break;
+                var paletteIndex = GetPaletteIndex(fileName);
+                image.MakePaletteTransparent(paletteIndex);
+            }
+            else
+            {
+                image.MakeMagentaTransparent();
             }
 
             image.WritePng(Path.Combine(filePath, fileName));

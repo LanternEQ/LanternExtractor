@@ -2,35 +2,20 @@
 using System.Collections.Generic;
 using System.IO;
 using Ionic.Zlib;
-using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
-namespace LanternExtractor.EQ.Pfs
+namespace LanternExtractor.EQ.Archive
 {
     /// <summary>
     /// Loads and can extract files in the PFS archive
     /// </summary>
-    public class PfsArchive
+    public class PfsArchive : ArchiveBase
     {
-        public string FilePath { get; }
-        public string FileName { get; }
-
-        private List<PfsFile> _files = new List<PfsFile>();
-        private Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
-        private ILogger _logger;
-
-        public bool IsWldArchive { get; set; }
-
-        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
-
-        public PfsArchive(string filePath, ILogger logger)
+        public PfsArchive(string filePath, ILogger logger) : base(filePath, logger)
         {
-            FilePath = filePath;
-            FileName = Path.GetFileName(filePath);
-            _logger = logger;
         }
 
-        public bool Initialize()
+        public override bool Initialize()
         {
             _logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
 
@@ -44,6 +29,8 @@ namespace LanternExtractor.EQ.Pfs
             {
                 var reader = new BinaryReader(fileStream);
                 int directoryOffset = reader.ReadInt32();
+                var pfsMagic = reader.ReadUInt32();
+                var pfsVersion = reader.ReadInt32();
                 reader.BaseStream.Position = directoryOffset;
 
                 int fileCount = reader.ReadInt32();
@@ -123,12 +110,27 @@ namespace LanternExtractor.EQ.Pfs
                 // Assign file names
                 for (int i = 0; i < _files.Count; ++i)
                 {
-                    _files[i].Name = fileNames[i];
-                    _fileNameReference[fileNames[i]] = _files[i];
-
-                    if (!IsWldArchive && fileNames[i].EndsWith(".wld"))
+                    switch(pfsVersion)
                     {
-                        IsWldArchive = true;
+                        case 0x10000:
+                            // PFS version 1 files do not appear to contain the filenames
+                            if (_files[i] is PfsFile pfsFile)
+                            {
+                                pfsFile.Name = $"{pfsFile.Crc:X8}.bin";
+                            }
+                            break;
+                        case 0x20000:
+                            _files[i].Name = fileNames[i];
+                            _fileNameReference[fileNames[i]] = _files[i];
+
+                            if (!IsWldArchive && fileNames[i].EndsWith(LanternStrings.WldFormatExtension))
+                            {
+                                IsWldArchive = true;
+                            }
+                            break;
+                        default:
+                            _logger.LogError("PfsArchive: Unexpected pfs version: " + FileName);
+                            break;
                     }
                 }
 
@@ -188,45 +190,5 @@ namespace LanternExtractor.EQ.Pfs
             }
         }
 
-        public PfsFile GetFile(string fileName)
-        {
-            return !_fileNameReference.ContainsKey(fileName) ? null : _fileNameReference[fileName];
-        }
-
-        public PfsFile GetFile(int index)
-        {
-            if (index < 0 || index >= _files.Count)
-            {
-                return null;
-            }
-
-            return _files[index];
-        }
-
-        public PfsFile[] GetAllFiles()
-        {
-            return _files.ToArray();
-        }
-
-        public void WriteAllFiles(string folder)
-        {
-            foreach (var file in _files)
-            {
-                FileWriter.WriteBytesToDisk(file.Bytes, folder, file.Name);
-            }
-        }
-
-        public void RenameFile(string originalName, string newName)
-        {
-            if (!_fileNameReference.ContainsKey(originalName))
-            {
-                return;
-            }
-
-            var file = _fileNameReference[originalName];
-            _fileNameReference.Remove(originalName);
-            file.Name = newName;
-            _fileNameReference[newName] = file;
-        }
     }
 }
