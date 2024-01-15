@@ -98,14 +98,14 @@ namespace LanternExtractor.Infrastructure
 
             _hasCheckedForPaletteFlagsField = true;
 
-            // The field needed may be named "flags" or "_flags", dependin on the version of Mono. To be thorough, check for the first Name that contains "lags".
+            // The field needed may be named "flags" or "_flags", depending on the version of Mono. To be thorough, check for the first Name that contains "lags".
             var fields = typeof(ColorPalette).GetFields(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
 
-            for (int i = 0; i < fields.Length; i++)
+            foreach (var t in fields)
             {
-                if (fields[i].Name.Contains("lags"))
+                if (t.Name.Contains("lags"))
                 {
-                    _paletteFlagsField = fields[i];
+                    _paletteFlagsField = t;
                     break;
                 }
             }
