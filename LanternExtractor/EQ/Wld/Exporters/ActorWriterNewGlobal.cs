@@ -88,7 +88,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             
             foreach (var o in _objects)
             {
-                _export.AppendLine(o);
+                Export.AppendLine(o);
             }
             
             //StringBuilder headerBuilder = new StringBuilder();

@@ -57,12 +57,12 @@ namespace LanternExtractor.EQ.Wld
                 string cleanedName = FragmentNameCleaner.CleanName(skeleton, false);
                 string actorName = cleanedName + "_ACTORDEF";
 
-                if (!_fragmentNameDictionary.ContainsKey(actorName))
+                if (!FragmentNameDictionary.ContainsKey(actorName))
                 {
                     continue;
                 }
 
-                (_fragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton, _logger);
+                (FragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton, Logger);
             }
         }
 
@@ -93,7 +93,7 @@ namespace LanternExtractor.EQ.Wld
                     string boneName = string.Empty;
                     if (skeleton.IsValidSkeleton(FragmentNameCleaner.CleanName(track), out boneName))
                     {
-                        _logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
+                        Logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
                         track.IsProcessed = true;
                         skeleton.AddTrackDataEquipment(track, boneName.ToLower());
                     }
@@ -107,7 +107,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                _logger.LogError("WldFileCharacters: Track not assigned: " + track.Name);
+                Logger.LogError("WldFileCharacters: Track not assigned: " + track.Name);
             }
         }
     }

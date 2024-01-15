@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             int vertexCount = Reader.ReadInt32();
             int faceCount = Reader.ReadInt32();
-            float BoundingRadius = Reader.ReadSingle();
+            float boundingRadius = Reader.ReadSingle();
 
             if (hasScaleFactor)
             {

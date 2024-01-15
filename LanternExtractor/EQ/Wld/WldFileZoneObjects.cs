@@ -26,7 +26,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (instanceList.Count == 0)
             {
-                _logger.LogWarning("Cannot export object instance list. No object instances found.");
+                Logger.LogWarning("Cannot export object instance list. No object instances found.");
                 return;
             }
 
@@ -49,9 +49,9 @@ namespace LanternExtractor.EQ.Wld
                 colorWriter.ClearExportData();
             }
 
-            if (_wldToInject != null)
+            if (WldToInject != null)
             {
-                instanceList = _wldToInject.GetFragmentsOfType<ObjectInstance>();
+                instanceList = WldToInject.GetFragmentsOfType<ObjectInstance>();
 
                 foreach (var instance in instanceList)
                 {

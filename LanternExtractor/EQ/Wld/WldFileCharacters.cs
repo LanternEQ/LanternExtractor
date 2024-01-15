@@ -11,7 +11,7 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileCharacters : WldFile
     {
-        public Dictionary<string, string> AnimationSources = new Dictionary<string, string>();
+        private readonly Dictionary<string, string> _animationSources = new Dictionary<string, string>();
 
         public WldFileCharacters(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
@@ -24,7 +24,7 @@ namespace LanternExtractor.EQ.Wld
             string filename = "ClientData/animationsources.txt";
             if (!File.Exists(filename))
             {
-                _logger.LogError("WldFileCharacters: No animationsources.txt file found.");
+                Logger.LogError("WldFileCharacters: No animationsources.txt file found.");
                 return;
             }
 
@@ -38,13 +38,13 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                AnimationSources[line[0].ToLower()] = line[1].ToLower();
+                _animationSources[line[0].ToLower()] = line[1].ToLower();
             }
         }
 
         private string GetAnimationModelLink(string modelName)
         {
-            return !AnimationSources.ContainsKey(modelName) ? modelName : AnimationSources[modelName];
+            return !_animationSources.ContainsKey(modelName) ? modelName : _animationSources[modelName];
         }
 
         protected override void ProcessData()
@@ -54,7 +54,7 @@ namespace LanternExtractor.EQ.Wld
             BuildSlotMapping();
             FindMaterialVariants();
 
-            if (_settings.ExportCharactersToSingleFolder)
+            if (Settings.ExportCharactersToSingleFolder)
             {
                 var characterFixer = new CharacterFixer();
                 characterFixer.Fix(this);
@@ -62,7 +62,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (var skeleton in GetFragmentsOfType<SkeletonHierarchy>())
             {
-                skeleton.BuildSkeletonData(_wldType == WldType.Characters);
+                skeleton.BuildSkeletonData(WldType == Wld.WldType.Characters);
             }
         }
 
@@ -72,7 +72,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (var list in materialLists)
             {
-                list.BuildSlotMapping(_logger);
+                list.BuildSlotMapping(Logger);
             }
         }
 
@@ -95,7 +95,7 @@ namespace LanternExtractor.EQ.Wld
 
                     if (materialName.StartsWith(materialListModelName))
                     {
-                        list.AddVariant(material, _logger);
+                        list.AddVariant(material, Logger);
                     }
                 }
             }
@@ -107,7 +107,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                _logger.LogWarning("WldFileCharacters: Material not assigned: " + material.Name);
+                Logger.LogWarning("WldFileCharacters: Material not assigned: " + material.Name);
             }
         }
 
@@ -122,12 +122,12 @@ namespace LanternExtractor.EQ.Wld
 
             if (skeletons.Count == 0)
             {
-                if (_wldToInject == null)
+                if (WldToInject == null)
                 {
                     return;
                 }
 
-                skeletons = _wldToInject.GetFragmentsOfType<SkeletonHierarchy>();
+                skeletons = WldToInject.GetFragmentsOfType<SkeletonHierarchy>();
             }
 
             if (skeletons.Count == 0)
@@ -157,7 +157,7 @@ namespace LanternExtractor.EQ.Wld
 
                     if (!track.IsNameParsed)
                     {
-                        track.ParseTrackData(_logger);
+                        track.ParseTrackData(Logger);
                     }
 
                     string trackModelBase = track.ModelName;
@@ -215,7 +215,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                _logger.LogWarning("WldFileCharacters: Track not assigned: " + track.Name);
+                Logger.LogWarning("WldFileCharacters: Track not assigned: " + track.Name);
             }
         }
     }

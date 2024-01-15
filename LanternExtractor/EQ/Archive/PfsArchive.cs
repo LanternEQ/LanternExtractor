@@ -17,11 +17,11 @@ namespace LanternExtractor.EQ.Archive
 
         public override bool Initialize()
         {
-            _logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
+            Logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
 
             if (!File.Exists(FilePath))
             {
-                _logger.LogError("PfsArchive: File does not exist at: " + FilePath);
+                Logger.LogError("PfsArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Archive
 
                     if (offset > reader.BaseStream.Length)
                     {
-                        _logger.LogError("PfsArchive: Corrupted PFS length detected!");
+                        Logger.LogError("PfsArchive: Corrupted PFS length detected!");
                         return false;
                     }
 
@@ -62,16 +62,16 @@ namespace LanternExtractor.EQ.Archive
 
                         if (deflatedLength >= reader.BaseStream.Length)
                         {
-                            _logger.LogError("PfsArchive: Corrupted file length detected!");
+                            Logger.LogError("PfsArchive: Corrupted file length detected!");
                             return false;
                         }
 
                         byte[] compressedBytes = reader.ReadBytes((int)deflatedLength);
                         byte[] inflatedBytes;
 
-                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, _logger))
+                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, Logger))
                         {
-                            _logger.LogError("PfsArchive: Error occured inflating data");
+                            Logger.LogError("PfsArchive: Error occured inflating data");
                             return false;
                         }
 
@@ -99,29 +99,29 @@ namespace LanternExtractor.EQ.Archive
                         continue;
                     }
 
-                    _files.Add(new PfsFile(crc, size, offset, fileBytes));
+                    Files.Add(new PfsFile(crc, size, offset, fileBytes));
 
                     reader.BaseStream.Position = cachedOffset;
                 }
 
                 // Sort files by offset so we can assign names
-                _files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
+                Files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
                 // Assign file names
-                for (int i = 0; i < _files.Count; ++i)
+                for (int i = 0; i < Files.Count; ++i)
                 {
                     switch(pfsVersion)
                     {
                         case 0x10000:
                             // PFS version 1 files do not appear to contain the filenames
-                            if (_files[i] is PfsFile pfsFile)
+                            if (Files[i] is PfsFile pfsFile)
                             {
                                 pfsFile.Name = $"{pfsFile.Crc:X8}.bin";
                             }
                             break;
                         case 0x20000:
-                            _files[i].Name = fileNames[i];
-                            _fileNameReference[fileNames[i]] = _files[i];
+                            Files[i].Name = fileNames[i];
+                            FileNameReference[fileNames[i]] = Files[i];
 
                             if (!IsWldArchive && fileNames[i].EndsWith(LanternStrings.WldFormatExtension))
                             {
@@ -129,12 +129,12 @@ namespace LanternExtractor.EQ.Archive
                             }
                             break;
                         default:
-                            _logger.LogError("PfsArchive: Unexpected pfs version: " + FileName);
+                            Logger.LogError("PfsArchive: Unexpected pfs version: " + FileName);
                             break;
                     }
                 }
 
-                _logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
+                Logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
             }
 
             return true;

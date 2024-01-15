@@ -6,8 +6,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public AmbientLightColorWriter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Ambient Light Color");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat + "R, G, B");
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Ambient Light Color");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat + "R, G, B");
         }
         
         public override void AddFragmentData(WldFragment data)
@@ -19,11 +19,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            _export.Append(globalAmbientLight.Color.R.ToString());
-            _export.Append(",");
-            _export.Append(globalAmbientLight.Color.G.ToString());
-            _export.Append(",");
-            _export.Append(globalAmbientLight.Color.B.ToString());
+            Export.Append(globalAmbientLight.Color.R.ToString());
+            Export.Append(",");
+            Export.Append(globalAmbientLight.Color.G.ToString());
+            Export.Append(",");
+            Export.Append(globalAmbientLight.Color.B.ToString());
         }
     }
 }

@@ -11,15 +11,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// </summary>
     public class Fragment07 : WldFragment
     {
-        private Fragment06 Fragment06;
+        private Fragment06 _fragment06;
         
         public override void Initialize(int index, int size, byte[] data, List<WldFragment> fragments, Dictionary<int, string> stringHash,
             bool isNewWldFormat, ILogger logger)
         {
             base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
-            Fragment06 = fragments[Reader.ReadInt32() - 1] as Fragment06;
-            int value_08 = Reader.ReadInt32(); // always 0
+            _fragment06 = fragments[Reader.ReadInt32() - 1] as Fragment06;
+            int value08 = Reader.ReadInt32(); // always 0
         }
     }
 }

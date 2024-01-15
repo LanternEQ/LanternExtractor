@@ -63,7 +63,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             int colorsCount = Reader.ReadInt32(); // size4
             int polygonCount = Reader.ReadInt32();
             int size6 = Reader.ReadInt16();
-            int fragment1maybe = Reader.ReadInt16();
+            int fragment1Maybe = Reader.ReadInt16();
             int vertexPieceCount = Reader.ReadInt32(); // -1
             MaterialList = fragments[Reader.ReadInt32() - 1] as MaterialList;
             int meshAnimation = Reader.ReadInt32();
@@ -241,9 +241,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // I think this might be the position of the lightdef; for a light pole the third float is like 7.66 which seems like a reasonable height
             if (ba.IsBitSet(13))
             {
-                var params3_1 = Reader.ReadSingle();
-                var params3_2 = Reader.ReadSingle();
-                var params3_3 = Reader.ReadSingle();
+                var params31 = Reader.ReadSingle();
+                var params32 = Reader.ReadSingle();
+                var params33 = Reader.ReadSingle();
 
                 var bp = 1;
             }

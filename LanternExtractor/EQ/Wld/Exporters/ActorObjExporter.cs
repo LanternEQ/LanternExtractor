@@ -12,7 +12,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public static class ActorObjExporter
     {
-        public static Dictionary<Mesh, List<vec3>> _backupVertices = new Dictionary<Mesh, List<vec3>>();
+        public static Dictionary<Mesh, List<vec3>> BackupVertices = new Dictionary<Mesh, List<vec3>>();
 
         public static void ExportActors(WldFile wldFile, Settings settings, ILogger logger)
         {
@@ -254,7 +254,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    _backupVertices[mesh] = MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
+                    BackupVertices[mesh] = MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
                         wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter.AddFragmentData(mesh);
                 }
@@ -266,7 +266,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
                     meshWriter2.SetIsCharacterModel(true);
                     meshWriter2.AddFragmentData(skeleton.Meshes[0]);
-                    _backupVertices[m2] = MeshExportHelper.ShiftMeshVertices(m2, skeleton,
+                    BackupVertices[m2] = MeshExportHelper.ShiftMeshVertices(m2, skeleton,
                         wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter2.AddFragmentData(m2);
                     meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
@@ -290,7 +290,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private static void RestoreVertices()
         {
-            foreach (var shiftedMesh in _backupVertices)
+            foreach (var shiftedMesh in BackupVertices)
             {
                 shiftedMesh.Key.Vertices = shiftedMesh.Value;
             }

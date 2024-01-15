@@ -43,28 +43,28 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 // TODO: polyhedron scale factor
                 foreach(var vertex in polyhedron.Vertices)
                 {
-                    _export.Append("v");
-                    _export.Append(",");
-                    _export.Append(vertex.x + lm.Center.x);
-                    _export.Append(",");
-                    _export.Append(vertex.z + lm.Center.z);
-                    _export.Append(",");
-                    _export.Append(vertex.y + lm.Center.y);
-                    _export.AppendLine();
+                    Export.Append("v");
+                    Export.Append(",");
+                    Export.Append(vertex.x + lm.Center.x);
+                    Export.Append(",");
+                    Export.Append(vertex.z + lm.Center.z);
+                    Export.Append(",");
+                    Export.Append(vertex.y + lm.Center.y);
+                    Export.AppendLine();
                 }
 
                 foreach(var polygon in polyhedron.Faces)
                 {
-                    _export.Append("i");
-                    _export.Append(",");
-                    _export.Append(0);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex1);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex2);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex3);
-                    _export.AppendLine();
+                    Export.Append("i");
+                    Export.Append(",");
+                    Export.Append(0);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex1);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex2);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex3);
+                    Export.AppendLine();
                 }
 
                 return;
@@ -72,45 +72,45 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (!_isCollisionMesh && (_isFirstMesh || _useGroups))
             {
-                _export.Append("ml");
-                _export.Append(",");
-                _export.Append(FragmentNameCleaner.CleanName(lm.MaterialList));
-                _export.AppendLine();
+                Export.Append("ml");
+                Export.Append(",");
+                Export.Append(FragmentNameCleaner.CleanName(lm.MaterialList));
+                Export.AppendLine();
                 _isFirstMesh = false;
             }
 
             foreach (var vertex in lm.Vertices)
             {
-                _export.Append("v");
-                _export.Append(",");
-                _export.Append(vertex.x + lm.Center.x);
-                _export.Append(",");
-                _export.Append(vertex.z + lm.Center.z);
-                _export.Append(",");
-                _export.Append(vertex.y + lm.Center.y);
-                _export.AppendLine();
+                Export.Append("v");
+                Export.Append(",");
+                Export.Append(vertex.x + lm.Center.x);
+                Export.Append(",");
+                Export.Append(vertex.z + lm.Center.z);
+                Export.Append(",");
+                Export.Append(vertex.y + lm.Center.y);
+                Export.AppendLine();
             }
 
             foreach (var uv in lm.TexCoords)
             {
-                _export.Append("uv");
-                _export.Append(",");
-                _export.Append(uv.x);
-                _export.Append(",");
-                _export.Append(uv.y);
-                _export.AppendLine();
+                Export.Append("uv");
+                Export.Append(",");
+                Export.Append(uv.x);
+                Export.Append(",");
+                Export.Append(uv.y);
+                Export.AppendLine();
             }
 
             foreach (var normal in lm.Normals)
             {
-                _export.Append("n");
-                _export.Append(",");
-                _export.Append(normal.x);
-                _export.Append(",");
-                _export.Append(normal.y);
-                _export.Append(",");
-                _export.Append(normal.z);
-                _export.AppendLine();
+                Export.Append("n");
+                Export.Append(",");
+                Export.Append(normal.x);
+                Export.Append(",");
+                Export.Append(normal.y);
+                Export.Append(",");
+                Export.Append(normal.z);
+                Export.AppendLine();
             }
 
             int currentPolygon = 0;
@@ -122,16 +122,16 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     Polygon polygon = lm.Polygons[currentPolygon];
                     currentPolygon++;
 
-                    _export.Append("i");
-                    _export.Append(",");
-                    _export.Append(renderGroup.MaterialIndex);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex1);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex2);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex3);
-                    _export.AppendLine();
+                    Export.Append("i");
+                    Export.Append(",");
+                    Export.Append(renderGroup.MaterialIndex);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex1);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex2);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex3);
+                    Export.AppendLine();
                 }
             }
 
@@ -139,53 +139,53 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var polygon in lm.Polygons)
                 {
-                    _export.Append("i");
-                    _export.Append(",");
-                    _export.Append(polygon.MaterialIndex);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex1);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex2);
-                    _export.Append(",");
-                    _export.Append(_currentBaseIndex + polygon.Vertex3);
-                    _export.AppendLine();
+                    Export.Append("i");
+                    Export.Append(",");
+                    Export.Append(polygon.MaterialIndex);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex1);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex2);
+                    Export.Append(",");
+                    Export.Append(_currentBaseIndex + polygon.Vertex3);
+                    Export.AppendLine();
                 }
             }
 
             foreach (var bone in lm.MobPieces)
             {
-                _export.Append("b");
-                _export.Append(",");
-                _export.Append(bone.Key);
-                _export.Append(",");
-                _export.Append(bone.Value.Start);
-                _export.Append(",");
-                _export.Append(bone.Value.Count);
-                _export.AppendLine();
+                Export.Append("b");
+                Export.Append(",");
+                Export.Append(bone.Key);
+                Export.Append(",");
+                Export.Append(bone.Value.Start);
+                Export.Append(",");
+                Export.Append(bone.Value.Count);
+                Export.AppendLine();
             }
 
             var animatedVertices = lm.AnimatedVerticesReference?.GetAnimatedVertices();
             if (animatedVertices != null && !_isCollisionMesh)
             {
-                _export.Append("ad");
-                _export.Append(",");
-                _export.Append(animatedVertices.Delay);
-                _export.AppendLine();
+                Export.Append("ad");
+                Export.Append(",");
+                Export.Append(animatedVertices.Delay);
+                Export.AppendLine();
 
                 for (var i = 0; i < animatedVertices.Frames.Count; i++)
                 {
                     foreach (vec3 position in animatedVertices.Frames[i])
                     {
-                        _export.Append("av");
-                        _export.Append(",");
-                        _export.Append(i);
-                        _export.Append(",");
-                        _export.Append(position.x + lm.Center.x);
-                        _export.Append(",");
-                        _export.Append(position.z + lm.Center.z);
-                        _export.Append(",");
-                        _export.Append(position.y + lm.Center.y);
-                        _export.AppendLine();
+                        Export.Append("av");
+                        Export.Append(",");
+                        Export.Append(i);
+                        Export.Append(",");
+                        Export.Append(position.x + lm.Center.x);
+                        Export.Append(",");
+                        Export.Append(position.z + lm.Center.z);
+                        Export.Append(",");
+                        Export.Append(position.y + lm.Center.y);
+                        Export.AppendLine();
                     }
                 }
             }
@@ -198,12 +198,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void WriteAssetToFile(string fileName)
         {
-            if (_export.Length == 0)
+            if (Export.Length == 0)
             {
                 return;
             }
 
-            _export.Insert(0, LanternStrings.ExportHeaderTitle + "Alternate Mesh Intermediate Format" + Environment.NewLine);
+            Export.Insert(0, LanternStrings.ExportHeaderTitle + "Alternate Mesh Intermediate Format" + Environment.NewLine);
 
             base.WriteAssetToFile(fileName);
         }

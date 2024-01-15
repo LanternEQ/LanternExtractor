@@ -31,12 +31,12 @@ namespace LanternExtractor.EQ.Wld
             base.ProcessData();
             LinkBspReferences();
 
-            if (_wldToInject != null)
+            if (WldToInject != null)
             {
                 ImportVertexColors();
             }
 
-            if (_wldType == WldType.Objects)
+            if (WldType == Wld.WldType.Objects)
             {
                 FixSkeletalObjectCollision();
             }
@@ -67,7 +67,7 @@ namespace LanternExtractor.EQ.Wld
 
         private void ImportVertexColors()
         {
-            var colors = _wldToInject.GetFragmentsOfType<VertexColors>();
+            var colors = WldToInject.GetFragmentsOfType<VertexColors>();
 
             if (colors.Count == 0)
             {

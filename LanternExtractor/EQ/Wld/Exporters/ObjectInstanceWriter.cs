@@ -7,8 +7,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
         public ObjectInstanceWriter()
         {
             
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat +
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Object Instances");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat +
                                         "ModelName, PosX, PosY, PosZ, RotX, RotY, RotZ, ScaleX, ScaleY, ScaleZ, ColorIndex");
         }
         
@@ -21,29 +21,29 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
             
-            _export.Append(instance.ObjectName);
-            _export.Append(",");
-            _export.Append(instance.Position.x.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Position.z.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Position.y.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Rotation.x.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Rotation.z.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Rotation.y.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Scale.x.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Scale.y.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Scale.z.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(instance.Colors == null ? -1 :instance.Colors.Index);
+            Export.Append(instance.ObjectName);
+            Export.Append(",");
+            Export.Append(instance.Position.x.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Position.z.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Position.y.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Rotation.x.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Rotation.z.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Rotation.y.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Scale.x.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Scale.y.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Scale.z.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(instance.Colors == null ? -1 :instance.Colors.Index);
 
-            _export.AppendLine();
+            Export.AppendLine();
         }        
     }
 }

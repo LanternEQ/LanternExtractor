@@ -29,7 +29,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (lightInstances.Count == 0)
             {
-                _logger.LogWarning("Unable to export light instance list. No instances found.");
+                Logger.LogWarning("Unable to export light instance list. No instances found.");
                 return;
             }
 

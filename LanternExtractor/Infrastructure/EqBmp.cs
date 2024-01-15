@@ -12,7 +12,7 @@ namespace LanternExtractor.Infrastructure
     /// </summary>
     public class EqBmp
     {
-        private static readonly bool _needsGdipHacks = Environment.OSVersion.Platform == PlatformID.MacOSX ||
+        private static readonly bool NeedsGdipHacks = Environment.OSVersion.Platform == PlatformID.MacOSX ||
             Environment.OSVersion.Platform == PlatformID.Unix;
         private static bool _hasCheckedForPaletteFlagsField;
         private static System.Reflection.FieldInfo _paletteFlagsField = null;
@@ -38,7 +38,7 @@ namespace LanternExtractor.Infrastructure
         public void MakeMagentaTransparent()
         {
             _bitmap.MakeTransparent(Color.Magenta);
-            if (_needsGdipHacks)
+            if (NeedsGdipHacks)
             {
                 // https://github.com/  mono/libgdiplus/commit/bf9a1440b7bfea704bf2cb771f5c2b5c09e7bcfa
                 _bitmap.MakeTransparent(Color.FromArgb(0, Color.Magenta));
@@ -47,7 +47,7 @@ namespace LanternExtractor.Infrastructure
 
         public void MakePaletteTransparent(int transparentIndex)
         {
-            if (_needsGdipHacks)
+            if (NeedsGdipHacks)
             {
                 // https://github.com/mono/libgdiplus/issues/702
                 _paletteFlagsField?.SetValue(_palette, _palette.Flags | (int)PaletteFlags.HasAlpha);
@@ -57,7 +57,7 @@ namespace LanternExtractor.Infrastructure
             _palette.Entries[transparentIndex] = transparentColor;
             _bitmap.Palette = _palette;
 
-            if (_needsGdipHacks)
+            if (NeedsGdipHacks)
             {
                 // Due to a bug with the libgdiplus implementation of System.Drawing, setting a color palette
                 // entry to transparent does not work. The workaround is to ensure that the transparent
@@ -70,7 +70,7 @@ namespace LanternExtractor.Infrastructure
         {
             var transparencyColor = Color.FromArgb(0, 0, 0, 0);
 
-            if (!_needsGdipHacks)
+            if (!NeedsGdipHacks)
             {
                 return transparencyColor;
             }
@@ -91,7 +91,7 @@ namespace LanternExtractor.Infrastructure
         // https://github.com/Robmaister/SharpFont/pull/136
         private static void SetPaletteFlagsField()
         {
-            if (!_needsGdipHacks || _hasCheckedForPaletteFlagsField)
+            if (!NeedsGdipHacks || _hasCheckedForPaletteFlagsField)
             {
                 return;
             }

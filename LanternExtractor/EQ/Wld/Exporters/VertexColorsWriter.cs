@@ -12,8 +12,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private void AddHeader()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Vertex Colors");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat +
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Vertex Colors");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat +
                                "Red, Green, Blue, Sunlight");
         }
 
@@ -28,14 +28,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             foreach (Color color in instance.Colors)
             {
-                _export.Append(color.R);
-                _export.Append(",");
-                _export.Append(color.G);
-                _export.Append(",");
-                _export.Append(color.B);
-                _export.Append(",");
-                _export.Append(color.A);
-                _export.AppendLine();
+                Export.Append(color.R);
+                Export.Append(",");
+                Export.Append(color.G);
+                Export.Append(",");
+                Export.Append(color.B);
+                Export.Append(",");
+                Export.Append(color.A);
+                Export.AppendLine();
             }
         }
 

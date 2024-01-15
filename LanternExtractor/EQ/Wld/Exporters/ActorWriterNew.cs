@@ -15,24 +15,24 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            _export.Append(actor.ActorType.ToString());
-            _export.Append(",");
-            _export.Append(actor.ReferenceName);
+            Export.Append(actor.ActorType.ToString());
+            Export.Append(",");
+            Export.Append(actor.ReferenceName);
             
-            _export.Append(FragmentNameCleaner.CleanName(actor));
-            _export.AppendLine();
+            Export.Append(FragmentNameCleaner.CleanName(actor));
+            Export.AppendLine();
         }
 
         public override void WriteAssetToFile(string fileName)
         {
-            if (_export.Length == 0)
+            if (Export.Length == 0)
             {
                 return;
             }
             
             StringBuilder headerBuilder = new StringBuilder();
             headerBuilder.AppendLine(LanternStrings.ExportHeaderTitle + "Actor");
-            _export.Insert(0, headerBuilder.ToString());
+            Export.Insert(0, headerBuilder.ToString());
             base.WriteAssetToFile(fileName);
         }
     }

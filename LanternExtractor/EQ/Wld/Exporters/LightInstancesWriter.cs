@@ -6,8 +6,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public LightInstancesWriter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Light Instances");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat +
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Light Instances");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat +
                                        "PosX, PosY, PosZ, Radius, ColorR, ColorG, ColorB");
         }
         
@@ -20,20 +20,20 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            _export.Append(light.Position.x.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.Position.z.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.Position.y.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.Radius.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.r.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.g.ToString(_numberFormat));
-            _export.Append(",");
-            _export.Append(light.LightReference.LightSource.Color.b.ToString(_numberFormat));
-            _export.AppendLine();
+            Export.Append(light.Position.x.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.Position.z.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.Position.y.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.Radius.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.LightReference.LightSource.Color.r.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.LightReference.LightSource.Color.g.ToString(NumberFormat));
+            Export.Append(",");
+            Export.Append(light.LightReference.LightSource.Color.b.ToString(NumberFormat));
+            Export.AppendLine();
         }
     }
 }

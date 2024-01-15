@@ -20,11 +20,11 @@ namespace LanternExtractor.EQ.Archive
 
         public override bool Initialize()
         {
-            _logger.LogInfo("T3dArchive: Started initialization of archive: " + FileName);
+            Logger.LogInfo("T3dArchive: Started initialization of archive: " + FileName);
 
             if (!File.Exists(FilePath))
             {
-                _logger.LogError("T3dArchive: File does not exist at: " + FilePath);
+                Logger.LogError("T3dArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
@@ -35,14 +35,14 @@ namespace LanternExtractor.EQ.Archive
                 var magic = reader.ReadBytes(4);
                 if (!magic.SequenceEqual(T3dMagic))
                 {
-                    _logger.LogError("T3dArchive: Incorrect file magic");
+                    Logger.LogError("T3dArchive: Incorrect file magic");
                     return false;
                 }
 
                 var version = reader.ReadBytes(4);
                 if (!version.SequenceEqual(T3dVersion))
                 {
-                    _logger.LogError("T3dArchive: Incorrect file version");
+                    Logger.LogError("T3dArchive: Incorrect file version");
                     return false;
                 }
 
@@ -79,8 +79,8 @@ namespace LanternExtractor.EQ.Archive
                         IsWldArchive = true;
                     }
 
-                    _files.Add(file);
-                    _fileNameReference[file.Name] = file;
+                    Files.Add(file);
+                    FileNameReference[file.Name] = file;
                 }
             }
 

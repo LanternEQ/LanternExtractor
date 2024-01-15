@@ -10,7 +10,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public AnimationWriter(bool isCharacterAnimation)
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Animation");
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Animation");
             _isCharacterAnimation = isCharacterAnimation;
         }
 
@@ -38,9 +38,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             Animation anim = skeleton.Animations[_targetAnimation];
 
-            _export.AppendLine("# Animation: " + _targetAnimation);
-            _export.AppendLine("framecount," + anim.FrameCount);
-            _export.AppendLine("totalTimeMs," + anim.AnimationTimeMs);
+            Export.AppendLine("# Animation: " + _targetAnimation);
+            Export.AppendLine("framecount," + anim.FrameCount);
+            Export.AppendLine("totalTimeMs," + anim.AnimationTimeMs);
 
             for (int i = 0; i < skeleton.Skeleton.Count; ++i)
             {
@@ -87,39 +87,39 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private void CreateTrackString(string fullPath, int frame, BoneTransform boneTransform, int delay)
         {
-            _export.Append(fullPath);
-            _export.Append(",");
+            Export.Append(fullPath);
+            Export.Append(",");
 
-            _export.Append(frame);
-            _export.Append(",");
+            Export.Append(frame);
+            Export.Append(",");
 
-            _export.Append(boneTransform.Translation.x);
-            _export.Append(",");
+            Export.Append(boneTransform.Translation.x);
+            Export.Append(",");
 
-            _export.Append(boneTransform.Translation.z);
-            _export.Append(",");
+            Export.Append(boneTransform.Translation.z);
+            Export.Append(",");
 
-            _export.Append(boneTransform.Translation.y);
-            _export.Append(",");
+            Export.Append(boneTransform.Translation.y);
+            Export.Append(",");
 
-            _export.Append(-boneTransform.Rotation.x);
-            _export.Append(",");
+            Export.Append(-boneTransform.Rotation.x);
+            Export.Append(",");
 
-            _export.Append(-boneTransform.Rotation.z);
-            _export.Append(",");
+            Export.Append(-boneTransform.Rotation.z);
+            Export.Append(",");
 
-            _export.Append(-boneTransform.Rotation.y);
-            _export.Append(",");
+            Export.Append(-boneTransform.Rotation.y);
+            Export.Append(",");
 
-            _export.Append(boneTransform.Rotation.w);
-            _export.Append(",");
+            Export.Append(boneTransform.Rotation.w);
+            Export.Append(",");
 
-            _export.Append(boneTransform.Scale);
-            _export.Append(",");
+            Export.Append(boneTransform.Scale);
+            Export.Append(",");
 
-            _export.Append(delay.ToString());
+            Export.Append(delay.ToString());
 
-            _export.AppendLine();
+            Export.AppendLine();
         }
 
 

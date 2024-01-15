@@ -95,17 +95,17 @@ namespace LanternExtractor.EQ.Wld.Exporters
             var cosc = Math.Cos(roll);
             var sinc = Math.Sin(roll);
 
-            var Axx = cosa * cosb;
-            var Axy = cosa * sinb * sinc - sina * cosc;
-            var Axz = cosa * sinb * cosc + sina * sinc;
+            var axx = cosa * cosb;
+            var axy = cosa * sinb * sinc - sina * cosc;
+            var axz = cosa * sinb * cosc + sina * sinc;
 
-            var Ayx = sina * cosb;
-            var Ayy = sina * sinb * sinc + cosa * cosc;
-            var Ayz = sina * sinb * cosc - cosa * sinc;
+            var ayx = sina * cosb;
+            var ayy = sina * sinb * sinc + cosa * cosc;
+            var ayz = sina * sinb * cosc - cosa * sinc;
 
-            var Azx = -sinb;
-            var Azy = cosb * sinc;
-            var Azz = cosb * cosc;
+            var azx = -sinb;
+            var azy = cosb * sinc;
+            var azz = cosb * cosc;
 
             if (mesh == null)
             {
@@ -125,13 +125,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     name = LanternStrings.ObjMaterialHeader + _forcedMeshList + ".mtl";
                 }
 
-                _export.AppendLine(name);
+                Export.AppendLine(name);
                 _isFirstMesh = false;
             }
 
             if (_exportGroups)
             {
-                _export.AppendLine("g " + FragmentNameCleaner.CleanName(mesh));
+                Export.AppendLine("g " + FragmentNameCleaner.CleanName(mesh));
             }
 
             if (mesh.ExportSeparateCollision)
@@ -317,14 +317,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         var py = vertex.y;
                         var pz = vertex.z;
 
-                        float x = (float)(Axx * px + Axy * py + Axz * pz);
-                        float y = (float)(Ayx * px + Ayy * py + Ayz * pz);
-                        float z = (float)(Azx * px + Azy * py + Azz * pz);
+                        float x = (float)(axx * px + axy * py + axz * pz);
+                        float y = (float)(ayx * px + ayy * py + ayz * pz);
+                        float z = (float)(azx * px + azy * py + azz * pz);
                         vertex = new vec3(x, y, z);
                     }
-                    vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x + offset.x)).ToString(_numberFormat) + " " +
-                                            (vertex.z + mesh.Center.z + offset.z).ToString(_numberFormat) + " " +
-                                            (vertex.y + mesh.Center.y + offset.y).ToString(_numberFormat));
+                    vertexOutput.AppendLine("v " + (-(vertex.x + mesh.Center.x + offset.x)).ToString(NumberFormat) + " " +
+                                            (vertex.z + mesh.Center.z + offset.z).ToString(NumberFormat) + " " +
+                                            (vertex.y + mesh.Center.y + offset.y).ToString(NumberFormat));
 
                     if (_objExportType == ObjExportType.Collision)
                     {
@@ -339,8 +339,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     }
 
                     vec2 vertexUvs = mesh.TextureUvCoordinates[usedVertex];
-                    vertexOutput.AppendLine("vt " + vertexUvs.x.ToString(_numberFormat) + " " +
-                                            vertexUvs.y.ToString(_numberFormat));
+                    vertexOutput.AppendLine("vt " + vertexUvs.x.ToString(NumberFormat) + " " +
+                                            vertexUvs.y.ToString(NumberFormat));
                 }
 
                 frames.Add(vertexOutput.ToString() + faceOutput);
@@ -351,7 +351,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 if (i == 0)
                 {
-                    _export.Append(frames[i]);
+                    Export.Append(frames[i]);
                 }
                 else
                 {
@@ -382,7 +382,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             for (int i = 1; i < _frames.Count; ++i)
             {
-                _export = _frames[i];
+                Export = _frames[i];
                 WriteAssetToFile(fileName.Replace(".obj", "") + "_frame" + i + ".obj");
             }
         }

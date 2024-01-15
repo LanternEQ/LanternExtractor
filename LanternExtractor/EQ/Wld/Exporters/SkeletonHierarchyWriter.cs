@@ -15,8 +15,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void AddFragmentData(WldFragment data)
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, AlternateMesh, ParticleCloud");
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, AlternateMesh, ParticleCloud");
 
             SkeletonHierarchy skeleton = data as SkeletonHierarchy;
 
@@ -27,42 +27,42 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
             {
-                _export.Append("meshes");
+                Export.Append("meshes");
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
-                _export.AppendLine();
+                Export.AppendLine();
 
-                _export.Append("secondary_meshes");
+                Export.Append("secondary_meshes");
                 foreach (var mesh in skeleton.SecondaryMeshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
 
-                _export.AppendLine();
+                Export.AppendLine();
             }
 
             if (skeleton.AlternateMeshes != null && skeleton.AlternateMeshes.Count != 0)
             {
-                _export.Append("meshes");
+                Export.Append("meshes");
                 foreach (var mesh in skeleton.AlternateMeshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
-                _export.AppendLine();
+                Export.AppendLine();
 
-                _export.Append("secondary_meshes");
+                Export.Append("secondary_meshes");
                 foreach (var mesh in skeleton.SecondaryAlternateMeshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
 
-                _export.AppendLine();
+                Export.AppendLine();
             }
 
             foreach (var node in skeleton.Skeleton)
@@ -86,32 +86,32 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     boneName = StripModelBase(boneName, skeleton.ModelBase);
                 }
 
-                _export.Append(CleanSkeletonNodeName(boneName));
-                _export.Append(",");
-                _export.Append(childrenList);
+                Export.Append(CleanSkeletonNodeName(boneName));
+                Export.Append(",");
+                Export.Append(childrenList);
 
-                _export.Append(",");
+                Export.Append(",");
 
                 if (node.MeshReference?.Mesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
+                    Export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
                 }
 
-                _export.Append(",");
+                Export.Append(",");
 
                 if (node.MeshReference?.LegacyMesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.LegacyMesh));
+                    Export.Append(FragmentNameCleaner.CleanName(node.MeshReference.LegacyMesh));
                 }
 
-                _export.Append(",");
+                Export.Append(",");
 
                 if (node.ParticleCloud != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.ParticleCloud));
+                    Export.Append(FragmentNameCleaner.CleanName(node.ParticleCloud));
                 }
 
-                _export.AppendLine();
+                Export.AppendLine();
             }
         }
 

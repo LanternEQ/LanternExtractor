@@ -8,8 +8,7 @@ namespace LanternExtractor.EQ.Sound
 {
     public class EnvAudio
     {
-        public static EnvAudio Instance => _instance;
-        private static readonly EnvAudio _instance = new EnvAudio();
+        public static EnvAudio Instance { get; } = new EnvAudio();
 
         public EalData Data { get; private set; }
 

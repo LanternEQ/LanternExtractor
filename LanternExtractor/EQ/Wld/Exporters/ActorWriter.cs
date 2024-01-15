@@ -30,30 +30,30 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
             if (_actorType == ActorType.Skeletal)
             {
-                _export.Append(FragmentNameCleaner.CleanName(actor));
-                _export.Append(",");
-                _export.Append(FragmentNameCleaner.CleanName(actor.SkeletonReference.SkeletonHierarchy));
-                _export.AppendLine();
+                Export.Append(FragmentNameCleaner.CleanName(actor));
+                Export.Append(",");
+                Export.Append(FragmentNameCleaner.CleanName(actor.SkeletonReference.SkeletonHierarchy));
+                Export.AppendLine();
             }
             else if (_actorType == ActorType.Static)
             {
-                _export.Append(FragmentNameCleaner.CleanName(actor));
-                _export.Append(",");
+                Export.Append(FragmentNameCleaner.CleanName(actor));
+                Export.Append(",");
 
                 if (actor.MeshReference.Mesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.Mesh));
+                    Export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.Mesh));
                 }
                 else if (actor.MeshReference.LegacyMesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.LegacyMesh));
+                    Export.Append(FragmentNameCleaner.CleanName(actor.MeshReference.LegacyMesh));
                 }
                 
-                _export.AppendLine();
+                Export.AppendLine();
             }
             else
             {
-                _export.AppendLine(FragmentNameCleaner.CleanName(actor));
+                Export.AppendLine(FragmentNameCleaner.CleanName(actor));
             }
             
             _actorCount++;
@@ -61,7 +61,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void WriteAssetToFile(string fileName)
         {
-            if (_export.Length == 0)
+            if (Export.Length == 0)
             {
                 return;
             }
@@ -70,7 +70,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             headerBuilder.AppendLine(LanternStrings.ExportHeaderTitle +
                                      "Actor List");
             headerBuilder.AppendLine("# Total models: " + _actorCount);
-            _export.Insert(0, headerBuilder.ToString());
+            Export.Insert(0, headerBuilder.ToString());
             
             base.WriteAssetToFile(fileName);
         }

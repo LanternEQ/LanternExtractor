@@ -13,8 +13,8 @@ namespace LanternExtractor.EQ.Wld.DataTypes
         public float Brightness { get; set; }
         public float ScaledAmbient { get; set; }
         public BitmapInfoReference SimpleSpriteReference { get; set; }
-        public UVInfo UVInfo { get; set; }
-        public List<vec2> UVMap { get; set; }
+        public UvInfo UvInfo { get; set; }
+        public List<vec2> UvMap { get; set; }
 
         public static RenderInfo Parse(BinaryReader reader, List<WldFragment> fragments)
         {
@@ -29,8 +29,8 @@ namespace LanternExtractor.EQ.Wld.DataTypes
             var hasBrightness = ba.IsBitSet(1);
             var hasScaledAmbient = ba.IsBitSet(2);
             var hasSimpleSprite = ba.IsBitSet(3);
-            var hasUVInfo = ba.IsBitSet(4);
-            var hasUVMap = ba.IsBitSet(5);
+            var hasUvInfo = ba.IsBitSet(4);
+            var hasUvMap = ba.IsBitSet(5);
             var isTwoSided = ba.IsBitSet(6);
 
             if (hasPen)
@@ -54,23 +54,23 @@ namespace LanternExtractor.EQ.Wld.DataTypes
                 renderInfo.SimpleSpriteReference = fragments[fragmentRef - 1] as BitmapInfoReference;
             }
 
-            if (hasUVInfo)
+            if (hasUvInfo)
             {
-                renderInfo.UVInfo = new UVInfo
+                renderInfo.UvInfo = new UvInfo
                 {
-                    UVOrigin = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
+                    UvOrigin = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     UAxis = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle()),
                     VAxis = new vec3(reader.ReadSingle(), reader.ReadSingle(), reader.ReadSingle())
                 };
             }
 
-            if (hasUVMap)
+            if (hasUvMap)
             {
                 var uvMapCount = reader.ReadInt32();
-                renderInfo.UVMap = new List<vec2>();
+                renderInfo.UvMap = new List<vec2>();
                 for (var i = 0; i < uvMapCount; i++)
                 {
-                    renderInfo.UVMap.Add(new vec2(reader.ReadSingle(), reader.ReadSingle()));
+                    renderInfo.UvMap.Add(new vec2(reader.ReadSingle(), reader.ReadSingle()));
                 }
             }
 
