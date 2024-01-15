@@ -40,7 +40,7 @@ namespace LanternExtractor.Infrastructure
             _bitmap.MakeTransparent(Color.Magenta);
             if (NeedsGdipHacks)
             {
-                // https://github.com/  mono/libgdiplus/commit/bf9a1440b7bfea704bf2cb771f5c2b5c09e7bcfa
+                // https://github.com/mono/libgdiplus/commit/bf9a1440b7bfea704bf2cb771f5c2b5c09e7bcfa
                 _bitmap.MakeTransparent(Color.FromArgb(0, Color.Magenta));
             }
         }
