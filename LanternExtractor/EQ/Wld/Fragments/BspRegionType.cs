@@ -94,7 +94,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             else if (regionTypeString.StartsWith("sln_"))
             {
                 // gukbottom, cazicthule (gumdrop), runnyeye, velketor
-                RegionTypes.Add(RegionType.WaterBlockLOS);
+                RegionTypes.Add(RegionType.WaterBlockLos);
             }
             else if (regionTypeString.StartsWith("vwn_"))
             {

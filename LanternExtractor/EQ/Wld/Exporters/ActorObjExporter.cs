@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 using GlmSharp;
-using LanternExtractor.EQ.Pfs;
+using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -12,7 +12,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public static class ActorObjExporter
     {
-        public static Dictionary<Mesh, List<vec3>> _backupVertices = new Dictionary<Mesh, List<vec3>>();
+        public static Dictionary<Mesh, List<vec3>> BackupVertices = new Dictionary<Mesh, List<vec3>>();
 
         public static void ExportActors(WldFile wldFile, Settings settings, ILogger logger)
         {
@@ -62,7 +62,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 var shortName = wldFile.ShortName;
 
                 // Get object instances within this zone file to map up and instantiate later
-                PfsFile zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
+                var zoneObjectsFileInArchive = s3dArchive.GetFile("objects" + LanternStrings.WldFormatExtension);
                 if (zoneObjectsFileInArchive != null)
                 {
                     var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
@@ -72,9 +72,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
 
                 // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
-                string objPath = path.Replace(".s3d", "_obj.s3d");
+                string objPath = EqFileHelper.ObjArchivePath(path);
                 string objArchive = Path.GetFileNameWithoutExtension(objPath);
-                var s3dObjArchive = new PfsArchive(objPath, logger);
+                var s3dObjArchive = ArchiveFactory.GetArchive(objPath, logger);
                 if (s3dObjArchive.Initialize())
                 {
                     string wldFileName = objArchive + LanternStrings.WldFormatExtension;
@@ -254,7 +254,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    _backupVertices[mesh] = MeshExportHelper.ShiftMeshVertices(mesh, skeleton, 
+                    BackupVertices[mesh] = MeshExportHelper.ShiftMeshVertices(mesh, skeleton,
                         wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter.AddFragmentData(mesh);
                 }
@@ -266,7 +266,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         settings.ExportZoneMeshGroups, wldFile.ZoneShortname);
                     meshWriter2.SetIsCharacterModel(true);
                     meshWriter2.AddFragmentData(skeleton.Meshes[0]);
-                    _backupVertices[m2] = MeshExportHelper.ShiftMeshVertices(m2, skeleton,
+                    BackupVertices[m2] = MeshExportHelper.ShiftMeshVertices(m2, skeleton,
                         wldFile.WldType == WldType.Characters, animation, frameIndex);
                     meshWriter2.AddFragmentData(m2);
                     meshWriter2.WriteAssetToFile(GetMeshPath(wldFile, FragmentNameCleaner.CleanName(skeleton), i + 1));
@@ -290,7 +290,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private static void RestoreVertices()
         {
-            foreach (var shiftedMesh in _backupVertices)
+            foreach (var shiftedMesh in BackupVertices)
             {
                 shiftedMesh.Key.Vertices = shiftedMesh.Value;
             }

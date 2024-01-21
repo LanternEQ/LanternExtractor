@@ -8,10 +8,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public BspTreeWriter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat +
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "BSP Tree");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat +
                                "Normal nodes: NormalX, NormalY, NormalZ, SplitDistance, LeftNodeId, RightNodeId");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat +
+            Export.AppendLine(LanternStrings.ExportHeaderFormat +
                                "Leaf nodes: BSPRegionId, RegionType");
         }
 
@@ -29,24 +29,24 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 // Normal node
                 if (node.Region == null)
                 {
-                    _export.Append(node.NormalX.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(node.NormalZ.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(node.NormalY.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(node.SplitDistance.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(node.LeftNode.ToString(_numberFormat));
-                    _export.Append(",");
-                    _export.Append(node.RightNode.ToString(_numberFormat));
-                    _export.AppendLine();
+                    Export.Append(node.NormalX.ToString(NumberFormat));
+                    Export.Append(",");
+                    Export.Append(node.NormalZ.ToString(NumberFormat));
+                    Export.Append(",");
+                    Export.Append(node.NormalY.ToString(NumberFormat));
+                    Export.Append(",");
+                    Export.Append(node.SplitDistance.ToString(NumberFormat));
+                    Export.Append(",");
+                    Export.Append(node.LeftNode.ToString(NumberFormat));
+                    Export.Append(",");
+                    Export.Append(node.RightNode.ToString(NumberFormat));
+                    Export.AppendLine();
                 }
                 else
                 // Leaf node
                 {
-                    _export.Append(node.RegionId.ToString(_numberFormat));
-                    _export.Append(",");
+                    Export.Append(node.RegionId.ToString(NumberFormat));
+                    Export.Append(",");
 
                     string types = string.Empty;
 
@@ -67,11 +67,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         types = RegionType.Normal.ToString();
                     }
                     
-                    _export.Append(types);
+                    Export.Append(types);
 
                     if (node.Region.RegionType == null)
                     {
-                        _export.AppendLine();
+                        Export.AppendLine();
                         continue;
                     }
 
@@ -81,30 +81,30 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
                         if (zoneline != null)
                         {
-                            _export.Append(",");
-                            _export.Append(zoneline.Type.ToString()); 
-                            _export.Append(",");
+                            Export.Append(",");
+                            Export.Append(zoneline.Type.ToString()); 
+                            Export.Append(",");
 
                             if (zoneline.Type == ZonelineType.Reference)
                             {
-                                _export.Append(zoneline.Index);
+                                Export.Append(zoneline.Index);
                             }
                             else
                             {                                
-                                _export.Append(zoneline.ZoneIndex);
-                                _export.Append(",");
-                                _export.Append(zoneline.Position.x);
-                                _export.Append(",");
-                                _export.Append(zoneline.Position.y);
-                                _export.Append(",");
-                                _export.Append(zoneline.Position.z);
-                                _export.Append(",");
-                                _export.Append(zoneline.Heading);
+                                Export.Append(zoneline.ZoneIndex);
+                                Export.Append(",");
+                                Export.Append(zoneline.Position.x);
+                                Export.Append(",");
+                                Export.Append(zoneline.Position.y);
+                                Export.Append(",");
+                                Export.Append(zoneline.Position.z);
+                                Export.Append(",");
+                                Export.Append(zoneline.Heading);
                             }
                         }
                     }
                     
-                    _export.AppendLine();
+                    Export.AppendLine();
                 }
             }
         }

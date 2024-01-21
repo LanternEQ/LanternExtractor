@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
             Name = stringHash[-Reader.ReadInt32()];
             int fragmentRef = Reader.ReadInt32();
-            int value_08 = Reader.ReadInt32(); // always 0
+            int value08 = Reader.ReadInt32(); // always 0
             _reference = fragments[fragmentRef - 1] as ParticleSprite;
         }
     }

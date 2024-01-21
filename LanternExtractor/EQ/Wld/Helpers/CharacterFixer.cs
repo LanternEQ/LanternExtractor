@@ -29,6 +29,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
             FixBlackAndWhiteDragon();
             FixGhoulTextures();
             FixHalasFemale();
+            FixBetaBeetle();
             FixHighpassMale();
         }
 
@@ -292,7 +293,7 @@ namespace LanternExtractor.EQ.Wld.Helpers
                         actor?.MeshReference?.Mesh?.MaterialList?.Name?.Replace("GHOSTSHIP", "GSP") ?? "GSP";
                 }
 
-                if (actor.Name.StartsWith("LAUNCH"))
+                if (actor.Name.StartsWith("LAUNCH") && (actor?.MeshReference?.Mesh?.Name ?? null) != null)
                 {
                     actor.Name = actor.MeshReference.Mesh.Name.Replace("DMSPRITEDEF", "ACTORDEF");
                 }
@@ -384,13 +385,32 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 return;
             }
 
-            skeleton.BoneMappingClean[7] = "bi_l";
-            skeleton.BoneMappingClean[10] = "l_point";
-            skeleton.BoneMappingClean[15] = "head_point";
+            RenameBone(skeleton, 7, "bi_l");
+            RenameBone(skeleton, 10, "l_point");
+            RenameBone(skeleton, 15, "head_point");
+        }
 
-            skeleton.Skeleton[7].CleanedName = "bi_l";
-            skeleton.Skeleton[10].CleanedName = "l_point";
-            skeleton.Skeleton[15].CleanedName = "head_point";
+        /// <summary>
+        /// Early beta beetles have SPI named bones
+        /// </summary>
+        private void FixBetaBeetle()
+        {
+            var skeleton = _wld.GetFragmentByName<SkeletonHierarchy>("BET_HS_DEF");
+
+            if (skeleton == null)
+            {
+                return;
+            }
+
+            for (var i = 0; i < skeleton.Skeleton.Count; i++)
+            {
+                var bone = skeleton.Skeleton[i];
+                var boneName = bone.CleanedName;
+                if (boneName.StartsWith("spi"))
+                {
+                    RenameBone(skeleton, i, boneName.Substring(3));
+                }
+            }
         }
 
         /// <summary>
@@ -406,12 +426,36 @@ namespace LanternExtractor.EQ.Wld.Helpers
                 return;
             }
 
+            if (skeleton.Skeleton.Count < 25)
+            {
+                return;
+            }
+
             skeleton.Skeleton[0].Children = new List<int>
             {
                 1
             };
 
             skeleton.Skeleton.RemoveAt(24);
+        }
+
+        private void RenameBone(SkeletonHierarchy skeleton, int index, string newBoneName)
+        {
+            var oldBoneName = skeleton.BoneMappingClean[index];
+
+            skeleton.BoneMappingClean[index] = newBoneName;
+            skeleton.Skeleton[index].CleanedName = newBoneName;
+
+            for (var i = 0; i < skeleton.Skeleton.Count; i++)
+            {
+                var fullPath = skeleton.Skeleton[i].CleanedFullPath;
+                if (!fullPath.Contains(oldBoneName))
+                {
+                    continue;
+                }
+
+                skeleton.Skeleton[i].CleanedFullPath = fullPath.Replace(oldBoneName, newBoneName);
+            }
         }
     }
 }

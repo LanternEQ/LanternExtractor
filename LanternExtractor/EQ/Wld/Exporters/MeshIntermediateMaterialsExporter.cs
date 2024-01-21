@@ -14,14 +14,14 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
             
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Intermediate Format");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat + "Index, MaterialName, AnimationTextures, AnimationDelayMs, SkinTextures");
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Intermediate Format");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat + "Index, MaterialName, AnimationTextures, AnimationDelayMs, SkinTextures");
 
             for (int i = 0; i < list.Materials.Count; i++)
             {
                 Material material = list.Materials[i];
-                _export.Append(i);
-                _export.Append(",");
+                Export.Append(i);
+                Export.Append(",");
 
                 List<Material> allMaterials = new List<Material> {material};
                 allMaterials.AddRange(list.GetMaterialVariants(material, null));
@@ -35,17 +35,17 @@ namespace LanternExtractor.EQ.Wld.Exporters
                         currentMaterial = allMaterials.First();
                     }
 
-                    _export.Append(GetMaterialString(currentMaterial));
+                    Export.Append(GetMaterialString(currentMaterial));
 
                     if (j < list.VariantCount)
                     {
-                        _export.Append(";");
+                        Export.Append(";");
                     }
                 }
 
-                _export.Append(",");
-                _export.Append(material.BitmapInfoReference?.BitmapInfo.AnimationDelayMs ?? 0);
-                _export.AppendLine();
+                Export.Append(",");
+                Export.Append(material.BitmapInfoReference?.BitmapInfo.AnimationDelayMs ?? 0);
+                Export.AppendLine();
             }
         }
         

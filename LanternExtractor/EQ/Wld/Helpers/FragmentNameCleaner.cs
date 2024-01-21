@@ -28,13 +28,13 @@ namespace LanternExtractor.EQ.Wld.Helpers
             {
                 cleanedName = cleanedName.Replace(_prefixes[fragment.GetType()], string.Empty);
             }
-            
+
             if(toLower)
             {
                 cleanedName = cleanedName.ToLower();
             }
-            
-            return cleanedName;
+
+            return cleanedName.Trim();
         }
     }
 }

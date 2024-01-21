@@ -1,4 +1,4 @@
-﻿using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -8,7 +8,7 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileEquipment : WldFile
     {
-        public WldFileEquipment(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+        public WldFileEquipment(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
@@ -41,7 +41,7 @@ namespace LanternExtractor.EQ.Wld
         private void FindUnhandledSkeletons()
         {
             var skeletons = GetFragmentsOfType<SkeletonHierarchy>();
-            
+
             if (skeletons == null)
             {
                 return;
@@ -56,13 +56,13 @@ namespace LanternExtractor.EQ.Wld
 
                 string cleanedName = FragmentNameCleaner.CleanName(skeleton, false);
                 string actorName = cleanedName + "_ACTORDEF";
-                
-                if (!_fragmentNameDictionary.ContainsKey(actorName))
+
+                if (!FragmentNameDictionary.ContainsKey(actorName))
                 {
                     continue;
                 }
 
-                (_fragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton, _logger);
+                (FragmentNameDictionary[actorName] as Actor)?.AssignSkeletonReference(skeleton, Logger);
             }
         }
 
@@ -87,13 +87,13 @@ namespace LanternExtractor.EQ.Wld
                 {
                     continue;
                 }
-                
+
                 foreach (var skeleton in skeletons)
                 {
                     string boneName = string.Empty;
                     if (skeleton.IsValidSkeleton(FragmentNameCleaner.CleanName(track), out boneName))
                     {
-                        _logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
+                        Logger.LogError($"Assigning {track.Name} to {skeleton.Name}");
                         track.IsProcessed = true;
                         skeleton.AddTrackDataEquipment(track, boneName.ToLower());
                     }
@@ -107,7 +107,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                _logger.LogError("WldFileCharacters: Track not assigned: " + track.Name);
+                Logger.LogError("WldFileCharacters: Track not assigned: " + track.Name);
             }
         }
     }

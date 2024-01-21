@@ -7,8 +7,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
 {
     public abstract class TextAssetWriter
     {
-        protected StringBuilder _export = new StringBuilder();
-        protected NumberFormatInfo _numberFormat = new NumberFormatInfo {NumberDecimalSeparator = "."};
+        protected StringBuilder Export = new StringBuilder();
+        protected NumberFormatInfo NumberFormat = new NumberFormatInfo {NumberDecimalSeparator = "."};
 
         public abstract void AddFragmentData(WldFragment data);
 
@@ -21,24 +21,24 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            if (_export.Length == 0)
+            if (Export.Length == 0)
             {
                 return;
             }
             
             Directory.CreateDirectory(directory);
             
-            File.WriteAllText(fileName, _export.ToString());
+            File.WriteAllText(fileName, Export.ToString());
         }
 
         public virtual void ClearExportData()
         {
-            _export.Clear();
+            Export.Clear();
         }
 
         public int GetExportByteCount()
         {
-            return _export.ToString().Length;
+            return Export.ToString().Length;
         }
     }
 }

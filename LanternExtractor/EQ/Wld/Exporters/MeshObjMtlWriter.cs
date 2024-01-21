@@ -52,12 +52,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     if(!createdNullMaterial)
                     {
-                        _export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + "null");
-                        _export.AppendLine("Ka 1.000 1.000 1.000");
-                        _export.AppendLine("Kd 1.000 1.000 1.000");
-                        _export.AppendLine("Ks 0.000 0.000 0.000");
-                        _export.AppendLine("d 1.0 ");
-                        _export.AppendLine("illum 2");
+                        Export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + "null");
+                        Export.AppendLine("Ka 1.000 1.000 1.000");
+                        Export.AppendLine("Kd 1.000 1.000 1.000");
+                        Export.AppendLine("Ks 0.000 0.000 0.000");
+                        Export.AppendLine("d 1.0 ");
+                        Export.AppendLine("illum 2");
 
                         createdNullMaterial = true;
                     }
@@ -70,13 +70,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     continue;
                 }
 
-                _export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + MaterialList.GetMaterialPrefix(material.ShaderType) + material.GetFirstBitmapNameWithoutExtension());
-                _export.AppendLine("Ka 1.000 1.000 1.000");
-                _export.AppendLine("Kd 1.000 1.000 1.000");
-                _export.AppendLine("Ks 0.000 0.000 0.000");
-                _export.AppendLine("d 1.0 ");
-                _export.AppendLine("illum 2");
-                _export.AppendLine("map_Kd " + "Textures/" + skinMaterial.GetFirstBitmapExportFilename());
+                Export.AppendLine(LanternStrings.ObjNewMaterialPrefix + " " + MaterialList.GetMaterialPrefix(material.ShaderType) + material.GetFirstBitmapNameWithoutExtension());
+                Export.AppendLine("Ka 1.000 1.000 1.000");
+                Export.AppendLine("Kd 1.000 1.000 1.000");
+                Export.AppendLine("Ks 0.000 0.000 0.000");
+                Export.AppendLine("d 1.0 ");
+                Export.AppendLine("illum 2");
+                Export.AppendLine("map_Kd " + "Textures/" + skinMaterial.GetFirstBitmapExportFilename());
             }
         }
     }

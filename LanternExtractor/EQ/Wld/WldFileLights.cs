@@ -1,4 +1,4 @@
-﻿using LanternExtractor.EQ.Pfs;
+﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
@@ -7,7 +7,7 @@ namespace LanternExtractor.EQ.Wld
 {
     public class WldFileLights : WldFile
     {
-        public WldFileLights(PfsFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+        public WldFileLights(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
             WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
         {
         }
@@ -19,7 +19,7 @@ namespace LanternExtractor.EQ.Wld
         {
             ExportLightInstanceList();
         }
-        
+
         /// <summary>
         /// Exports the list of light instances (contains position, colors, radius)
         /// </summary>
@@ -29,7 +29,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (lightInstances.Count == 0)
             {
-                _logger.LogWarning("Unable to export light instance list. No instances found.");
+                Logger.LogWarning("Unable to export light instance list. No instances found.");
                 return;
             }
 
@@ -39,7 +39,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 writer.AddFragmentData(light);
             }
-            
+
             writer.WriteAssetToFile(GetExportFolderForWldType() + "light_instances.txt");
         }
     }

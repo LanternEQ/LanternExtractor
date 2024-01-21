@@ -6,7 +6,7 @@ namespace LanternExtractor.EQ
 {
     public static class ClientDataCopier
     {
-        public const string ClientDataDirectory = "clientdata";
+        private const string ClientDataDirectory = "clientdata";
 
         public static void Copy(string fileName, string rootFolder, ILogger logger, Settings settings)
         {

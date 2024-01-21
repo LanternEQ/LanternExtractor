@@ -7,7 +7,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public ParticleSystemWriter()
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Particle System");
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Particle System");
         }
         
         public override void AddFragmentData(WldFragment data)
@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 return;
             }
 
-            _export.AppendLine(FragmentNameCleaner.CleanName(data));
+            Export.AppendLine(FragmentNameCleaner.CleanName(data));
         }
     }
 }

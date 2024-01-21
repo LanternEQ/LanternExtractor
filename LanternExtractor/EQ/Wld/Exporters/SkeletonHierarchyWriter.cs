@@ -7,56 +7,68 @@ namespace LanternExtractor.EQ.Wld.Exporters
     public class SkeletonHierarchyWriter : TextAssetWriter
     {
         private bool _stripModelBase;
-        
+
         public SkeletonHierarchyWriter(bool stripModelBase)
         {
             _stripModelBase = stripModelBase;
         }
-        
+
         public override void AddFragmentData(WldFragment data)
         {
-            _export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
-            _export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, AlternateMesh, ParticleCloud");
-            
+            Export.AppendLine(LanternStrings.ExportHeaderTitle + "Skeleton Hierarchy");
+            Export.AppendLine(LanternStrings.ExportHeaderFormat + "BoneName, Children, Mesh, AlternateMesh, ParticleCloud");
+
             SkeletonHierarchy skeleton = data as SkeletonHierarchy;
 
             if (skeleton == null)
             {
                 return;
             }
-            
+
             if (skeleton.Meshes != null && skeleton.Meshes.Count != 0)
             {
-                _export.Append("meshes");
+                Export.Append("meshes");
                 foreach (var mesh in skeleton.Meshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
+                Export.AppendLine();
+
+                Export.Append("secondary_meshes");
                 foreach (var mesh in skeleton.SecondaryMeshes)
                 {
-                    _export.Append(",");
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
 
-                _export.AppendLine();
+                Export.AppendLine();
             }
 
             if (skeleton.AlternateMeshes != null && skeleton.AlternateMeshes.Count != 0)
             {
-                _export.Append("meshes,");
+                Export.Append("meshes");
                 foreach (var mesh in skeleton.AlternateMeshes)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(mesh));
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
                 }
-                
-                _export.AppendLine();
+                Export.AppendLine();
+
+                Export.Append("secondary_meshes");
+                foreach (var mesh in skeleton.SecondaryAlternateMeshes)
+                {
+                    Export.Append(",");
+                    Export.Append(FragmentNameCleaner.CleanName(mesh));
+                }
+
+                Export.AppendLine();
             }
 
             foreach (var node in skeleton.Skeleton)
             {
                 string childrenList = string.Empty;
-                
+
                 foreach (var children in node.Children)
                 {
                     childrenList += children;
@@ -73,36 +85,36 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     boneName = StripModelBase(boneName, skeleton.ModelBase);
                 }
-                
-                _export.Append(CleanSkeletonNodeName(boneName));
-                _export.Append(",");
-                _export.Append(childrenList);
 
-                _export.Append(",");
+                Export.Append(CleanSkeletonNodeName(boneName));
+                Export.Append(",");
+                Export.Append(childrenList);
+
+                Export.Append(",");
 
                 if (node.MeshReference?.Mesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
+                    Export.Append(FragmentNameCleaner.CleanName(node.MeshReference.Mesh));
                 }
-                
-                _export.Append(",");
+
+                Export.Append(",");
 
                 if (node.MeshReference?.LegacyMesh != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.MeshReference.LegacyMesh));
+                    Export.Append(FragmentNameCleaner.CleanName(node.MeshReference.LegacyMesh));
                 }
-                
-                _export.Append(",");
+
+                Export.Append(",");
 
                 if (node.ParticleCloud != null)
                 {
-                    _export.Append(FragmentNameCleaner.CleanName(node.ParticleCloud));
+                    Export.Append(FragmentNameCleaner.CleanName(node.ParticleCloud));
                 }
-                
-                _export.AppendLine();
+
+                Export.AppendLine();
             }
         }
-        
+
         private string CleanSkeletonNodeName(string name)
         {
             return name.Replace("_DAG", "").ToLower();

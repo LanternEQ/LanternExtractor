@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public List<LegacyMesh> AlternateMeshes { get; private set; }
         public List<SkeletonBone> Skeleton { get; set; }
 
-        private Fragment18 _fragment18Reference;
+        private PolyhedronReference _fragment18Reference;
 
         public string ModelBase { get; set; }
         public bool IsAssigned { get; set; }
@@ -34,6 +34,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public float BoundingRadius;
 
         public List<Mesh> SecondaryMeshes = new List<Mesh>();
+        public List<LegacyMesh> SecondaryAlternateMeshes = new List<LegacyMesh>();
 
         private bool _hasBuiltData;
 
@@ -71,7 +72,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (fragment18Reference > 0)
             {
-                _fragment18Reference = fragments[fragment18Reference] as Fragment18;
+                _fragment18Reference = fragments[fragment18Reference] as PolyhedronReference;
             }
 
             // Three sequential DWORDs
@@ -92,7 +93,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 // An index into the string has to get this bone's name
                 int boneNameIndex = Reader.ReadInt32();
                 string boneName = string.Empty;
-                
+
                 if (stringHash.ContainsKey(-boneNameIndex))
                 {
                     boneName = stringHash[-boneNameIndex];
@@ -111,17 +112,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 var pieceNew = new SkeletonBone
                 {
-                    Index = i, 
-                    Track = track, 
+                    Index = i,
+                    Track = track,
                     Name = boneName
                 };
-                
+
                 pieceNew.Track.IsPoseAnimation = true;
                 pieceNew.AnimationTracks = new Dictionary<string, TrackFragment>();
-                
+
                 BoneMappingClean[i] = Animation.CleanBoneAndStripBase(boneName, ModelBase);
                 BoneMapping[i] = boneName;
-                
+
                 if (pieceNew.Track == null)
                 {
                     logger.LogError("Unable to link track reference!");
@@ -216,8 +217,8 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 return;
             }
-            
-            BuildSkeletonTreeData(0, Skeleton, null, string.Empty, 
+
+            BuildSkeletonTreeData(0, Skeleton, null, string.Empty,
                 string.Empty, string.Empty, stripModelBase);
             _hasBuiltData = true;
         }
@@ -375,14 +376,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             track.IsProcessed = true;
         }
 
-        private void BuildSkeletonTreeData(int index, List<SkeletonBone> treeNodes, SkeletonBone parent, 
+        private void BuildSkeletonTreeData(int index, List<SkeletonBone> treeNodes, SkeletonBone parent,
             string runningName, string runningNameCleaned, string runningIndex, bool stripModelBase)
         {
             SkeletonBone bone = treeNodes[index];
             bone.Parent = parent;
             bone.CleanedName = CleanBoneName(bone.Name, stripModelBase);
             BoneMappingClean[index] = bone.CleanedName;
-            
+
             if (bone.Name != string.Empty)
             {
                 runningIndex += bone.Index + "/";
@@ -424,12 +425,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public void AddAdditionalMesh(Mesh mesh)
         {
-            if (Meshes.Any(x => x.Name == mesh.Name) 
+            if (Meshes.Any(x => x.Name == mesh.Name)
                 || SecondaryMeshes.Any(x => x.Name == mesh.Name))
             {
                 return;
             }
-            
+
             if (mesh.MobPieces.Count == 0)
             {
                 return;
@@ -437,6 +438,23 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             SecondaryMeshes.Add(mesh);
             SecondaryMeshes = SecondaryMeshes.OrderBy(x => x.Name).ToList();
+        }
+
+        public void AddAdditionalAlternateMesh(LegacyMesh mesh)
+        {
+            if (AlternateMeshes.Any(x => x.Name == mesh.Name)
+                || SecondaryAlternateMeshes.Any(x => x.Name == mesh.Name))
+            {
+                return;
+            }
+
+            if (mesh.MobPieces.Count == 0)
+            {
+                return;
+            }
+
+            SecondaryAlternateMeshes.Add(mesh);
+            SecondaryAlternateMeshes = SecondaryAlternateMeshes.OrderBy(x => x.Name).ToList();
         }
 
         public bool IsValidSkeleton(string trackName, out string boneName)
@@ -476,7 +494,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
 
             var currentBone = Skeleton[boneIndex];
-            
+
             mat4 boneMatrix = mat4.Identity;
 
             while (currentBone != null)
@@ -485,16 +503,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 {
                     break;
                 }
-                
+
                 var track = Animations[animName].TracksCleanedStripped[currentBone.CleanedName].TrackDefFragment;
                 int realFrame = frame >= track.Frames.Count ? 0 : frame;
                 currentBone = Skeleton[boneIndex].Parent;
-                
+
                 float scaleValue = track.Frames[realFrame].Scale;
                 var scaleMat = mat4.Scale(scaleValue, scaleValue, scaleValue);
-        
+
                 var rotationMatrix = new mat4(track.Frames[realFrame].Rotation);
-        
+
                 var translation = track.Frames[realFrame].Translation;
                 var translateMat = mat4.Translate(translation);
 

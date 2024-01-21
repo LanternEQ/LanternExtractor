@@ -10,17 +10,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
     /// Contains a list of frames each containing a position for each vertex.
     /// The frame vertices are cycled through, animating the model.
     /// </summary>
-    public class MeshAnimatedVertices : WldFragment
+    public class MeshAnimatedVertices : WldFragment, IAnimatedVertices
     {
         /// <summary>
         /// The model frames
         /// </summary>
-        public List<List<vec3>> Frames { get; private set; }
+        public List<List<vec3>> Frames { get; set; }
 
         /// <summary>
         /// The delay between the vertex swaps
         /// </summary>
-        public int Delay { get; private set; }
+        public int Delay { get; set; }
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,

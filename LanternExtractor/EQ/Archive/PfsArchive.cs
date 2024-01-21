@@ -2,41 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using Ionic.Zlib;
-using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
 
-namespace LanternExtractor.EQ.Pfs
+namespace LanternExtractor.EQ.Archive
 {
     /// <summary>
     /// Loads and can extract files in the PFS archive
     /// </summary>
-    public class PfsArchive
+    public class PfsArchive : ArchiveBase
     {
-        public string FilePath { get; }
-        public string FileName { get; }
-
-        private List<PfsFile> _files = new List<PfsFile>();
-        private Dictionary<string, PfsFile> _fileNameReference = new Dictionary<string, PfsFile>();
-        private ILogger _logger;
-
-        public bool IsWldArchive { get; set; }
-
-        public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
-
-        public PfsArchive(string filePath, ILogger logger)
+        public PfsArchive(string filePath, ILogger logger) : base(filePath, logger)
         {
-            FilePath = filePath;
-            FileName = Path.GetFileName(filePath);
-            _logger = logger;
         }
 
-        public bool Initialize()
+        public override bool Initialize()
         {
-            _logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
+            Logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
 
             if (!File.Exists(FilePath))
             {
-                _logger.LogError("PfsArchive: File does not exist at: " + FilePath);
+                Logger.LogError("PfsArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
@@ -44,6 +29,8 @@ namespace LanternExtractor.EQ.Pfs
             {
                 var reader = new BinaryReader(fileStream);
                 int directoryOffset = reader.ReadInt32();
+                var pfsMagic = reader.ReadUInt32();
+                var pfsVersion = reader.ReadInt32();
                 reader.BaseStream.Position = directoryOffset;
 
                 int fileCount = reader.ReadInt32();
@@ -57,7 +44,7 @@ namespace LanternExtractor.EQ.Pfs
 
                     if (offset > reader.BaseStream.Length)
                     {
-                        _logger.LogError("PfsArchive: Corrupted PFS length detected!");
+                        Logger.LogError("PfsArchive: Corrupted PFS length detected!");
                         return false;
                     }
 
@@ -75,16 +62,16 @@ namespace LanternExtractor.EQ.Pfs
 
                         if (deflatedLength >= reader.BaseStream.Length)
                         {
-                            _logger.LogError("PfsArchive: Corrupted file length detected!");
+                            Logger.LogError("PfsArchive: Corrupted file length detected!");
                             return false;
                         }
 
                         byte[] compressedBytes = reader.ReadBytes((int)deflatedLength);
                         byte[] inflatedBytes;
 
-                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, _logger))
+                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, Logger))
                         {
-                            _logger.LogError("PfsArchive: Error occured inflating data");
+                            Logger.LogError("PfsArchive: Error occured inflating data");
                             return false;
                         }
 
@@ -92,7 +79,9 @@ namespace LanternExtractor.EQ.Pfs
                         inflatedSize += inflatedLength;
                     }
 
-                    if (crc == 0x61580AC9)
+                    // EQZip saved archives use 0xFFFFFFFFU for filenames
+                    // https://github.com/Shendare/EQZip/blob/b181ec7658ea9880984d58271cbab924ab8dd702/EQArchive.cs#L517
+                    if (crc == 0x61580AC9 || (crc == 0xFFFFFFFFU && fileNames.Count == 0))
                     {
                         var dictionaryStream = new MemoryStream(fileBytes);
                         var dictionary = new BinaryReader(dictionaryStream);
@@ -110,27 +99,42 @@ namespace LanternExtractor.EQ.Pfs
                         continue;
                     }
 
-                    _files.Add(new PfsFile(crc, size, offset, fileBytes));
+                    Files.Add(new PfsFile(crc, size, offset, fileBytes));
 
                     reader.BaseStream.Position = cachedOffset;
                 }
 
                 // Sort files by offset so we can assign names
-                _files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
+                Files.Sort((x, y) => x.Offset.CompareTo(y.Offset));
 
                 // Assign file names
-                for (int i = 0; i < _files.Count; ++i)
+                for (int i = 0; i < Files.Count; ++i)
                 {
-                    _files[i].Name = fileNames[i];
-                    _fileNameReference[fileNames[i]] = _files[i];
-
-                    if (!IsWldArchive && fileNames[i].EndsWith(".wld"))
+                    switch(pfsVersion)
                     {
-                        IsWldArchive = true;
+                        case 0x10000:
+                            // PFS version 1 files do not appear to contain the filenames
+                            if (Files[i] is PfsFile pfsFile)
+                            {
+                                pfsFile.Name = $"{pfsFile.Crc:X8}.bin";
+                            }
+                            break;
+                        case 0x20000:
+                            Files[i].Name = fileNames[i];
+                            FileNameReference[fileNames[i]] = Files[i];
+
+                            if (!IsWldArchive && fileNames[i].EndsWith(LanternStrings.WldFormatExtension))
+                            {
+                                IsWldArchive = true;
+                            }
+                            break;
+                        default:
+                            Logger.LogError("PfsArchive: Unexpected pfs version: " + FileName);
+                            break;
                     }
                 }
 
-                _logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
+                Logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
             }
 
             return true;
@@ -186,45 +190,5 @@ namespace LanternExtractor.EQ.Pfs
             }
         }
 
-        public PfsFile GetFile(string fileName)
-        {
-            return !_fileNameReference.ContainsKey(fileName) ? null : _fileNameReference[fileName];
-        }
-
-        public PfsFile GetFile(int index)
-        {
-            if (index < 0 || index >= _files.Count)
-            {
-                return null;
-            }
-
-            return _files[index];
-        }
-
-        public PfsFile[] GetAllFiles()
-        {
-            return _files.ToArray();
-        }
-
-        public void WriteAllFiles(string folder)
-        {
-            foreach (var file in _files)
-            {
-                FileWriter.WriteBytesToDisk(file.Bytes, folder, file.Name);
-            }
-        }
-
-        public void RenameFile(string originalName, string newName)
-        {
-            if (!_fileNameReference.ContainsKey(originalName))
-            {
-                return;
-            }
-
-            var file = _fileNameReference[originalName];
-            _fileNameReference.Remove(originalName);
-            file.Name = newName;
-            _fileNameReference[newName] = file;
-        }
     }
 }
