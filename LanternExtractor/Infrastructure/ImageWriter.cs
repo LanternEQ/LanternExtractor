@@ -24,7 +24,7 @@ namespace LanternExtractor.Infrastructure
             }
             else
             {
-                WriteDdsAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png");
+                WriteDdsAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", logger);
             }
         }
 
@@ -72,7 +72,7 @@ namespace LanternExtractor.Infrastructure
             image.WritePng(Path.Combine(filePath, fileName));
         }
 
-        private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName)
+        private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName, ILogger logger)
         {
             using (IImage image = Pfim.Pfim.FromStream(new MemoryStream(bytes)))
             {
@@ -81,10 +81,27 @@ namespace LanternExtractor.Infrastructure
                 // Convert from Pfim's backend agnostic image format into GDI+'s image format
                 switch (image.Format)
                 {
+                    // Some PoP sky.s3d tga files
+                    case Pfim.ImageFormat.Rgb24:
+                        format = PixelFormat.Format24bppRgb;
+                        break;
                     case Pfim.ImageFormat.Rgba32:
                         format = PixelFormat.Format32bppArgb;
                         break;
+                    // case Pfim.ImageFormat.R5g5b5:
+                    //     format = PixelFormat.Format16bppRgb555;
+                    //     break;
+                    // case Pfim.ImageFormat.R5g6b5:
+                    //     format = PixelFormat.Format16bppRgb565;
+                    //     break;
+                    // case Pfim.ImageFormat.R5g5b5a1:
+                    //     format = PixelFormat.Format16bppArgb1555;
+                    //     break;
+                    // case Pfim.ImageFormat.Rgb8:
+                    //     format = PixelFormat.Format8bppIndexed;
+                    //     break;
                     default:
+                        logger.LogError($"Unsupported image format {fileName} {image.Format}");
                         return;
                 }
 
