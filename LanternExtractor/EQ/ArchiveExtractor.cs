@@ -237,6 +237,7 @@ namespace LanternExtractor.EQ
                 wldFile.Initialize(rootFolder, false);
                 archive.FilenameChanges = wldFile.FilenameChanges;
                 WriteWldTextures(archive, wldFile, texturePath, logger);
+                MissingTextureFixer.Fix(wldFile.ZoneShortname);
                 wldFile.ExportData();
             }
         }
