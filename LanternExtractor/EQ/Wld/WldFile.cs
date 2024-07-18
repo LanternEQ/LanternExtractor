@@ -169,19 +169,7 @@ namespace LanternExtractor.EQ.Wld
                     Logger);
                 newFragment.OutputInfo(Logger);
 
-                Fragments.Add(newFragment);
-
-                if (!FragmentTypeDictionary.ContainsKey(newFragment.GetType()))
-                {
-                    FragmentTypeDictionary[newFragment.GetType()] = new List<WldFragment>();
-                }
-
-                if (!string.IsNullOrEmpty(newFragment.Name) && !FragmentNameDictionary.ContainsKey(newFragment.Name))
-                {
-                    FragmentNameDictionary[newFragment.Name] = newFragment;
-                }
-
-                FragmentTypeDictionary[newFragment.GetType()].Add(newFragment);
+                AddFragment(newFragment);
             }
 
             Logger.LogInfo("-----------------------------------");
@@ -215,6 +203,23 @@ namespace LanternExtractor.EQ.Wld
             }
 
             return FragmentNameDictionary[fragmentName] as T;
+        }
+
+        protected void AddFragment(WldFragment fragment)
+        {
+            Fragments.Add(fragment);
+
+            if (!FragmentTypeDictionary.ContainsKey(fragment.GetType()))
+            {
+                FragmentTypeDictionary[fragment.GetType()] = new List<WldFragment>();
+            }
+
+            if (!string.IsNullOrEmpty(fragment.Name) && !FragmentNameDictionary.ContainsKey(fragment.Name))
+            {
+                FragmentNameDictionary[fragment.Name] = fragment;
+            }
+
+            FragmentTypeDictionary[fragment.GetType()].Add(fragment);
         }
 
         protected virtual void ProcessData()
