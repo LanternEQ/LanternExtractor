@@ -291,7 +291,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 var materialName = GetMaterialName(mesh.MaterialList.Materials[materialGroup.MaterialIndex]);
                 if (_meshMaterialsToSkip.Contains(materialName))
                 {
-                    polygonIndex += materialGroup.PolygonCount;
+                    polygonIndex += materialGroup.TriangleCount;
                     continue;
                 }
 
@@ -301,7 +301,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
 
                 var primitive = gltfMesh.UsePrimitive(gltfMaterial);
-                for (var i = 0; i < materialGroup.PolygonCount; ++i)
+                for (var i = 0; i < materialGroup.TriangleCount; ++i)
                 {
                     IDictionary<VertexPositionNormal, int> triangleGtlfVpToWldVi;
                     if (!canExportVertexColors && !isSkinned)
@@ -541,8 +541,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 where TvM : struct, IVertexMaterial
                 where TvS : struct, IVertexSkinning
         {
-            var triangle = mesh.Indices[polygonIndex];
-            (int v0, int v1, int v2) vertexIndices = (triangle.Vertex1, triangle.Vertex2, triangle.Vertex3);
+            var triangle = mesh.Triangles[polygonIndex];
+            (int v0, int v1, int v2) vertexIndices = (triangle.Index1, triangle.Index2, triangle.Index3);
             (Vector3 v0, Vector3 v1, Vector3 v2) vertexPositions = (
                 (mesh.Vertices[vertexIndices.v0] + mesh.Center).ToVector3(true),
                 (mesh.Vertices[vertexIndices.v1] + mesh.Center).ToVector3(true),
@@ -552,9 +552,9 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v1].ToVector3()),
                 Vector3.Normalize(-mesh.Normals[vertexIndices.v2].ToVector3()));
             (Vector2 v0, Vector2 v1, Vector2 v2) vertexUvs = (
-                mesh.TextureUvCoordinates[vertexIndices.v0].ToVector2(true),
-                mesh.TextureUvCoordinates[vertexIndices.v1].ToVector2(true),
-                mesh.TextureUvCoordinates[vertexIndices.v2].ToVector2(true));
+                mesh.Uvs[vertexIndices.v0].ToVector2(true),
+                mesh.Uvs[vertexIndices.v1].ToVector2(true),
+                mesh.Uvs[vertexIndices.v2].ToVector2(true));
             (int v0, int v1, int v2) boneIndexes = (singularBoneIndex, singularBoneIndex, singularBoneIndex);
             if (isSkinned && singularBoneIndex == -1)
             {
