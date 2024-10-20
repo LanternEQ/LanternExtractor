@@ -3,7 +3,7 @@
 # EverQuest Installation Path
 # Windows example: C:/EverQuest
 # MacOS example: /Users/your.name/EQ/
-EverQuestDirectory = C:/EverQuest
+EverQuestDirectory = "C:/EverQuest"
 
 # Extract the contents of the S3D archive as is?
 # If true, this will export all contents as they exist in the archives in their original formats.
@@ -29,16 +29,16 @@ ExportHiddenGeometry = false
 # If true, will export all characters to the 'characters' folder
 # This is useful when batch importing into Unity
 # (Intermediate)
-ExportCharacterToSingleFolder = true
+ExportCharacterToSingleFolder = false
 
 # If true, will export all equipment to the 'equipment' folder
 # This is useful when batch importing into Unity
 # (Intermediate)
-ExportEquipmentToSingleFolder = true
+ExportEquipmentToSingleFolder = false
 
 # If true, will export all sounds to the 'sounds' folder
 # Some sounds with conflicting names will be overwritten
-ExportSoundsToSingleFolder = true
+ExportSoundsToSingleFolder = false
 
 # If true and using OBJ export format, this will dump an OBJ for each animation frame.
 # This could use a high amount of disk space.
@@ -65,9 +65,9 @@ ExportGltfVertexColors = false
 ExportGltfInGlbFormat = false
 
 # Additional files that should be copied when extracting with `all` or `clientdata`
-# Files should be comma separated and relative to `EverQuestDirectory`.
+# Files should be specified as a TOML array and relative to `EverQuestDirectory`.
 # (Intermediate)
-ClientDataToCopy = spells.eff,spdat.eff
+ClientDataToCopy = ["spells.eff", "spdat.eff"]
 
 # If enabled, client XMI files will be copied to the 'Exports/Music' folder
 # XMI files can be used in the Lantern client

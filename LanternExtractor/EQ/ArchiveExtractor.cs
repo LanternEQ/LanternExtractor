@@ -5,6 +5,7 @@ using LanternExtractor.EQ.Wld;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ
 {
@@ -28,7 +29,7 @@ namespace LanternExtractor.EQ
                 return;
             }
 
-            if (settings.RawS3dExtract)
+            if (settings.RawS3DExtract)
             {
                 archive.WriteAllFiles(Path.Combine(rootFolder, archiveName));
                 return;

@@ -1,5 +1,6 @@
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
@@ -8,7 +9,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private Settings _settings;
         private string _modelName;
         private int _skinId;
-        
+
         public MeshObjMtlWriter(Settings settings, string modelName)
         {
             _settings = settings;
@@ -19,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             _skinId = id;
         }
-        
+
         public override void AddFragmentData(WldFragment data)
         {
             MaterialList list = data as MaterialList;
@@ -28,7 +29,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             bool createdNullMaterial = false;
 
             foreach (Material material in list.Materials)
@@ -47,7 +48,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 }
 
                 string filenameWithoutExtension = skinMaterial.GetFirstBitmapNameWithoutExtension();
-                
+
                 if (string.IsNullOrEmpty(filenameWithoutExtension))
                 {
                     if(!createdNullMaterial)

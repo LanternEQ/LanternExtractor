@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ
 {
@@ -38,7 +39,7 @@ namespace LanternExtractor.EQ
         {
             var paths = new List<string>();
 
-            foreach (var filePath in settings.ClientDataToCopy.Split(','))
+            foreach (var filePath in settings.ClientDataToCopy)
             {
                 var clientDataFilePath = Path.Combine(settings.EverQuestDirectory, filePath.Trim());
                 if (File.Exists(clientDataFilePath))

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LanternExtractor.EQ.Wld.Helpers;
+using LanternExtractor.Infrastructure.Settings;
 using static LanternExtractor.EQ.Wld.Exporters.GltfWriter;
 
 namespace LanternExtractor.EQ.Wld.Exporters

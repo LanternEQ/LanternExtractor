@@ -4,6 +4,7 @@ using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {

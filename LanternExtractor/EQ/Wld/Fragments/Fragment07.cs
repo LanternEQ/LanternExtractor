@@ -12,7 +12,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
     public class Fragment07 : WldFragment
     {
         private Fragment06 _fragment06;
-        
+
         public override void Initialize(int index, int size, byte[] data, List<WldFragment> fragments, Dictionary<int, string> stringHash,
             bool isNewWldFormat, ILogger logger)
         {

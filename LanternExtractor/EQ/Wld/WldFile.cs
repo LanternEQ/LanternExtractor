@@ -8,6 +8,7 @@ using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -305,17 +306,17 @@ namespace LanternExtractor.EQ.Wld
 
         private void ExportMeshes()
         {
-            if (Settings.ModelExportFormat == ModelExportFormat.Intermediate)
+            switch (Settings.ModelExportFormat)
             {
-                MeshExporter.ExportMeshes(this, Settings, Logger);
-            }
-            else if (Settings.ModelExportFormat == ModelExportFormat.Obj)
-            {
-                ActorObjExporter.ExportActors(this, Settings, Logger);
-            }
-            else
-            {
-                ActorGltfExporter.ExportActors(this, Settings, Logger);
+                case ModelExportFormat.Intermediate:
+                    MeshExporter.ExportMeshes(this, Settings, Logger);
+                    break;
+                case ModelExportFormat.Obj:
+                    ActorObjExporter.ExportActors(this, Settings, Logger);
+                    break;
+                default:
+                    ActorGltfExporter.ExportActors(this, Settings, Logger);
+                    break;
             }
         }
 

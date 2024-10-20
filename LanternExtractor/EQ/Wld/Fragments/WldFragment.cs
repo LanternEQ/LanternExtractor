@@ -20,7 +20,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// The name of the fragment - not always used
         /// </summary>
         public string Name { get; set; }
-        
+
         public BinaryReader Reader { get; set; }
 
         /// <summary>

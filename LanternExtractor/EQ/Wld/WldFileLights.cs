@@ -2,6 +2,7 @@
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -21,7 +22,7 @@ namespace LanternExtractor.EQ.Wld
         }
 
         /// <summary>
-        /// Exports the list of light instances (contains position, colors, radius)
+        /// Exports the list of light instances (position, colors, radius)
         /// </summary>
         private void ExportLightInstanceList()
         {
@@ -33,8 +34,7 @@ namespace LanternExtractor.EQ.Wld
                 return;
             }
 
-            LightInstancesWriter writer = new LightInstancesWriter();
-
+            var writer = new LightInstancesWriter();
             foreach (var light in lightInstances)
             {
                 writer.AddFragmentData(light);

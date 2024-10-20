@@ -1,6 +1,7 @@
 using System.IO;
 using System.Linq;
 using LanternExtractor.Infrastructure.Logger;
+using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ
 {
@@ -14,7 +15,7 @@ namespace LanternExtractor.EQ
             {
                 return;
             }
-            
+
             if (!settings.CopyMusic)
             {
                 return;
