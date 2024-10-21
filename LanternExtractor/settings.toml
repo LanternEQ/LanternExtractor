@@ -1,78 +1,105 @@
+########################################
 # Lantern Extractor Settings
+########################################
 
-# EverQuest Installation Path
-# Windows example: C:/EverQuest
-# MacOS example: /Users/your.name/EQ/
-EverQuestDirectory = "C:/EverQuest"
-
-# Extract the contents of the S3D archive as is?
-# If true, this will export all contents as they exist in the archives in their original formats.
-# If false, this will extract contents, process WLD files and convert images to PNG.
+########################################################
+# GENERAL SETTINGS
+#
+#    EverQuestDirectory
+#        Specifies the EverQuest installation path.
+#        Example for Windows: C:/EverQuest
+#        Example for macOS: /Users/your.name/EQ/
+#
+#    LoggerVerbosity
+#        Sets the minimum verbosity of the logger.
+#        0 = info, 1 = warnings, 2 = errors
+#
+#    RawS3DExtract
+#        Extracts the contents of the S3D archive as is.
+#        true = export contents as they exist in their original formats.
+#        false = extract contents, process WLD files, convert images to PNG.
+#
+#    ExportCharacterToSingleFolder
+#        Exports all characters to the 'characters' folder.
+#        Useful for batch importing into Unity.
+#
+#    ExportEquipmentToSingleFolder
+#        Exports all equipment to the 'equipment' folder.
+#        Useful for batch importing into Unity.
+#
+########################################################
+EverQuestDirectory = "C:\\Users\\wilki\\Desktop\\Install"
+UseMultithreading = false
+LoggerVerbosity = 2
 RawS3DExtract = false
-
-# Sets the desired export format for models
-# 0 = Intermediate (Unity importer), 1 = OBJ, 2 = glTF
-ModelExportFormat = 0
-
-# Extract the zone mesh with groups?
-# The zone model is made up of smaller BSP region meshes.
-# If enabled, each region mesh is exported.
-# If disabled, the mesh is combined into a single mesh.
-# Unity importer only supports single mesh zone.
-# (Intermediate, OBJ)
-ExportZoneMeshGroups = false
-
-# Include hidden geometry (invisible boundaries) in the zone collision export?
-# (Intermediate, OBJ)
-ExportHiddenGeometry = false
-
-# If true, will export all characters to the 'characters' folder
-# This is useful when batch importing into Unity
-# (Intermediate)
 ExportCharacterToSingleFolder = false
-
-# If true, will export all equipment to the 'equipment' folder
-# This is useful when batch importing into Unity
-# (Intermediate)
 ExportEquipmentToSingleFolder = false
 
-# If true, will export all sounds to the 'sounds' folder
-# Some sounds with conflicting names will be overwritten
-ExportSoundsToSingleFolder = false
-
-# If true and using OBJ export format, this will dump an OBJ for each animation frame.
-# This could use a high amount of disk space.
-# If true and using glTF export format, skeletal models will export with animations.
-# (OBJ, glTF)
+########################################################
+# MODEL EXPORT SETTINGS
+#
+#    ModelExportFormat
+#        Sets the desired export format for models.
+#        0 = Intermediate (Unity importer)
+#        1 = OBJ
+#        2 = glTF
+#
+#    ExportZoneMeshGroups
+#        Extracts the zone mesh with groups.
+#        true = export each region mesh separately.
+#        false = combine the zone into a single mesh (Unity importer supports only single mesh zone).
+#
+#    ExportHiddenGeometry
+#        Includes hidden geometry (invisible boundaries) in the zone collision export.
+#
+#    ExportZoneWithObjects
+#        Exports zone files in OBJ format with associated objects placed in the zone.
+#
+#    ExportGltfVertexColors
+#        Exports vertex colors for glTF models.
+#        Note: Default behavior of glTF renderers is to mix the vertex color with the base color,
+#        which may not display correctly.
+#
+#    ExportGltfInGlbFormat
+#        Exports glTF models in .GLB file format.
+#        GLB packages the .glTF JSON, .bin, and textures into a single file.
+#        This takes more space but makes models more portable.
+#
+#    ExportAllAnimationFrames
+#        Exports an OBJ for each animation frame.
+#        Note: This can use a lot of disk space if using OBJ format.
+#        For glTF, skeletal models are exported with animations.
+#
+########################################################
+ModelExportFormat = 0
+ExportZoneMeshGroups = false
+ExportHiddenGeometry = false
+ExportZoneWithObjects = false
+ExportGltfVertexColors = false
+ExportGltfInGlbFormat = false
 ExportAllAnimationFrames = false
 
-# If true, will export zone files in obj format with their associated objects placed within the zone
-# (OBJ, glTF)
-ExportZoneWithObjects = false
-
-# Export vertex colors
-# Default behavior of glTF renderers is to mix the vertex color with the base color,
-# which will not look right. Only turn this on if you intend to do some post-processing that
-# requires vertex colors being present.
-# (glTF)
-ExportGltfVertexColors = false
-
-# Export glTF models in .GLB file format.
-# GLB packages the .glTF json, the associated .bin, and all of the model's texture images
-# into one file. This will take up more space since textures can't be shared, and the export
-# process will likely take longer to complete. However, using GLB will make models more portable.
-# (glTF)
-ExportGltfInGlbFormat = false
-
-# Additional files that should be copied when extracting with `all` or `clientdata`
-# Files should be specified as a TOML array and relative to `EverQuestDirectory`.
-# (Intermediate)
-ClientDataToCopy = ["spells.eff", "spdat.eff"]
-
-# If enabled, client XMI files will be copied to the 'Exports/Music' folder
-# XMI files can be used in the Lantern client
+########################################################
+# SOUND AND MUSIC SETTINGS
+#
+#    ExportSoundsToSingleFolder
+#        Exports all sounds to the 'sounds' folder.
+#        Note: Some sounds with conflicting names may be overwritten.
+#
+#    CopyMusic
+#        Copies client XMI music files to the 'Exports/Music' folder.
+#        XMI files can be used in the Lantern client.
+#
+########################################################
+ExportSoundsToSingleFolder = false
 CopyMusic = true
 
-# The minimum verbosity of the logger
-# 0 = info, 1 = warnings, 2 = errors
-LoggerVerbosity = 2
+########################################################
+# CLIENT DATA SETTINGS
+#
+#    ClientDataToCopy
+#        Specifies additional files to copy during extraction.
+#        Files should be listed relative to `EverQuestDirectory`.
+#
+########################################################
+ClientDataToCopy = ["spells.eff", "spdat.eff"]
