@@ -1,6 +1,4 @@
 ﻿using System.Collections.Generic;
-using LanternExtractor.Infrastructure.Logger;
-
 namespace LanternExtractor.EQ.Wld.Fragments
 {
     /// <summary>
@@ -14,11 +12,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data, List<WldFragment> fragments,
             Dictionary<int, string> stringHash,
-            bool isNewWldFormat, ILogger logger)
+            bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
-            
+
             //File.WriteAllBytes("ParticleClouds/" + Name, data);
 
             int flags = Reader.ReadInt32(); // always 4
@@ -28,7 +26,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             byte value17 = Reader.ReadByte();
             byte value18 = Reader.ReadByte();
             byte value19 = Reader.ReadByte();
-            int value20 = Reader.ReadInt32(); // 200, 30, particle count? 
+            int value20 = Reader.ReadInt32(); // 200, 30, particle count?
             int value24 = Reader.ReadInt32(); // always 0
             int value28 = Reader.ReadInt32(); // always 0
             int value32 = Reader.ReadInt32(); // always 0

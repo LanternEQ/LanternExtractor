@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using GlmSharp;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -35,9 +35,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
             var bitAnalyzer = new BitAnalyzer(flags);
@@ -71,7 +71,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 if (Attenuation != 1)
                 {
-                        
+
                 }
 
                 return;
@@ -83,7 +83,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 float something2 = Reader.ReadSingle();
                 return;
             }
-            
+
             // Not sure yet what the purpose of this fragment is in the main zone file
             // For now, return
             if (!IsPlacedLightSource && Name == "DEFAULT_LIGHTDEF")
@@ -116,17 +116,17 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("LightSource: Is a placed light: " + IsPlacedLightSource);
-            logger.LogInfo("LightSource: Is a colored light: " + IsColoredLight);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("LightSource: Is a placed light: " + IsPlacedLightSource);
+            Log.Information("LightSource: Is a colored light: " + IsColoredLight);
 
             if (IsColoredLight)
             {
-                logger.LogInfo("LightSource: Color: " + Color);
-                logger.LogInfo("LightSource: Attenuation (?): " + Attenuation);
+                Log.Information("LightSource: Color: " + Color);
+                Log.Information("LightSource: Attenuation (?): " + Attenuation);
             }
         }
     }

@@ -5,7 +5,7 @@ using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -40,9 +40,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
 
             Skeleton = new List<SkeletonBone>();
             Meshes = new List<Mesh>();
@@ -125,7 +125,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 if (pieceNew.Track == null)
                 {
-                    logger.LogError("Unable to link track reference!");
+                    Log.Error("Unable to link track reference!");
                 }
 
                 int meshReferenceIndex = Reader.ReadInt32() - 1;
@@ -223,11 +223,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             _hasBuiltData = true;
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("0x10: Skeleton pieces: " + Skeleton.Count);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("0x10: Skeleton pieces: " + Skeleton.Count);
         }
 
         private void AddPoseTrack(TrackFragment track, string pieceName)

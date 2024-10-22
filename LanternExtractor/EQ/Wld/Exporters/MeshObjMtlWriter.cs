@@ -1,5 +1,4 @@
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld.Exporters
@@ -39,7 +38,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 if (_skinId != 0)
                 {
                     int skinId = _skinId - 1;
-                    var variants = list.GetMaterialVariants(skinMaterial, new EmptyLogger());
+                    var variants = list.GetMaterialVariants(skinMaterial);
 
                     if (skinId >= 0 && skinId < variants.Count && variants[skinId] != null)
                     {

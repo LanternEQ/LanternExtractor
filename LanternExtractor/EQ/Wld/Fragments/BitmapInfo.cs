@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -17,7 +17,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         public bool IsAnimated { get; private set; }
 
         /// <summary>
-        /// The bitmap names referenced. 
+        /// The bitmap names referenced.
         /// </summary>
         public List<BitmapName> BitmapNames { get; private set; }
 
@@ -28,15 +28,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
             var bitAnalyzer = new BitAnalyzer(flags);
             IsAnimated = bitAnalyzer.IsBitSet(3);
             int bitmapCount = Reader.ReadInt32();
-            
+
             BitmapNames = new List<BitmapName>();
 
             if (IsAnimated)
@@ -50,15 +50,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("BitmapInfo: Animated: " + IsAnimated);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("BitmapInfo: Animated: " + IsAnimated);
 
             if (IsAnimated)
             {
-                logger.LogInfo("BitmapInfo: Animation delay: " + AnimationDelayMs + "ms");
+                Log.Information("BitmapInfo: Animation delay: " + AnimationDelayMs + "ms");
             }
 
             string references = string.Empty;
@@ -74,7 +74,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 references += bitmapName.Index + 1;
             }
 
-            logger.LogInfo("BitmapInfo: Reference(s): " + references);
+            Log.Information("BitmapInfo: Reference(s): " + references);
         }
     }
 }

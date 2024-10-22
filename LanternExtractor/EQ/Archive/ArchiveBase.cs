@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Archive
 {
@@ -11,15 +10,13 @@ namespace LanternExtractor.EQ.Archive
         public string FileName { get; }
         protected List<ArchiveFile> Files = new List<ArchiveFile>();
         protected Dictionary<string, ArchiveFile> FileNameReference = new Dictionary<string, ArchiveFile>();
-        protected ILogger Logger;
         public bool IsWldArchive { get; set; }
         public Dictionary<string, string> FilenameChanges = new Dictionary<string, string>();
 
-        protected ArchiveBase(string filePath, ILogger logger)
+        protected ArchiveBase(string filePath)
         {
             FilePath = filePath;
             FileName = Path.GetFileName(filePath);
-            Logger = logger;
         }
 
         public abstract bool Initialize();

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
+using Serilog;
 
 namespace LanternExtractor.EQ
 {
@@ -9,7 +9,7 @@ namespace LanternExtractor.EQ
     {
         private const string ClientDataDirectory = "clientdata";
 
-        public static void Copy(string fileName, string rootFolder, ILogger logger, Settings settings)
+        public static void Copy(string fileName, string rootFolder, Settings settings)
         {
             if (settings.ClientDataToCopy == null ||
                 settings.ModelExportFormat != ModelExportFormat.Intermediate ||
@@ -18,10 +18,10 @@ namespace LanternExtractor.EQ
                 return;
             }
 
-            WriteAllFiles(rootFolder, logger, settings);
+            WriteAllFiles(rootFolder, settings);
         }
 
-        private static void WriteAllFiles(string rootFolder, ILogger logger, Settings settings)
+        private static void WriteAllFiles(string rootFolder, Settings settings)
         {
             Directory.CreateDirectory(rootFolder + ClientDataDirectory);
 
@@ -30,7 +30,7 @@ namespace LanternExtractor.EQ
             foreach (var filePath in filePaths)
             {
                 var destFilePath = GetDestinationPath(rootFolder, filePath);
-                logger.LogInfo($"Copying {filePath} to {destFilePath}");
+                Log.Information($"Copying {filePath} to {destFilePath}");
                 File.Copy(filePath, destFilePath, true);
             }
         }

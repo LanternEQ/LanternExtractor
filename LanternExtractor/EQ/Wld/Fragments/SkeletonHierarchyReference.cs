@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -15,12 +15,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
 
             var reader = new BinaryReader(new MemoryStream(data));
-            
+
             // Reference is usually 0
             // Confirmed
             Name = stringHash[-reader.ReadInt32()];
@@ -31,7 +31,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (SkeletonHierarchy == null)
             {
-                logger.LogError("Bad skeleton hierarchy reference");
+                Log.Error("Bad skeleton hierarchy reference");
             }
 
             int params1 = reader.ReadInt32();
@@ -40,24 +40,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             // Confirmed
             if (params1 != 0)
             {
-                
+
             }
-            
+
             // Confirmed end
             if (reader.BaseStream.Position != reader.BaseStream.Length)
             {
-                
+
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
+            base.OutputInfo();
 
             if (SkeletonHierarchy != null)
             {
-                logger.LogInfo("-----");
-                logger.LogInfo("0x11: Skeleton track reference: " + SkeletonHierarchy.Index + 1);
+                Log.Information("-----");
+                Log.Information("0x11: Skeleton track reference: " + SkeletonHierarchy.Index + 1);
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.Helpers;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -38,9 +38,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             Materials = new List<Material>();
@@ -55,7 +55,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
                 if (material == null)
                 {
-                    logger.LogError("Unable to get material reference for fragment id: " + reference);
+                    Log.Error("Unable to get material reference for fragment id: " + reference);
                     continue;
                 }
 
@@ -66,7 +66,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public void BuildSlotMapping(ILogger logger)
+        public void BuildSlotMapping()
         {
             Slots = new Dictionary<string, Dictionary<int, Material>>();
 
@@ -81,8 +81,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 string skinId = string.Empty;
                 string partName = string.Empty;
 
-                ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName,
-                    logger);
+                ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName);
 
                 string key = character + "_" + partName;
                 Slots[key] = new Dictionary<int, Material>();
@@ -91,11 +90,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             AdditionalMaterials = new List<Material>();
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("0x30: Material count: " + Materials.Count);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("0x30: Material count: " + Materials.Count);
 
             string references = string.Empty;
 
@@ -109,7 +108,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
                 references += (Materials[i].Index + 1);
             }
 
-            logger.LogInfo("0x30: References: " + references);
+            Log.Information("0x30: References: " + references);
         }
 
         /// <summary>
@@ -120,7 +119,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="skinId">The skin ID</param>
         /// <param name="partName">The name of the body part this material is applied to</param>
         private static void ParseCharacterSkin(string materialName, out string character, out string skinId,
-            out string partName, ILogger logger)
+            out string partName)
         {
             if (materialName.Length != 9)
             {
@@ -168,13 +167,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public void AddVariant(Material material, ILogger logger)
+        public void AddVariant(Material material)
         {
             string character = string.Empty;
             string skinId = string.Empty;
             string partName = string.Empty;
-            ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName,
-                logger);
+            ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName);
 
             string key = character + "_" + partName;
 
@@ -195,7 +193,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             AdditionalMaterials.Add(material);
         }
 
-        public List<Material> GetMaterialVariants(Material material, ILogger logger)
+        public List<Material> GetMaterialVariants(Material material)
         {
             List<Material> additionalSkins = new List<Material>();
 
@@ -207,8 +205,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
             string character = string.Empty;
             string skinId = string.Empty;
             string partName = string.Empty;
-            ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName,
-                logger);
+            ParseCharacterSkin(FragmentNameCleaner.CleanName(material), out character, out skinId, out partName);
 
             string key = character + "_" + partName;
 

@@ -5,8 +5,8 @@ using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -14,8 +14,8 @@ namespace LanternExtractor.EQ.Wld
     {
         private readonly Dictionary<string, string> _animationSources = new Dictionary<string, string>();
 
-        public WldFileCharacters(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
+        public WldFileCharacters(ArchiveFile wldFile, string zoneName, WldType type, Settings settings,
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, settings, wldToInject)
         {
             ParseAnimationSources();
         }
@@ -25,7 +25,7 @@ namespace LanternExtractor.EQ.Wld
             string filename = "ClientData/animationsources.txt";
             if (!File.Exists(filename))
             {
-                Logger.LogError("WldFileCharacters: No animationsources.txt file found.");
+                Log.Error("WldFileCharacters: No animationsources.txt file found.");
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace LanternExtractor.EQ.Wld
 
             foreach (var list in materialLists)
             {
-                list.BuildSlotMapping(Logger);
+                list.BuildSlotMapping();
             }
         }
 
@@ -96,7 +96,7 @@ namespace LanternExtractor.EQ.Wld
 
                     if (materialName.StartsWith(materialListModelName))
                     {
-                        list.AddVariant(material, Logger);
+                        list.AddVariant(material);
                     }
                 }
             }
@@ -108,7 +108,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                Logger.LogWarning("WldFileCharacters: Material not assigned: " + material.Name);
+                Log.Warning("WldFileCharacters: Material not assigned: " + material.Name);
             }
         }
 
@@ -158,7 +158,7 @@ namespace LanternExtractor.EQ.Wld
 
                     if (!track.IsNameParsed)
                     {
-                        track.ParseTrackData(Logger);
+                        track.ParseTrackData();
                     }
 
                     string trackModelBase = track.ModelName;
@@ -212,7 +212,7 @@ namespace LanternExtractor.EQ.Wld
                     continue;
                 }
 
-                Logger.LogWarning("WldFileCharacters: Track not assigned: " + track.Name);
+                Log.Warning("WldFileCharacters: Track not assigned: " + track.Name);
             }
         }
     }

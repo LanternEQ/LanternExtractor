@@ -2,7 +2,7 @@
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -32,9 +32,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             // Flags
@@ -254,16 +254,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
             RegionType = bspRegionType;
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("BspRegion: Contains polygons: " + ContainsPolygons);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("BspRegion: Contains polygons: " + ContainsPolygons);
 
             if (ContainsPolygons)
             {
                 int meshIndex = Mesh?.Index ?? LegacyMesh?.Index ?? 0;
-                logger.LogInfo("BspRegion: Mesh index: " + meshIndex);
+                Log.Information("BspRegion: Mesh index: " + meshIndex);
             }
         }
     }

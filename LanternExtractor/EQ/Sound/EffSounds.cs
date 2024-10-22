@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Sound
 {
@@ -31,7 +31,7 @@ namespace LanternExtractor.EQ.Sound
             _envAudio = envAudio;
         }
 
-        public void Initialize(ILogger logger)
+        public void Initialize()
         {
             if (_soundBank == null || !File.Exists(_soundFilePath))
             {
@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Sound
 
             if (fileLength % EntryLengthInBytes != 0)
             {
-                logger.LogError($"Invalid .eff file - size must be multiple of {EntryLengthInBytes}");
+                Log.Error($"Invalid .eff file - size must be multiple of {EntryLengthInBytes}");
                 return;
             }
 
@@ -65,7 +65,7 @@ namespace LanternExtractor.EQ.Sound
 
                 if (!Enum.IsDefined(typeof(AudioType), typeByte))
                 {
-                    logger.LogError($"Unable to parse sound type: {typeByte}");
+                    Log.Error($"Unable to parse sound type: {typeByte}");
                     continue;
                 }
 

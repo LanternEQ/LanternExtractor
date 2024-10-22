@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -12,14 +12,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
     public class MeshReference : WldFragment
     {
         public Mesh Mesh { get; private set; }
-        
+
         public LegacyMesh LegacyMesh { get; private set; }
-        
+
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int reference = Reader.ReadInt32() - 1;
             Mesh = fragments[reference] as Mesh;
@@ -28,25 +28,25 @@ namespace LanternExtractor.EQ.Wld.Fragments
             {
                 return;
             }
-            
+
             LegacyMesh = fragments[reference] as LegacyMesh;
 
             if (LegacyMesh != null)
             {
                 return;
             }
-            
-            logger.LogError("No mesh reference found for id: " + reference);
+
+            Log.Error("No mesh reference found for id: " + reference);
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
+            base.OutputInfo();
 
             if (Mesh != null)
             {
-                logger.LogInfo("-----");
-                logger.LogInfo("0x2D: Mesh reference: " + Mesh.Index);
+                Log.Information("-----");
+                Log.Information("0x2D: Mesh reference: " + Mesh.Index);
             }
         }
     }

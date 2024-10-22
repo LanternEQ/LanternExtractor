@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace LanternExtractor.Performance
+namespace LanternExtractor.Infrastructure.Performance
 {
     /// <summary>
     /// A thread-safe benchmarking utility to measure and report execution times of functions.

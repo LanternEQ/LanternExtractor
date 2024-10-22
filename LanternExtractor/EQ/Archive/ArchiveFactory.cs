@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Archive
 {
@@ -9,12 +8,12 @@ namespace LanternExtractor.EQ.Archive
         private const uint T3dMagic = 0xffff3d02;
         private const uint PfsMagic = 0x20534650;
 
-        public static ArchiveBase GetArchive(string filePath, ILogger logger)
+        public static ArchiveBase GetArchive(string filePath)
         {
             if (!File.Exists(filePath))
             {
                 // Skip detection and let the archive Initialize fail.
-                return new NullArchive(filePath, logger);
+                return new NullArchive(filePath);
             }
 
             var archiveType = GetArchiveTypeFromMagic(filePath);
@@ -26,9 +25,9 @@ namespace LanternExtractor.EQ.Archive
             switch (archiveType)
             {
                 case ArchiveType.Pfs:
-                    return new PfsArchive(filePath, logger);
+                    return new PfsArchive(filePath);
                 case ArchiveType.T3d:
-                    return new T3dArchive(filePath, logger);
+                    return new T3dArchive(filePath);
                 default:
                     throw new ArgumentException("Unknown archive type", "filePath");
             }

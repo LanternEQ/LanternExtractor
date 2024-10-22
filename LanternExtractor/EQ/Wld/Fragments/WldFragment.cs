@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -33,10 +33,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <param name="fragments">A dictionary of all other fragments for referencing</param>
         /// <param name="stringHash">The string hash - for fragment name assignment</param>
         /// <param name="isNewWldFormat"></param>
-        /// <param name="logger">Logger for debug output</param>
         public virtual void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
             Index = index;
             Size = size;
@@ -46,13 +45,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// <summary>
         /// Outputs general information about the fragment
         /// </summary>
-        public virtual void OutputInfo(ILogger logger)
+        public virtual void OutputInfo()
         {
-            logger.LogInfo("-----------------------------------");
-            logger.LogInfo("Fragment " + (Index + 1) + ": " + this.GetType().Name);
-            logger.LogInfo("-----");
-            logger.LogInfo("Size: " + Size + " bytes");
-            logger.LogInfo("Name: " + (string.IsNullOrEmpty(Name) ? "(empty)" : Name));
+            Log.Information("-----------------------------------");
+            Log.Information("Fragment " + (Index + 1) + ": " + this.GetType().Name);
+            Log.Information("-----");
+            Log.Information("Size: " + Size + " bytes");
+            Log.Information("Name: " + (string.IsNullOrEmpty(Name) ? "(empty)" : Name));
         }
     }
 }

@@ -7,7 +7,8 @@
 #
 #    EverQuestDirectory
 #        Specifies the EverQuest installation path.
-#        Example for Windows: C:/EverQuest
+#        On Windows, you must use double backslashes
+#        Example for Windows: C:\\EverQuest
 #        Example for macOS: /Users/your.name/EQ/
 #
 #    LoggerVerbosity
@@ -28,8 +29,8 @@
 #        Useful for batch importing into Unity.
 #
 ########################################################
-EverQuestDirectory = "C:\\Users\\wilki\\Desktop\\Install"
-UseMultithreading = false
+EverQuestDirectory = "C:\\EQ"
+UseMultithreading = true
 LoggerVerbosity = 2
 RawS3DExtract = false
 ExportCharacterToSingleFolder = false

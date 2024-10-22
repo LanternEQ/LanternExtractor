@@ -16,8 +16,6 @@ using System.Numerics;
 using WldColor = LanternExtractor.EQ.Wld.DataTypes.Color;
 using Animation = LanternExtractor.EQ.Wld.DataTypes.Animation;
 using System.Drawing.Imaging;
-using LanternExtractor.Infrastructure.Logger;
-
 namespace LanternExtractor.EQ.Wld.Exporters
 {
     public class GltfWriter : TextAssetWriter
@@ -50,7 +48,6 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         private readonly bool _exportVertexColors;
         private readonly GltfExportFormat _exportFormat = GltfExportFormat.GlTF;
-        private readonly ILogger _logger;
 
         private static readonly float MaterialRoughness = 0.9f;
         private static readonly Vector4 DefaultVertexColor = new Vector4(0f, 0f, 0f, 1f); // Black
@@ -94,11 +91,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
         private IDictionary<string, IMeshBuilder<MaterialBuilder>> _sharedMeshes;
         private IDictionary<string, List<NodeBuilder>> _skeletons;
 
-        public GltfWriter(bool exportVertexColors, GltfExportFormat exportFormat, ILogger logger)
+        public GltfWriter(bool exportVertexColors, GltfExportFormat exportFormat)
         {
             _exportVertexColors = exportVertexColors;
             _exportFormat = exportFormat;
-            _logger = logger;
 
             Materials = new Dictionary<string, MaterialBuilder>();
             _meshMaterialsToSkip = new HashSet<string>();

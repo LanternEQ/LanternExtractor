@@ -1,6 +1,5 @@
 using System.IO;
 using System.Linq;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ
@@ -9,7 +8,7 @@ namespace LanternExtractor.EQ
     {
         private const string MusicDirectory = "music";
 
-        public static void Copy(string shortname, ILogger logger, Settings settings)
+        public static void Copy(string shortname, Settings settings)
         {
             if (shortname != "music" && shortname != "all")
             {

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Archive
 {
@@ -14,17 +14,17 @@ namespace LanternExtractor.EQ.Archive
         private static readonly byte[] T3dMagic = new byte[] {0x02, 0x3D, 0xFF, 0xFF};
         private static readonly byte[] T3dVersion = new byte[] {0x00, 0x57, 0x01, 0x00};
 
-        public T3dArchive(string filePath, ILogger logger) : base(filePath, logger)
+        public T3dArchive(string filePath) : base(filePath)
         {
         }
 
         public override bool Initialize()
         {
-            Logger.LogInfo("T3dArchive: Started initialization of archive: " + FileName);
+            Log.Information("T3dArchive: Started initialization of archive: " + FileName);
 
             if (!File.Exists(FilePath))
             {
-                Logger.LogError("T3dArchive: File does not exist at: " + FilePath);
+                Log.Error("T3dArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
@@ -35,14 +35,14 @@ namespace LanternExtractor.EQ.Archive
                 var magic = reader.ReadBytes(4);
                 if (!magic.SequenceEqual(T3dMagic))
                 {
-                    Logger.LogError("T3dArchive: Incorrect file magic");
+                    Log.Error("T3dArchive: Incorrect file magic");
                     return false;
                 }
 
                 var version = reader.ReadBytes(4);
                 if (!version.SequenceEqual(T3dVersion))
                 {
-                    Logger.LogError("T3dArchive: Incorrect file version");
+                    Log.Error("T3dArchive: Incorrect file version");
                     return false;
                 }
 

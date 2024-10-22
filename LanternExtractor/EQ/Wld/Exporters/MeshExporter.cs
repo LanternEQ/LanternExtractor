@@ -3,14 +3,13 @@ using System.IO;
 using System.Linq;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld.Exporters
 {
     public static class MeshExporter
     {
-        public static void ExportMeshes(WldFile wldFile, Settings settings, ILogger logger)
+        public static void ExportMeshes(WldFile wldFile, Settings settings)
         {
             var meshFolder = "Meshes/";
             var legacyMeshFolder = "AlternateMeshes/";

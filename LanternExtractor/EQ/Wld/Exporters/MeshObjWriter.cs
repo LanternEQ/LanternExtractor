@@ -201,7 +201,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 {
                     if (currentPolygon < 0 || currentPolygon >= mesh.Triangles.Count)
                     {
-                        //logger.LogError("Invalid polygon index");
+                        //Log.Error("Invalid polygon index");
                         continue;
                     }
 
@@ -287,7 +287,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     {
                         if (usedVertex < 0 || usedVertex >= mesh.Vertices.Count)
                         {
-                            //logger.LogError("Invalid vertex index: " + usedVertex);
+                            //Log.Error("Invalid vertex index: " + usedVertex);
                             continue;
                         }
 

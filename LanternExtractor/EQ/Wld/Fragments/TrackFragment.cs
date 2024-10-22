@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -31,9 +31,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             int reference = Reader.ReadInt32();
@@ -41,7 +41,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (TrackDefFragment == null)
             {
-                logger.LogError("Bad track def reference'");
+                Log.Error("Bad track def reference'");
             }
 
             // Either 4 or 5 - maybe something to look into
@@ -58,14 +58,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
+            base.OutputInfo();
 
             if (TrackDefFragment != null)
             {
-                logger.LogInfo("-----");
-                logger.LogInfo("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
+                Log.Information("-----");
+                Log.Information("0x13: Skeleton piece reference: " + TrackDefFragment.Index + 1);
             }
         }
 
@@ -85,7 +85,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
         /// 4. End with _TRACK
         /// </summary>
         /// <param name="logger"></param>
-        public void ParseTrackData(ILogger logger)
+        public void ParseTrackData()
         {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 
@@ -119,10 +119,10 @@ namespace LanternExtractor.EQ.Wld.Fragments
             PieceName = cleanedName;
 
             IsNameParsed = true;
-            //logger.LogError($"Split into, {AnimationName} {ModelName} {PieceName}");
+            //Log.Error($"Split into, {AnimationName} {ModelName} {PieceName}");
         }
 
-        public void ParseTrackDataEquipment(SkeletonHierarchy skeletonHierarchy, ILogger logger)
+        public void ParseTrackDataEquipment(SkeletonHierarchy skeletonHierarchy)
         {
             string cleanedName = FragmentNameCleaner.CleanName(this, true);
 

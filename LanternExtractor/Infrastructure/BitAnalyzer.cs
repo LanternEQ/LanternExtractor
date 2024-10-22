@@ -22,7 +22,7 @@ namespace LanternExtractor.Infrastructure
         }
 
         /// <summary>
-        /// Returns whether or not the bit in a specific position is set
+        /// Returns whether the bit in a specific position is set
         /// </summary>
         /// <param name="position">The position of the bit to check</param>
         /// <returns></returns>

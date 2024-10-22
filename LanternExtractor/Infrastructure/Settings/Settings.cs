@@ -1,6 +1,6 @@
 using System;
 using System.IO;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 using Tomlyn;
 
 namespace LanternExtractor.Infrastructure.Settings
@@ -11,17 +11,13 @@ namespace LanternExtractor.Infrastructure.Settings
     public class Settings
     {
         /// <summary>
-        /// The logger reference for debug output
-        /// </summary>
-        private readonly ILogger _logger;
-
-        /// <summary>
         /// The OS path to the settings file
         /// </summary>
         private readonly string _settingsFilePath;
 
         // Properties with default values
-        public string EverQuestDirectory { get; private set; } = "C:/EverQuest/";
+        public string EverQuestDirectory { get; private set; } = "C:/EQxcdf/";
+        public bool UseMultithreading { get; private set; } = false;
         public bool RawS3DExtract { get; private set; } = false;
         public ModelExportFormat ModelExportFormat { get; private set; } = ModelExportFormat.Intermediate;
         public bool ExportZoneMeshGroups { get; private set; } = false;
@@ -41,57 +37,74 @@ namespace LanternExtractor.Infrastructure.Settings
         /// Constructor which caches the settings file path and the logger
         /// </summary>
         /// <param name="settingsFilePath">The OS path to the settings file</param>
-        /// <param name="logger">A reference to the logger for debug info</param>
-        public Settings(string settingsFilePath, ILogger logger)
+        public Settings(string settingsFilePath)
         {
             _settingsFilePath = settingsFilePath;
-            _logger = logger;
         }
 
         /// <summary>
         /// Initializes the settings by reading from the TOML file
         /// </summary>
         public void Initialize()
+{
+    try
+    {
+        string settingsText = File.ReadAllText(_settingsFilePath);
+        var document = Toml.Parse(settingsText);
+
+        // Pass custom TomlModelOptions to prevent PascalCase -> snake_case conversion
+        var options = new TomlModelOptions
         {
-            try
-            {
-                string settingsText = File.ReadAllText(_settingsFilePath);
-                var document = Toml.Parse(settingsText);
-                // Pass custom TomlModelOptions to prevent PascalCase -> snake_case conversion
-                var options = new TomlModelOptions
-                {
-                    ConvertPropertyName = (propertyName) => propertyName
-                };
+            ConvertPropertyName = (propertyName) => propertyName
+        };
 
-                var settingsData = document.ToModel<SettingsData>(options);
+        var settingsData = document.ToModel<SettingsData>(options);
 
-                EverQuestDirectory = settingsData.EverQuestDirectory ?? EverQuestDirectory;
-                RawS3DExtract = settingsData.RawS3DExtract ?? RawS3DExtract;
-                ModelExportFormat = settingsData.ModelExportFormat.HasValue ? (ModelExportFormat)settingsData.ModelExportFormat.Value : ModelExportFormat;
-                ExportZoneMeshGroups = settingsData.ExportZoneMeshGroups ?? ExportZoneMeshGroups;
-                ExportHiddenGeometry = settingsData.ExportHiddenGeometry ?? ExportHiddenGeometry;
-                ExportCharactersToSingleFolder = settingsData.ExportCharacterToSingleFolder ?? ExportCharactersToSingleFolder;
-                ExportEquipmentToSingleFolder = settingsData.ExportEquipmentToSingleFolder ?? ExportEquipmentToSingleFolder;
-                ExportSoundsToSingleFolder = settingsData.ExportSoundsToSingleFolder ?? ExportSoundsToSingleFolder;
-                ExportAllAnimationFrames = settingsData.ExportAllAnimationFrames ?? ExportAllAnimationFrames;
-                ExportZoneWithObjects = settingsData.ExportZoneWithObjects ?? ExportZoneWithObjects;
-                ExportGltfVertexColors = settingsData.ExportGltfVertexColors ?? ExportGltfVertexColors;
-                ExportGltfInGlbFormat = settingsData.ExportGltfInGlbFormat ?? ExportGltfInGlbFormat;
-                ClientDataToCopy = settingsData.ClientDataToCopy ?? ClientDataToCopy;
-                CopyMusic = settingsData.CopyMusic ?? CopyMusic;
-                LoggerVerbosity = settingsData.LoggerVerbosity ?? LoggerVerbosity;
+        EverQuestDirectory = NormalizePath(settingsData.EverQuestDirectory ?? EverQuestDirectory);
+        UseMultithreading = settingsData.UseMultithreading ?? UseMultithreading;
+        RawS3DExtract = settingsData.RawS3DExtract ?? RawS3DExtract;
+        ModelExportFormat = settingsData.ModelExportFormat.HasValue ? (ModelExportFormat)settingsData.ModelExportFormat.Value : ModelExportFormat;
+        ExportZoneMeshGroups = settingsData.ExportZoneMeshGroups ?? ExportZoneMeshGroups;
+        ExportHiddenGeometry = settingsData.ExportHiddenGeometry ?? ExportHiddenGeometry;
+        ExportCharactersToSingleFolder = settingsData.ExportCharacterToSingleFolder ?? ExportCharactersToSingleFolder;
+        ExportEquipmentToSingleFolder = settingsData.ExportEquipmentToSingleFolder ?? ExportEquipmentToSingleFolder;
+        ExportSoundsToSingleFolder = settingsData.ExportSoundsToSingleFolder ?? ExportSoundsToSingleFolder;
+        ExportAllAnimationFrames = settingsData.ExportAllAnimationFrames ?? ExportAllAnimationFrames;
+        ExportZoneWithObjects = settingsData.ExportZoneWithObjects ?? ExportZoneWithObjects;
+        ExportGltfVertexColors = settingsData.ExportGltfVertexColors ?? ExportGltfVertexColors;
+        ExportGltfInGlbFormat = settingsData.ExportGltfInGlbFormat ?? ExportGltfInGlbFormat;
+        ClientDataToCopy = settingsData.ClientDataToCopy ?? ClientDataToCopy;
+        CopyMusic = settingsData.CopyMusic ?? CopyMusic;
+        LoggerVerbosity = settingsData.LoggerVerbosity ?? LoggerVerbosity;
+    }
+    catch (Exception e)
+    {
+        Log.Error("Error loading settings file: " + e.Message);
+    }
+}
 
-                EverQuestDirectory = Path.GetFullPath(EverQuestDirectory + Path.DirectorySeparatorChar);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError("Error loading settings file: " + e.Message);
-            }
-        }
+/// <summary>
+/// Normalize the directory path to handle OS-specific path separators.
+/// </summary>
+/// <param name="path">The raw path from the settings file.</param>
+/// <returns>A normalized path with correct directory separators.</returns>
+private string NormalizePath(string path)
+{
+    if (string.IsNullOrWhiteSpace(path))
+        return path;
+
+    // Normalize slashes
+    path = path.Replace('\\', Path.DirectorySeparatorChar);
+    path = Path.GetFullPath(path + Path.DirectorySeparatorChar);
+
+    return path;
+}
+
 
         private class SettingsData
         {
             public string EverQuestDirectory { get; set; }
+            public bool? UseMultithreading { get; set; }
             public bool? RawS3DExtract { get; set; }
             public int? ModelExportFormat { get; set; }
             public bool? ExportZoneMeshGroups { get; set; }

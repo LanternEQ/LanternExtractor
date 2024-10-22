@@ -2,7 +2,7 @@
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Helpers;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -36,9 +36,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
 
@@ -121,15 +121,15 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("Material: Shader type: " + ShaderType);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("Material: Shader type: " + ShaderType);
 
             if (ShaderType != ShaderType.Invisible && BitmapInfoReference != null)
             {
-                logger.LogInfo("Material: Reference: " + (BitmapInfoReference.Index + 1));
+                Log.Information("Material: Reference: " + (BitmapInfoReference.Index + 1));
             }
         }
 

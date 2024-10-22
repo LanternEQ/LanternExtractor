@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -18,9 +18,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             // The client supports more than one bitmap reference but is never used
@@ -28,7 +28,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (bitmapCount > 1)
             {
-                logger.LogWarning("BitmapName: Bitmap count exceeds 1.");
+                Log.Warning("BitmapName: Bitmap count exceeds 1.");
             }
 
             int nameLength = Reader.ReadInt16();
@@ -49,11 +49,11 @@ namespace LanternExtractor.EQ.Wld.Fragments
             return Filename.Substring(0, Filename.Length - 4);
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("BitmapName: Filename: " + Filename);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("BitmapName: Filename: " + Filename);
         }
     }
 }

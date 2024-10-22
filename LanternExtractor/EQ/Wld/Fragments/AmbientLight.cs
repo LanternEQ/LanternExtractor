@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -22,9 +22,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int reference = Reader.ReadInt32() - 1;
             LightReference = fragments[reference] as LightSourceReference;
@@ -39,12 +39,12 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("AmbientLight: Reference: " + (LightReference.Index + 1));
-            logger.LogInfo("AmbientLight: Regions: " + Regions.Count);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("AmbientLight: Reference: " + (LightReference.Index + 1));
+            Log.Information("AmbientLight: Regions: " + Regions.Count);
         }
     }
 }

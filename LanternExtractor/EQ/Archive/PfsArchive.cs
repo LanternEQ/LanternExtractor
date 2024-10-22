@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Ionic.Zlib;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Archive
 {
@@ -11,17 +11,17 @@ namespace LanternExtractor.EQ.Archive
     /// </summary>
     public class PfsArchive : ArchiveBase
     {
-        public PfsArchive(string filePath, ILogger logger) : base(filePath, logger)
+        public PfsArchive(string filePath) : base(filePath)
         {
         }
 
         public override bool Initialize()
         {
-            Logger.LogInfo("PfsArchive: Started initialization of archive: " + FileName);
+            Log.Information("PfsArchive: Started initialization of archive: " + FileName);
 
             if (!File.Exists(FilePath))
             {
-                Logger.LogError("PfsArchive: File does not exist at: " + FilePath);
+                Log.Error("PfsArchive: File does not exist at: " + FilePath);
                 return false;
             }
 
@@ -44,7 +44,7 @@ namespace LanternExtractor.EQ.Archive
 
                     if (offset > reader.BaseStream.Length)
                     {
-                        Logger.LogError("PfsArchive: Corrupted PFS length detected!");
+                        Log.Error("PfsArchive: Corrupted PFS length detected!");
                         return false;
                     }
 
@@ -62,16 +62,16 @@ namespace LanternExtractor.EQ.Archive
 
                         if (deflatedLength >= reader.BaseStream.Length)
                         {
-                            Logger.LogError("PfsArchive: Corrupted file length detected!");
+                            Log.Error("PfsArchive: Corrupted file length detected!");
                             return false;
                         }
 
                         byte[] compressedBytes = reader.ReadBytes((int)deflatedLength);
                         byte[] inflatedBytes;
 
-                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes, Logger))
+                        if (!InflateBlock(compressedBytes, (int)inflatedLength, out inflatedBytes))
                         {
-                            Logger.LogError("PfsArchive: Error occured inflating data");
+                            Log.Error("PfsArchive: Error occured inflating data");
                             return false;
                         }
 
@@ -129,19 +129,18 @@ namespace LanternExtractor.EQ.Archive
                             }
                             break;
                         default:
-                            Logger.LogError("PfsArchive: Unexpected pfs version: " + FileName);
+                            Log.Error("PfsArchive: Unexpected pfs version: " + FileName);
                             break;
                     }
                 }
 
-                Logger.LogInfo("PfsArchive: Finished initialization of archive: " + FileName);
+                Log.Information("PfsArchive: Finished initialization of archive: " + FileName);
             }
 
             return true;
         }
 
-        private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes,
-            ILogger logger)
+        private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes)
         {
             var output = new byte[inflatedSize];
 
@@ -170,7 +169,7 @@ namespace LanternExtractor.EQ.Archive
                         catch (Exception e)
                         {
                             inflatedBytes = null;
-                            logger.LogError("PfsArchive: Exception caught while inflating bytes: " + e);
+                            Log.Error("PfsArchive: Exception caught while inflating bytes: " + e);
                             return false;
                         }
 

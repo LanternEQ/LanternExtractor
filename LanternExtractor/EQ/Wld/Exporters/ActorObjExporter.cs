@@ -6,7 +6,6 @@ using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld.Exporters
@@ -15,12 +14,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
     {
         public static Dictionary<Mesh, List<vec3>> BackupVertices = new Dictionary<Mesh, List<vec3>>();
 
-        public static void ExportActors(WldFile wldFile, Settings settings, ILogger logger)
+        public static void ExportActors(WldFile wldFile, Settings settings)
         {
             // For a zone wld, we ignore actors and just export all meshes
             if (wldFile.WldType == WldType.Zone)
             {
-                ExportZone((WldFileZone)wldFile, settings, logger);
+                ExportZone((WldFileZone)wldFile, settings);
                 return;
             }
 
@@ -43,12 +42,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
         }
 
         /// <summary>
-        /// Exports all of the meshes of a zone in a single obj
+        /// Exports all meshes of a zone in a single obj
         /// </summary>
         /// <param name="wldFile"></param>
         /// <param name="settings"></param>
-        /// <param name="logger"></param>
-        private static void ExportZone(WldFileZone wldFile, Settings settings, ILogger logger)
+        private static void ExportZone(WldFileZone wldFile, Settings settings)
         {
             List<Mesh> meshes = wldFile.GetFragmentsOfType<Mesh>();
             List<MaterialList> materialLists = wldFile.GetFragmentsOfType<MaterialList>();
@@ -67,7 +65,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 if (zoneObjectsFileInArchive != null)
                 {
                     var zoneObjectsWldFile = new WldFileZoneObjects(zoneObjectsFileInArchive, shortName,
-                        WldType.ZoneObjects, logger, settings, wldFileToInject);
+                        WldType.ZoneObjects, settings, wldFileToInject);
                     zoneObjectsWldFile.Initialize(rootFolder, false);
                     objects.AddRange(zoneObjectsWldFile.GetFragmentsOfType<ObjectInstance>());
                 }
@@ -75,13 +73,13 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 // Find associated _obj archive e.g. qeytoqrg_obj.s3d, open it and add meshes and materials to our list
                 string objPath = EqFileHelper.ObjArchivePath(path);
                 string objArchive = Path.GetFileNameWithoutExtension(objPath);
-                var s3dObjArchive = ArchiveFactory.GetArchive(objPath, logger);
+                var s3dObjArchive = ArchiveFactory.GetArchive(objPath);
                 if (s3dObjArchive.Initialize())
                 {
                     string wldFileName = objArchive + LanternStrings.WldFormatExtension;
-                    var objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, logger, settings);
+                    var objWldFile = new WldFileZone(s3dObjArchive.GetFile(wldFileName), shortName, WldType.Objects, settings);
                     objWldFile.Initialize(rootFolder, false);
-                    ArchiveExtractor.WriteWldTextures(s3dObjArchive, objWldFile, rootFolder + shortName + "/Zone/Textures/", logger);
+                    ArchiveExtractor.WriteWldTextures(s3dObjArchive, objWldFile, rootFolder + shortName + "/Zone/Textures/");
                     meshes.AddRange(objWldFile.GetFragmentsOfType<Mesh>());
                     materialLists.AddRange(objWldFile.GetFragmentsOfType<MaterialList>());
                 }

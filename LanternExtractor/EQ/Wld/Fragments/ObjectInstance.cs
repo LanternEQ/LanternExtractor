@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using GlmSharp;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -38,9 +38,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             // in main zone, points to 0x16, in object wld, it contains the object name
@@ -84,14 +84,14 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("----------");
-            logger.LogInfo($"{GetType()}: Name: " + ObjectName);
-            logger.LogInfo($"{GetType()}: Position: " + Position);
-            logger.LogInfo($"{GetType()}: Rotation: " + Rotation);
-            logger.LogInfo($"{GetType()}: Scale: " + Scale);
+            base.OutputInfo();
+            Log.Information("----------");
+            Log.Information($"{GetType()}: Name: " + ObjectName);
+            Log.Information($"{GetType()}: Position: " + Position);
+            Log.Information($"{GetType()}: Rotation: " + Rotation);
+            Log.Information($"{GetType()}: Scale: " + Scale);
         }
     }
 }

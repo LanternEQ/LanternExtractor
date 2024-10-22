@@ -13,7 +13,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 return;
             }
-            
+
             Export.AppendLine(LanternStrings.ExportHeaderTitle + "Material List Intermediate Format");
             Export.AppendLine(LanternStrings.ExportHeaderFormat + "Index, MaterialName, AnimationTextures, AnimationDelayMs, SkinTextures");
 
@@ -24,8 +24,8 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 Export.Append(",");
 
                 List<Material> allMaterials = new List<Material> {material};
-                allMaterials.AddRange(list.GetMaterialVariants(material, null));
-                
+                allMaterials.AddRange(list.GetMaterialVariants(material));
+
                 for (int j = 0; j < allMaterials.Count; j++)
                 {
                     var currentMaterial = allMaterials[j];
@@ -48,7 +48,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
                 Export.AppendLine();
             }
         }
-        
+
         private string GetMaterialString(Material material)
         {
             StringBuilder sb = new StringBuilder();

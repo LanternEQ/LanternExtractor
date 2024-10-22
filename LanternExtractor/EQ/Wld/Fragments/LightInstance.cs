@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using GlmSharp;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -28,9 +28,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             LightReference = fragments[Reader.ReadInt32() - 1] as LightSourceReference;
             int flags = Reader.ReadInt32();
@@ -38,13 +38,13 @@ namespace LanternExtractor.EQ.Wld.Fragments
             Radius = Reader.ReadSingle();
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("LightInstance: Reference: " + (LightReference.Index + 1));
-            logger.LogInfo("LightInstance: Position: " + Position);
-            logger.LogInfo("LightInstance: Radius: " + Radius);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("LightInstance: Reference: " + (LightReference.Index + 1));
+            Log.Information("LightInstance: Position: " + Position);
+            Log.Information("LightInstance: Radius: " + Radius);
         }
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.Infrastructure;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -41,9 +41,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
             int flags = Reader.ReadInt32();
 
@@ -97,7 +97,7 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
             if (componentCount > 1)
             {
-                logger.LogWarning("Actor: More than one component references");
+                Log.Warning("Actor: More than one component references");
             }
 
             // Can contain either a skeleton reference (animated), mesh reference (static) or a camera reference
@@ -149,16 +149,16 @@ namespace LanternExtractor.EQ.Wld.Fragments
                     break;
                 }
 
-                logger.LogError($"Actor: Cannot link fragment with index {fragmentIndex}");
+                Log.Error($"Actor: Cannot link fragment with index {fragmentIndex}");
             }
 
             // Always 0 in qeynos2 objects
             int name3Bytes = Reader.ReadInt32();
 
-            CalculateActorType(logger);
+            CalculateActorType();
         }
 
-        private void CalculateActorType(ILogger logger)
+        private void CalculateActorType()
         {
             if (CameraReference != null)
             {
@@ -190,24 +190,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
             else
             {
-                logger.LogError("Cannot determine actor type!");
+                Log.Error("Cannot determine actor type!");
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
+            base.OutputInfo();
+            Log.Information("-----");
         }
 
-        public void AssignSkeletonReference(SkeletonHierarchy skeleton, ILogger logger)
+        public void AssignSkeletonReference(SkeletonHierarchy skeleton)
         {
             SkeletonReference = new SkeletonHierarchyReference
             {
                 SkeletonHierarchy = skeleton
             };
 
-            CalculateActorType(logger);
+            CalculateActorType();
             skeleton.IsAssigned = true;
         }
     }

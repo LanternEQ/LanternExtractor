@@ -7,8 +7,8 @@ using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
 using LanternExtractor.EQ.Wld.Helpers;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld
 {
@@ -54,11 +54,6 @@ namespace LanternExtractor.EQ.Wld
         protected readonly string ZoneName;
 
         /// <summary>
-        /// The logger to use to output WLD information
-        /// </summary>
-        protected readonly ILogger Logger;
-
-        /// <summary>
         /// The WLD file found in the archive
         /// </summary>
         private readonly ArchiveFile _wldFile;
@@ -85,13 +80,12 @@ namespace LanternExtractor.EQ.Wld
         /// <param name="zoneName">The shortname of the zone</param>
         /// <param name="type">The type of WLD - used to determine what to extract</param>
         /// <param name="logger">The logger used for debug output</param>
-        protected WldFile(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
+        protected WldFile(ArchiveFile wldFile, string zoneName, WldType type, Settings settings,
             WldFile fileToInject)
         {
             _wldFile = wldFile;
             ZoneName = zoneName.ToLower();
             WldType = type;
-            Logger = logger;
             Settings = settings;
             WldToInject = fileToInject;
         }
@@ -102,9 +96,9 @@ namespace LanternExtractor.EQ.Wld
         public virtual bool Initialize(string rootFolder, bool exportData = true)
         {
             RootExportFolder = rootFolder;
-            Logger.LogInfo("Extracting WLD archive: " + _wldFile.Name);
-            Logger.LogInfo("-----------------------------------");
-            Logger.LogInfo("WLD type: " + WldType);
+            Log.Information("Extracting WLD archive: " + _wldFile.Name);
+            Log.Information("-----------------------------------");
+            Log.Information("WLD type: " + WldType);
 
             Fragments = new List<WldFragment>();
             FragmentTypeDictionary = new Dictionary<Type, List<WldFragment>>();
@@ -121,7 +115,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (identifier != WldIdentifier.WldFileIdentifier)
             {
-                Logger.LogError("Not a valid WLD file!");
+                Log.Error("Not a valid WLD file!");
                 return false;
             }
 
@@ -133,10 +127,10 @@ namespace LanternExtractor.EQ.Wld
                     break;
                 case WldIdentifier.WldFormatNewIdentifier:
                     _isNewWldFormat = true;
-                    Logger.LogWarning("New WLD format not fully supported.");
+                    Log.Warning("New WLD format not fully supported.");
                     break;
                 default:
-                    Logger.LogError("Unrecognized WLD format.");
+                    Log.Error("Unrecognized WLD format.");
                     return false;
             }
 
@@ -162,19 +156,18 @@ namespace LanternExtractor.EQ.Wld
 
                 if (newFragment is Generic)
                 {
-                    Logger.LogWarning($"WldFile: Unhandled fragment type: {fragId:x}");
+                    Log.Warning($"WldFile: Unhandled fragment type: {fragId:x}");
                 }
 
                 newFragment.Initialize(i, (int)fragSize, reader.ReadBytes((int)fragSize), Fragments, _stringHash,
-                    _isNewWldFormat,
-                    Logger);
-                newFragment.OutputInfo(Logger);
+                    _isNewWldFormat);
+                newFragment.OutputInfo();
 
                 AddFragment(newFragment);
             }
 
-            Logger.LogInfo("-----------------------------------");
-            Logger.LogInfo("WLD extraction complete");
+            Log.Information("-----------------------------------");
+            Log.Information("WLD extraction complete");
 
             ProcessData();
 
@@ -269,7 +262,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (materialLists.Count == 0)
             {
-                Logger.LogWarning("Cannot get material types. No texture list found.");
+                Log.Warning("Cannot get material types. No texture list found.");
                 return null;
             }
 
@@ -309,13 +302,13 @@ namespace LanternExtractor.EQ.Wld
             switch (Settings.ModelExportFormat)
             {
                 case ModelExportFormat.Intermediate:
-                    MeshExporter.ExportMeshes(this, Settings, Logger);
+                    MeshExporter.ExportMeshes(this, Settings);
                     break;
                 case ModelExportFormat.Obj:
-                    ActorObjExporter.ExportActors(this, Settings, Logger);
+                    ActorObjExporter.ExportActors(this, Settings);
                     break;
                 default:
-                    ActorGltfExporter.ExportActors(this, Settings, Logger);
+                    ActorGltfExporter.ExportActors(this, Settings);
                     break;
             }
         }
@@ -422,7 +415,7 @@ namespace LanternExtractor.EQ.Wld
             {
                 if (WldToInject == null)
                 {
-                    Logger.LogWarning("Cannot export animations. No model references.");
+                    Log.Warning("Cannot export animations. No model references.");
                     return;
                 }
 
@@ -430,7 +423,7 @@ namespace LanternExtractor.EQ.Wld
 
                 if (skeletons == null)
                 {
-                    Logger.LogWarning("Cannot export animations 2. No model references.");
+                    Log.Warning("Cannot export animations 2. No model references.");
                     return;
                 }
             }

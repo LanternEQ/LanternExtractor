@@ -1,35 +1,32 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using LanternExtractor.Infrastructure.Logger;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using Pfim;
+using Serilog;
 using ImageFormat = System.Drawing.Imaging.ImageFormat;
 
 namespace LanternExtractor.Infrastructure
 {
     public static class ImageWriter
     {
-        public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked,
-            ILogger logger)
+        public static void WriteImageAsPng(byte[] bytes, string filePath, string fileName, bool isMasked)
         {
             // https://docs.microsoft.com/en-us/windows/win32/direct3ddds/dx-graphics-dds-pguide#dds-file-layout
             bool ddsMagic = Encoding.ASCII.GetString(bytes, 0, 4) == "DDS ";
             if (fileName.EndsWith(".bmp") && !ddsMagic)
             {
-                WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false,
-                    logger);
+                WriteBmpAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", isMasked, false);
             }
             else
             {
-                WriteDdsAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png", logger);
+                WriteDdsAsPng(bytes, filePath, Path.GetFileNameWithoutExtension(fileName) + ".png");
             }
         }
 
-        private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate,
-            ILogger logger)
+        private static void WriteBmpAsPng(byte[] bytes, string filePath, string fileName, bool isMasked, bool rotate)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -47,7 +44,7 @@ namespace LanternExtractor.Infrastructure
             }
             catch (Exception e)
             {
-                logger.LogError("Caught exception while creating bitmap: " + e);
+                Log.Error("Caught exception while creating bitmap: " + e);
                 return;
             }
 
@@ -72,7 +69,7 @@ namespace LanternExtractor.Infrastructure
             image.WritePng(Path.Combine(filePath, fileName));
         }
 
-        private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName, ILogger logger)
+        private static void WriteDdsAsPng(byte[] bytes, string filePath, string fileName)
         {
             using (IImage image = Pfim.Pfim.FromStream(new MemoryStream(bytes)))
             {
@@ -101,7 +98,7 @@ namespace LanternExtractor.Infrastructure
                     //     format = PixelFormat.Format8bppIndexed;
                     //     break;
                     default:
-                        logger.LogError($"Unsupported image format {fileName} {image.Format}");
+                        Log.Error($"Unsupported image format {fileName} {image.Format}");
                         return;
                 }
 

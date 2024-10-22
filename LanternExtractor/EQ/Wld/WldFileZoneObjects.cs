@@ -1,15 +1,15 @@
 ﻿using LanternExtractor.EQ.Archive;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZoneObjects : WldFile
     {
-        public WldFileZoneObjects(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings, WldFile wldToInject = null) : base(
-            wldFile, zoneName, type, logger, settings, wldToInject)
+        public WldFileZoneObjects(ArchiveFile wldFile, string zoneName, WldType type, Settings settings, WldFile wldToInject = null) : base(
+            wldFile, zoneName, type, settings, wldToInject)
         {
         }
 
@@ -27,7 +27,7 @@ namespace LanternExtractor.EQ.Wld
 
             if (instanceList.Count == 0)
             {
-                Logger.LogWarning("Cannot export object instance list. No object instances found.");
+                Log.Warning("Cannot export object instance list. No object instances found.");
                 return;
             }
 

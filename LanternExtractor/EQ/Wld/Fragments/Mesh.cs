@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using GlmSharp;
 using LanternExtractor.EQ.Wld.DataTypes;
-using LanternExtractor.Infrastructure.Logger;
+using Serilog;
 
 namespace LanternExtractor.EQ.Wld.Fragments
 {
@@ -94,9 +94,9 @@ namespace LanternExtractor.EQ.Wld.Fragments
 
         public override void Initialize(int index, int size, byte[] data,
             List<WldFragment> fragments,
-            Dictionary<int, string> stringHash, bool isNewWldFormat, ILogger logger)
+            Dictionary<int, string> stringHash, bool isNewWldFormat)
         {
-            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat, logger);
+            base.Initialize(index, size, data, fragments, stringHash, isNewWldFormat);
             Name = stringHash[-Reader.ReadInt32()];
 
             // Zone: 0x00018003, Objects: 0x00014003
@@ -254,24 +254,24 @@ namespace LanternExtractor.EQ.Wld.Fragments
             }
         }
 
-        public override void OutputInfo(ILogger logger)
+        public override void OutputInfo()
         {
-            base.OutputInfo(logger);
-            logger.LogInfo("-----");
-            logger.LogInfo("Mesh: Center: " + Center);
-            logger.LogInfo("Mesh: Max distance: " + MaxDistance);
-            logger.LogInfo("Mesh: Min position: " + MinPosition);
-            logger.LogInfo("Mesh: Max position: " + MaxDistance);
-            logger.LogInfo("Mesh: Texture list reference: " + MaterialList.Index);
-            logger.LogInfo("Mesh: Vertex count: " + Vertices.Count);
-            logger.LogInfo("Mesh: Polygon count: " + Triangles.Count);
-            logger.LogInfo("Mesh: Texture coordinate count: " + Uvs.Count);
-            logger.LogInfo("Mesh: Render group count: " + MaterialGroups.Count);
-            logger.LogInfo("Mesh: Export separate collision: " + ExportSeparateCollision);
+            base.OutputInfo();
+            Log.Information("-----");
+            Log.Information("Mesh: Center: " + Center);
+            Log.Information("Mesh: Max distance: " + MaxDistance);
+            Log.Information("Mesh: Min position: " + MinPosition);
+            Log.Information("Mesh: Max position: " + MaxDistance);
+            Log.Information("Mesh: Texture list reference: " + MaterialList.Index);
+            Log.Information("Mesh: Vertex count: " + Vertices.Count);
+            Log.Information("Mesh: Polygon count: " + Triangles.Count);
+            Log.Information("Mesh: Texture coordinate count: " + Uvs.Count);
+            Log.Information("Mesh: Render group count: " + MaterialGroups.Count);
+            Log.Information("Mesh: Export separate collision: " + ExportSeparateCollision);
 
             if (AnimatedVerticesReference != null)
             {
-                logger.LogInfo("Mesh: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
+                Log.Information("Mesh: Animated mesh vertices reference: " + AnimatedVerticesReference.Index);
             }
         }
 

@@ -2,15 +2,14 @@
 using LanternExtractor.EQ.Wld.DataTypes;
 using LanternExtractor.EQ.Wld.Exporters;
 using LanternExtractor.EQ.Wld.Fragments;
-using LanternExtractor.Infrastructure.Logger;
 using LanternExtractor.Infrastructure.Settings;
 
 namespace LanternExtractor.EQ.Wld
 {
     public class WldFileZone : WldFile
     {
-        public WldFileZone(ArchiveFile wldFile, string zoneName, WldType type, ILogger logger, Settings settings,
-            WldFile wldToInject = null) : base(wldFile, zoneName, type, logger, settings, wldToInject)
+        public WldFileZone(ArchiveFile wldFile, string zoneName, WldType type, Settings settings,
+            WldFile wldToInject = null) : base(wldFile, zoneName, type, settings, wldToInject)
         {
         }
 
