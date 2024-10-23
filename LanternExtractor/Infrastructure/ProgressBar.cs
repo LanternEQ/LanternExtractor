@@ -23,6 +23,9 @@ namespace LanternExtractor.Infrastructure
         private readonly bool _isMultithreaded;
         private bool _firstStepCalled;
 
+        // Store the current console window width for detecting changes
+        private int _currentWindowWidth;
+
         public ProgressBar(int totalSteps, int barWidth, bool isMultithreaded = false, char fillChar = '#', char backgroundChar = '-', ConsoleColor fillColor = ConsoleColor.Green, ConsoleColor backgroundColor = ConsoleColor.DarkGray)
         {
             _totalSteps = totalSteps;
@@ -37,6 +40,9 @@ namespace LanternExtractor.Infrastructure
             _isMultithreaded = isMultithreaded;
             _isCompleted = false;
             _firstStepCalled = false;
+
+            // Capture the initial window width
+            _currentWindowWidth = Console.WindowWidth;
 
             // Initial progress bar draw
             Draw(_currentFileName, initialDraw: true);
@@ -82,15 +88,36 @@ namespace LanternExtractor.Infrastructure
             int cursorLeft = Console.CursorLeft;
             int cursorTop = Console.CursorTop;
 
-            // Update the timer display at the right side of the console
-            if (Console.WindowWidth - timerString.Length - 1 > 0)
+            // Check if the console window size has changed
+            int newWindowWidth = Console.WindowWidth;
+            if (newWindowWidth != _currentWindowWidth)
             {
-                Console.SetCursorPosition(Console.WindowWidth - timerString.Length - 1, cursorTop);
+                ClearOldTimer();
+                _currentWindowWidth = newWindowWidth;
+            }
+
+            // Calculate the new position for the timer
+            int timerPosition = _currentWindowWidth - timerString.Length - 1;
+            if (timerPosition > 0)
+            {
+                Console.SetCursorPosition(timerPosition, cursorTop);
                 Console.Write(timerString);
             }
 
             // Reset the cursor to its original position
             Console.SetCursorPosition(cursorLeft, cursorTop);
+        }
+
+        // Clear the old timer from its previous position
+        private void ClearOldTimer()
+        {
+            int cursorTop = Console.CursorTop;
+            int oldTimerPosition = _currentWindowWidth - 5; // Assuming "0:00" length is 5 characters
+            if (oldTimerPosition > 0)
+            {
+                Console.SetCursorPosition(oldTimerPosition, cursorTop);
+                Console.Write(new string(' ', 5)); // Clear old timer (5 characters)
+            }
         }
 
         public void Step(string fileName, bool advanceBar = true)
