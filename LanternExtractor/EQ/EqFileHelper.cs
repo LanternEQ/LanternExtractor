@@ -44,8 +44,8 @@ namespace LanternExtractor.EQ
             }
 
             validFiles = validFiles
-                .OrderBy(file => file.Length)   // First, order by length
-                .ThenBy(file => file, StringComparer.OrdinalIgnoreCase)  // Then, order alphabetically
+                .OrderBy(file => file, StringComparer.OrdinalIgnoreCase)
+                .ThenBy(file => file.Length)
                 .ToList();
             return validFiles;
         }
