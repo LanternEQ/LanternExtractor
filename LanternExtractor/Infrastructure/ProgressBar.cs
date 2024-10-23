@@ -12,17 +12,16 @@ namespace LanternExtractor.Infrastructure
         private readonly char _backgroundChar;
         private readonly ConsoleColor _fillColor;
         private readonly ConsoleColor _backgroundColor;
-        private readonly ConsoleColor _resetColorForeground;
-        private readonly ConsoleColor _resetColorBackground;
+        private readonly ConsoleColor _defaultForegroundColor;
+        private readonly ConsoleColor _defaultBackgroundColor;
         private readonly DateTime _startTime;
-
         private readonly object _lock = new object();
         private bool _isCompleted;
         private Thread _timerThread;
         private string _currentFileName;
         private string _lastPrintedStatus = string.Empty;
         private readonly bool _isMultithreaded;
-        private bool _firstStepCalled = false;
+        private bool _firstStepCalled;
 
         public ProgressBar(int totalSteps, int barWidth, bool isMultithreaded = false, char fillChar = '#', char backgroundChar = '-', ConsoleColor fillColor = ConsoleColor.Green, ConsoleColor backgroundColor = ConsoleColor.DarkGray)
         {
@@ -32,18 +31,17 @@ namespace LanternExtractor.Infrastructure
             _backgroundChar = backgroundChar;
             _fillColor = fillColor;
             _backgroundColor = backgroundColor;
-            _currentStep = 0;
-            _resetColorForeground = Console.ForegroundColor;
-            _resetColorBackground = Console.BackgroundColor;
+            _defaultForegroundColor = Console.ForegroundColor;
+            _defaultBackgroundColor = Console.BackgroundColor;
             _startTime = DateTime.Now;
-            _isCompleted = false;
-            _currentFileName = string.Empty;
             _isMultithreaded = isMultithreaded;
+            _isCompleted = false;
+            _firstStepCalled = false;
 
-            // Draw the initial empty progress bar immediately
-            Draw(_currentFileName, true);
+            // Initial progress bar draw
+            Draw(_currentFileName, initialDraw: true);
 
-            // Start the timer thread to update the time independently
+            // Start timer in background
             _timerThread = new Thread(UpdateTimer)
             {
                 IsBackground = true
@@ -51,32 +49,41 @@ namespace LanternExtractor.Infrastructure
             _timerThread.Start();
         }
 
-        // Timer to update the timer part independently
         private void UpdateTimer()
         {
+            DateTime lastUpdateTime = DateTime.Now;
+
             while (!_isCompleted)
             {
                 lock (_lock)
                 {
                     UpdateTimerDisplay();
                 }
-                Thread.Sleep(1000); // Update the timer once every second
+
+                var now = DateTime.Now;
+                var elapsedSinceLastUpdate = now - lastUpdateTime;
+
+                // Sleep for remaining time in the second
+                if (elapsedSinceLastUpdate.TotalMilliseconds < 1000)
+                {
+                    var remainingTime = 1000 - (int)elapsedSinceLastUpdate.TotalMilliseconds;
+                    Thread.Sleep(remainingTime);
+                }
+
+                lastUpdateTime = DateTime.Now;
             }
         }
 
-        // Updates just the timer part of the display
         private void UpdateTimerDisplay()
         {
             TimeSpan elapsedTime = DateTime.Now - _startTime;
             string timerString = $"{elapsedTime.Minutes}:{elapsedTime.Seconds:D2}";
 
-            // Position the cursor for the timer update
             int cursorLeft = Console.CursorLeft;
             int cursorTop = Console.CursorTop;
 
-            // Set the cursor to the correct position and update the timer
-            int remainingSpace = Console.WindowWidth - timerString.Length - 1;
-            if (remainingSpace > 0)
+            // Update the timer display at the right side of the console
+            if (Console.WindowWidth - timerString.Length - 1 > 0)
             {
                 Console.SetCursorPosition(Console.WindowWidth - timerString.Length - 1, cursorTop);
                 Console.Write(timerString);
@@ -86,7 +93,6 @@ namespace LanternExtractor.Infrastructure
             Console.SetCursorPosition(cursorLeft, cursorTop);
         }
 
-        // Step method that takes a parameter to optionally advance the progress bar
         public void Step(string fileName, bool advanceBar = true)
         {
             lock (_lock)
@@ -99,21 +105,16 @@ namespace LanternExtractor.Infrastructure
                     return;
                 }
 
-                // First step for single-threaded mode updates the text, not the bar
                 if (!_isMultithreaded && !_firstStepCalled)
                 {
                     _firstStepCalled = true;
-                    Draw(fileName, false);
+                    Draw(fileName, initialDraw: false);
                     return;
                 }
 
-                if (advanceBar)
-                {
-                    _currentStep++;
-                }
+                if (advanceBar) _currentStep++;
 
-                // Update the progress bar
-                Draw(fileName, advanceBar);
+                Draw(fileName, initialDraw: true);
 
                 if (_currentStep == _totalSteps)
                 {
@@ -122,8 +123,7 @@ namespace LanternExtractor.Infrastructure
             }
         }
 
-        // Draws the progress bar and status
-        private void Draw(string fileName, bool drawBar)
+        private void Draw(string fileName, bool initialDraw)
         {
             int filledWidth = (int)((double)_currentStep / _totalSteps * _barWidth);
             double percentage = (double)_currentStep / _totalSteps * 100;
@@ -137,27 +137,21 @@ namespace LanternExtractor.Infrastructure
 
                 Console.SetCursorPosition(0, originalCursorTop);
 
-                // Draw progress bar if requested
-                if (drawBar)
+                // Draw progress bar
+                if (initialDraw)
                 {
                     Console.Write('[');
                     Console.ForegroundColor = _fillColor;
-                    for (int i = 0; i < filledWidth; i++)
-                    {
-                        Console.Write(_fillChar);
-                    }
 
+                    Console.Write(new string(_fillChar, filledWidth));
                     Console.ForegroundColor = _backgroundColor;
-                    for (int i = filledWidth; i < _barWidth; i++)
-                    {
-                        Console.Write(_backgroundChar);
-                    }
+                    Console.Write(new string(_backgroundChar, _barWidth - filledWidth));
                     Console.ResetColor();
 
                     Console.Write($"] {_currentStep}/{_totalSteps} ({percentage:0.00}%)");
                 }
 
-                // Show extracting file in single-threaded mode
+                // Display extracting file in single-threaded mode
                 if (!_isMultithreaded && !string.IsNullOrEmpty(fileName))
                 {
                     Console.SetCursorPosition(0, originalCursorTop + 1);
@@ -166,7 +160,7 @@ namespace LanternExtractor.Infrastructure
                     Console.Write($"Extracting: {fileName}");
                 }
 
-                // Multithreaded mode shows "Extracting archives..." or "Extraction complete" when it changes
+                // Status update in multithreaded mode
                 string status = _isCompleted ? "Extraction complete" : "Extracting archives...";
                 if (_lastPrintedStatus != status)
                 {
@@ -174,43 +168,41 @@ namespace LanternExtractor.Infrastructure
                     Console.Write(new string(' ', Console.WindowWidth));
                     Console.SetCursorPosition(0, originalCursorTop + 1);
                     Console.Write(status);
-                    _lastPrintedStatus = status; // Store last printed status to avoid flickering
+                    _lastPrintedStatus = status;
                 }
 
-                // Reset cursor to original position to avoid screen shifting
                 Console.SetCursorPosition(originalCursorLeft, originalCursorTop);
             }
         }
 
-        // Called when all steps are complete
-        public void Complete()
+        private void Complete()
         {
             lock (_lock)
             {
                 _isCompleted = true;
                 _currentStep = _totalSteps;
-                Draw("Extraction complete", true);
+                Draw("Extraction complete", initialDraw: true);
 
                 _timerThread.Join();
 
                 Console.SetCursorPosition(0, Console.CursorTop + 2);
                 Console.CursorVisible = true;
-                Console.ForegroundColor = _resetColorForeground;
-                Console.BackgroundColor = _resetColorBackground;
+                Console.ForegroundColor = _defaultForegroundColor;
+                Console.BackgroundColor = _defaultBackgroundColor;
             }
         }
 
-        // Resets the progress bar to its initial state
         public void Reset()
         {
             lock (_lock)
             {
                 _currentStep = 0;
-                _currentFileName = "";
+                _currentFileName = string.Empty;
                 _isCompleted = false;
                 _firstStepCalled = false;
-                _lastPrintedStatus = "";
-                Draw("", false);
+                _lastPrintedStatus = string.Empty;
+
+                Draw(string.Empty, initialDraw: false);
             }
         }
     }
