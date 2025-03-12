@@ -44,8 +44,11 @@ namespace LanternExtractor.Infrastructure
             // Capture the initial window width
             _currentWindowWidth = Console.WindowWidth;
 
+            // Start with a clean buffer (addresses existing scrollback)
+            Console.Clear();
+
             // Initial progress bar draw
-            Draw(_currentFileName, initialDraw: true);
+            Draw(initialDraw: true);
 
             // Start timer in background
             _timerThread = new Thread(UpdateTimer)
@@ -92,7 +95,7 @@ namespace LanternExtractor.Infrastructure
             int newWindowWidth = Console.WindowWidth;
             if (newWindowWidth != _currentWindowWidth)
             {
-                ClearOldTimer();
+                Redraw();
                 _currentWindowWidth = newWindowWidth;
             }
 
@@ -106,18 +109,6 @@ namespace LanternExtractor.Infrastructure
 
             // Reset the cursor to its original position
             Console.SetCursorPosition(cursorLeft, cursorTop);
-        }
-
-        // Clear the old timer from its previous position
-        private void ClearOldTimer()
-        {
-            int cursorTop = Console.CursorTop;
-            int oldTimerPosition = _currentWindowWidth - 5; // Assuming "0:00" length is 5 characters
-            if (oldTimerPosition > 0)
-            {
-                Console.SetCursorPosition(oldTimerPosition, cursorTop);
-                Console.Write(new string(' ', 5)); // Clear old timer (5 characters)
-            }
         }
 
         public void Step(string fileName, bool advanceBar = true)
@@ -135,13 +126,13 @@ namespace LanternExtractor.Infrastructure
                 if (!_isMultithreaded && !_firstStepCalled)
                 {
                     _firstStepCalled = true;
-                    Draw(fileName, initialDraw: false);
+                    Draw(initialDraw: false);
                     return;
                 }
 
                 if (advanceBar) _currentStep++;
 
-                Draw(fileName, initialDraw: true);
+                Draw(initialDraw: true);
 
                 if (_currentStep == _totalSteps)
                 {
@@ -150,7 +141,7 @@ namespace LanternExtractor.Infrastructure
             }
         }
 
-        private void Draw(string fileName, bool initialDraw)
+        private void Draw(bool initialDraw)
         {
             int filledWidth = (int)((double)_currentStep / _totalSteps * _barWidth);
             double percentage = (double)_currentStep / _totalSteps * 100;
@@ -179,12 +170,12 @@ namespace LanternExtractor.Infrastructure
                 }
 
                 // Display extracting file in single-threaded mode
-                if (!_isMultithreaded && !string.IsNullOrEmpty(fileName))
+                if (!_isMultithreaded && !string.IsNullOrEmpty(_currentFileName))
                 {
                     Console.SetCursorPosition(0, originalCursorTop + 1);
                     Console.Write(new string(' ', Console.WindowWidth));
                     Console.SetCursorPosition(0, originalCursorTop + 1);
-                    Console.Write($"Extracting: {fileName}");
+                    Console.Write($"Extracting: {_currentFileName}");
                 }
 
                 // Status update in multithreaded mode
@@ -202,13 +193,21 @@ namespace LanternExtractor.Infrastructure
             }
         }
 
+        private void Redraw()
+        {
+            Console.Clear();
+            _lastPrintedStatus = string.Empty;
+            Draw(initialDraw: true);
+        }
+
         private void Complete()
         {
             lock (_lock)
             {
                 _isCompleted = true;
                 _currentStep = _totalSteps;
-                Draw("Extraction complete", initialDraw: true);
+                _currentFileName = "Extraction complete";
+                Draw(initialDraw: true);
 
                 _timerThread.Join();
 
@@ -229,7 +228,7 @@ namespace LanternExtractor.Infrastructure
                 _firstStepCalled = false;
                 _lastPrintedStatus = string.Empty;
 
-                Draw(string.Empty, initialDraw: false);
+                Draw(initialDraw: false);
             }
         }
     }

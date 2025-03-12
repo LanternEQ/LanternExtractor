@@ -50,24 +50,24 @@ namespace LanternExtractor
                 ? $"Multithreading enabled ({processorCount} processors)"
                 : "Multithreading disabled");
 
-            var progressBar = new ProgressBar(eqFiles.Count, '*', useMultithreading, '*');
+            var progressBar = Console.IsOutputRedirected ? null : new ProgressBar(eqFiles.Count, '*', useMultithreading, '*');
 
             if (useMultithreading)
             {
                 Parallel.ForEach(eqFiles, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, file =>
                 {
                     ArchiveExtractor.Extract(file, "Exports/", _settings);
-                    progressBar.Step(Path.GetFileName(file));
+                    progressBar?.Step(Path.GetFileName(file));
                 });
             }
             else
             {
                 foreach (var file in eqFiles)
                 {
-                    progressBar.Step(Path.GetFileName(file));
+                    progressBar?.Step(Path.GetFileName(file));
                     ArchiveExtractor.Extract(file, "Exports/", _settings);
                 }
-                progressBar.Step(string.Empty);
+                progressBar?.Step(string.Empty);
             }
 
             ClientDataCopier.Copy(archiveName, "Exports/", _settings);
