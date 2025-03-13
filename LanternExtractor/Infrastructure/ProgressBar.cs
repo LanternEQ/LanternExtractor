@@ -26,6 +26,11 @@ namespace LanternExtractor.Infrastructure
         // Store the current console window width for detecting changes
         private int _currentWindowWidth;
 
+        private string Title => $"{StatusText} {StatusPercent} | {AppDomain.CurrentDomain.FriendlyName}";
+        private double Percentage => (double)_currentStep / _totalSteps * 100;
+        private string StatusPercent => $"{_currentStep}/{_totalSteps} ({Percentage:0.00}%)";
+        private string StatusText => !_isMultithreaded && !string.IsNullOrEmpty(_currentFileName) ? $"Extracting: {_currentFileName}" : "Extracting archives...";
+
         public ProgressBar(int totalSteps, int barWidth, bool isMultithreaded = false, char fillChar = '#', char backgroundChar = '-', ConsoleColor fillColor = ConsoleColor.Green, ConsoleColor backgroundColor = ConsoleColor.DarkGray)
         {
             _totalSteps = totalSteps;
@@ -86,7 +91,7 @@ namespace LanternExtractor.Infrastructure
         private void UpdateTimerDisplay()
         {
             TimeSpan elapsedTime = DateTime.Now - _startTime;
-            string timerString = $"{elapsedTime.Minutes}:{elapsedTime.Seconds:D2}";
+            string timerString = $"{(int)elapsedTime.TotalMinutes}:{elapsedTime.Seconds:D2}";
 
             int cursorLeft = Console.CursorLeft;
             int cursorTop = Console.CursorTop;
@@ -144,7 +149,6 @@ namespace LanternExtractor.Infrastructure
         private void Draw(bool initialDraw)
         {
             int filledWidth = (int)((double)_currentStep / _totalSteps * _barWidth);
-            double percentage = (double)_currentStep / _totalSteps * 100;
 
             lock (_lock)
             {
@@ -166,20 +170,11 @@ namespace LanternExtractor.Infrastructure
                     Console.Write(new string(_backgroundChar, _barWidth - filledWidth));
                     Console.ResetColor();
 
-                    Console.Write($"] {_currentStep}/{_totalSteps} ({percentage:0.00}%)");
+                    Console.Write($"] {StatusPercent}");
                 }
 
-                // Display extracting file in single-threaded mode
-                if (!_isMultithreaded && !string.IsNullOrEmpty(_currentFileName))
-                {
-                    Console.SetCursorPosition(0, originalCursorTop + 1);
-                    Console.Write(new string(' ', Console.WindowWidth));
-                    Console.SetCursorPosition(0, originalCursorTop + 1);
-                    Console.Write($"Extracting: {_currentFileName}");
-                }
-
-                // Status update in multithreaded mode
-                string status = _isCompleted ? "Extraction complete" : "Extracting archives...";
+                // Status update
+                string status = _isCompleted ? "Extraction complete" : StatusText;
                 if (_lastPrintedStatus != status)
                 {
                     Console.SetCursorPosition(0, originalCursorTop + 1);
@@ -189,6 +184,7 @@ namespace LanternExtractor.Infrastructure
                     _lastPrintedStatus = status;
                 }
 
+                Console.Title = Title;
                 Console.SetCursorPosition(originalCursorLeft, originalCursorTop);
             }
         }
