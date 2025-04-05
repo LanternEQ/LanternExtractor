@@ -45,12 +45,13 @@ namespace LanternExtractor
         private static void ExtractFiles(string archiveName, List<string> eqFiles)
         {
             bool useMultithreading = _settings.UseMultithreading;
+            bool useProgressBar = eqFiles.Count > 0 && !Console.IsOutputRedirected;
             int processorCount = Environment.ProcessorCount;
             Console.WriteLine(useMultithreading
                 ? $"Multithreading enabled ({processorCount} processors)"
                 : "Multithreading disabled");
 
-            var progressBar = Console.IsOutputRedirected ? null : new ProgressBar(eqFiles.Count, '*', useMultithreading, '*');
+            var progressBar = useProgressBar ? new ProgressBar(eqFiles.Count, '*', useMultithreading, '*') : null;
 
             if (useMultithreading)
             {

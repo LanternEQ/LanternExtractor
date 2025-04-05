@@ -149,6 +149,7 @@ namespace LanternExtractor.Infrastructure
         private void Draw(bool initialDraw)
         {
             int filledWidth = (int)((double)_currentStep / _totalSteps * _barWidth);
+            filledWidth = Math.Max(filledWidth, 0);
 
             lock (_lock)
             {
