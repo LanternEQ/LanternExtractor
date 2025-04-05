@@ -73,6 +73,7 @@ namespace LanternExtractor
 
             ClientDataCopier.Copy(archiveName, "Exports/", _settings);
             MusicCopier.Copy(archiveName, _settings);
+            VideoCopier.Copy(archiveName, _settings);
         }
     }
 }

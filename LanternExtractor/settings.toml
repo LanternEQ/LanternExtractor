@@ -81,7 +81,7 @@ ExportGltfInGlbFormat = false
 ExportAllAnimationFrames = false
 
 ########################################################
-# SOUND AND MUSIC SETTINGS
+# SOUND, MUSIC, AND VIDEO SETTINGS
 #
 #    ExportSoundsToSingleFolder
 #        Exports all sounds to the 'sounds' folder.
@@ -91,9 +91,13 @@ ExportAllAnimationFrames = false
 #        Copies client XMI music files to the 'Exports/Music' folder.
 #        XMI files can be used in the Lantern client.
 #
+#    CopyVideo
+#        Copies client SMK video files to the 'Exports/Video' folder.
+#
 ########################################################
 ExportSoundsToSingleFolder = false
 CopyMusic = true
+CopyVideo = true
 
 ########################################################
 # CLIENT DATA SETTINGS

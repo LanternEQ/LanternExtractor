@@ -226,9 +226,14 @@ namespace LanternExtractor.EQ
             return filename.EndsWith(".xmi");
         }
 
+        public static bool IsVideoFile(string filename)
+        {
+            return filename.EndsWith(".smk");
+        }
+
         public static bool IsSpecialCaseExtraction(string archiveName)
         {
-            return archiveName == "clientdata" || archiveName == "music";
+            return archiveName == "clientdata" || archiveName == "music" || archiveName == "video";
         }
 
         public static bool IsUsedSoundArchive(string archiveName)

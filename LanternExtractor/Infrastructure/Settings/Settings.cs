@@ -31,6 +31,7 @@ namespace LanternExtractor.Infrastructure.Settings
         public bool ExportGltfInGlbFormat { get; private set; } = false;
         public string[] ClientDataToCopy { get; private set; } = Array.Empty<string>();
         public bool CopyMusic { get; private set; } = false;
+        public bool CopyVideo { get; private set; } = false;
         public int LoggerVerbosity { get; private set; } = 0;
 
         /// <summary>
@@ -75,6 +76,7 @@ namespace LanternExtractor.Infrastructure.Settings
         ExportGltfInGlbFormat = settingsData.ExportGltfInGlbFormat ?? ExportGltfInGlbFormat;
         ClientDataToCopy = settingsData.ClientDataToCopy ?? ClientDataToCopy;
         CopyMusic = settingsData.CopyMusic ?? CopyMusic;
+        CopyVideo = settingsData.CopyVideo ?? CopyVideo;
         LoggerVerbosity = settingsData.LoggerVerbosity ?? LoggerVerbosity;
     }
     catch (Exception e)
@@ -118,6 +120,7 @@ private string NormalizePath(string path)
             public bool? ExportGltfInGlbFormat { get; set; }
             public string[] ClientDataToCopy { get; set; }
             public bool? CopyMusic { get; set; }
+            public bool? CopyVideo { get; set; }
             public int? LoggerVerbosity { get; set; }
         }
     }
