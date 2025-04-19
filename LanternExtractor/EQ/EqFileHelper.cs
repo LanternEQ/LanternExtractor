@@ -181,7 +181,7 @@ namespace LanternExtractor.EQ
 
         public static bool IsEquipmentArchive(string archiveName)
         {
-            return archiveName.StartsWith("gequip");
+            return archiveName.Contains("gequip");
         }
 
         public static bool IsCharacterArchive(string archiveName)
