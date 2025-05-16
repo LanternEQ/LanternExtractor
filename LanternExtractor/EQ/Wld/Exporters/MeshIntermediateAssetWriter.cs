@@ -253,7 +253,7 @@ namespace LanternExtractor.EQ.Wld.Exporters
 
         public override void WriteAssetToFile(string fileName)
         {
-            if (Export.Length == 0)
+            if (Export.Length == 0 && !_isCollisionMesh)
             {
                 return;
             }
