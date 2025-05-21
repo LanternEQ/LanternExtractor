@@ -25,6 +25,7 @@ namespace LanternExtractor.Infrastructure.Settings
         public bool ExportCharactersToSingleFolder { get; private set; } = false;
         public bool ExportEquipmentToSingleFolder { get; private set; } = false;
         public bool ExportSoundsToSingleFolder { get; private set; } = false;
+        public bool ExportFrontendToSingleFolder { get; private set; } = false;
         public bool ExportAllAnimationFrames { get; private set; } = false;
         public bool ExportZoneWithObjects { get; private set; } = false;
         public bool ExportGltfVertexColors { get; private set; } = false;
@@ -70,6 +71,7 @@ namespace LanternExtractor.Infrastructure.Settings
         ExportCharactersToSingleFolder = settingsData.ExportCharacterToSingleFolder ?? ExportCharactersToSingleFolder;
         ExportEquipmentToSingleFolder = settingsData.ExportEquipmentToSingleFolder ?? ExportEquipmentToSingleFolder;
         ExportSoundsToSingleFolder = settingsData.ExportSoundsToSingleFolder ?? ExportSoundsToSingleFolder;
+        ExportFrontendToSingleFolder = settingsData.ExportFrontendToSingleFolder ?? ExportFrontendToSingleFolder;
         ExportAllAnimationFrames = settingsData.ExportAllAnimationFrames ?? ExportAllAnimationFrames;
         ExportZoneWithObjects = settingsData.ExportZoneWithObjects ?? ExportZoneWithObjects;
         ExportGltfVertexColors = settingsData.ExportGltfVertexColors ?? ExportGltfVertexColors;
@@ -114,6 +116,7 @@ private string NormalizePath(string path)
             public bool? ExportCharacterToSingleFolder { get; set; }
             public bool? ExportEquipmentToSingleFolder { get; set; }
             public bool? ExportSoundsToSingleFolder { get; set; }
+            public bool? ExportFrontendToSingleFolder { get; set; }
             public bool? ExportAllAnimationFrames { get; set; }
             public bool? ExportZoneWithObjects { get; set; }
             public bool? ExportGltfVertexColors { get; set; }

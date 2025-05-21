@@ -21,7 +21,7 @@ namespace LanternExtractor
 
             if (args.Length != 1)
             {
-                Console.WriteLine("Usage: lantern.exe <filename/shortname/all>");
+                Console.WriteLine("Usage: LanternExtractor.exe <filename/shortname/all>");
                 return;
             }
 

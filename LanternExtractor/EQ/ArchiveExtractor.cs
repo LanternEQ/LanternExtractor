@@ -40,13 +40,28 @@ namespace LanternExtractor.EQ
             // The difference between this and the raw export is that it will convert images to PNG
             if (!archive.IsWldArchive)
             {
-                WriteS3dTextures(archive, rootFolder + shortName);
+                if (EqFileHelper.IsUsedFrontendArchive(archiveName))
+                {
+                    // write to archiveName instead of shortName to preserve _french _german etc.
+                    WriteS3dTextures(archive,
+                        Path.Combine(rootFolder, settings.ExportFrontendToSingleFolder ? "frontend" : archiveName));
+                    return;
+                }
 
                 if (EqFileHelper.IsUsedSoundArchive(archiveName))
                 {
                     WriteS3dSounds(archive,
                         Path.Combine(rootFolder, settings.ExportSoundsToSingleFolder ? "sounds" : shortName));
+                    return;
                 }
+
+                // unused archives
+                if (EqFileHelper.IsFrontendArchive(archiveName) || EqFileHelper.IsSoundArchive(archiveName))
+                {
+                    return;
+                }
+
+                WriteS3dTextures(archive, rootFolder + shortName);
 
                 return;
             }

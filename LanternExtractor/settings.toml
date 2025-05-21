@@ -81,7 +81,11 @@ ExportGltfInGlbFormat = false
 ExportAllAnimationFrames = false
 
 ########################################################
-# SOUND, MUSIC, AND VIDEO SETTINGS
+# FRONTEND, SOUND, MUSIC, AND VIDEO SETTINGS
+#
+#    ExportFrontendToSingleFolder
+#        Exports all frontend artwork to the 'frontend' folder.
+#        Note: Some images with conflicting names may be overwritten.
 #
 #    ExportSoundsToSingleFolder
 #        Exports all sounds to the 'sounds' folder.
@@ -95,6 +99,7 @@ ExportAllAnimationFrames = false
 #        Copies client SMK video files to the 'Exports/Video' folder.
 #
 ########################################################
+ExportFrontendToSingleFolder = false
 ExportSoundsToSingleFolder = false
 CopyMusic = true
 CopyVideo = true
