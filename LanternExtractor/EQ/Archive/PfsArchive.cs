@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Ionic.Zlib;
+using System.IO.Compression;
 using LanternExtractor.Infrastructure.Logger;
 
 namespace LanternExtractor.EQ.Archive
@@ -143,52 +143,22 @@ namespace LanternExtractor.EQ.Archive
         private static bool InflateBlock(byte[] deflatedBytes, int inflatedSize, out byte[] inflatedBytes,
             ILogger logger)
         {
-            var output = new byte[inflatedSize];
+            var inputStream = new MemoryStream(deflatedBytes);
+            var decompressStream = new ZLibStream(inputStream, CompressionMode.Decompress);
+            var outputStream = new MemoryStream();
 
-            using (var memoryStream = new MemoryStream())
+            try
             {
-                var zlibCodec = new ZlibCodec();
-                zlibCodec.InitializeInflate(true);
-
-                zlibCodec.InputBuffer = deflatedBytes;
-                zlibCodec.AvailableBytesIn = deflatedBytes.Length;
-                zlibCodec.NextIn = 0;
-                zlibCodec.OutputBuffer = output;
-
-                foreach (FlushType f in new[] { FlushType.None, FlushType.Finish })
-                {
-                    int bytesToWrite;
-
-                    do
-                    {
-                        zlibCodec.AvailableBytesOut = inflatedSize;
-                        zlibCodec.NextOut = 0;
-                        try
-                        {
-                            zlibCodec.Inflate(f);
-                        }
-                        catch (Exception e)
-                        {
-                            inflatedBytes = null;
-                            logger.LogError("PfsArchive: Exception caught while inflating bytes: " + e);
-                            return false;
-                        }
-
-                        bytesToWrite = inflatedSize - zlibCodec.AvailableBytesOut;
-                        if (bytesToWrite > 0)
-                            memoryStream.Write(output, 0, bytesToWrite);
-                    }
-                    while (f == FlushType.None &&
-                             (zlibCodec.AvailableBytesIn != 0 || zlibCodec.AvailableBytesOut == 0) ||
-                             f == FlushType.Finish && bytesToWrite != 0);
-                }
-
-                zlibCodec.EndInflate();
-
-                inflatedBytes = output;
+                decompressStream.CopyTo(outputStream);
+                inflatedBytes = outputStream.ToArray();
                 return true;
             }
+            catch (Exception e)
+            {
+                inflatedBytes = null;
+                logger.LogError("PfsArchive: Exception caught while inflating bytes: " + e);
+                return false;
+            }
         }
-
     }
 }
