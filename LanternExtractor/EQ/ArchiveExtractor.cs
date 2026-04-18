@@ -237,8 +237,34 @@ namespace LanternExtractor.EQ
                 wldFile.Initialize(rootFolder, false);
                 archive.FilenameChanges = wldFile.FilenameChanges;
                 WriteWldTextures(archive, wldFile, texturePath, logger);
+                FixKnownMissingZoneTextures(rootFolder, texturePath);
                 wldFile.ExportData();
             }
+        }
+
+        private static void FixKnownMissingZoneTextures(string rootFolder, string texturePath)
+        {
+            var normalizedTexturePath = texturePath.Replace('\\', '/');
+            if (!normalizedTexturePath.EndsWith("fearplane/Zone/Textures/"))
+            {
+                return;
+            }
+
+            var source = Path.Combine(rootFolder, "fearplane", "Objects", "Textures", "maywall.png");
+            var destination = Path.Combine(rootFolder, "fearplane", "Zone", "Textures", "maywall.png");
+
+            if (!File.Exists(source) || File.Exists(destination))
+            {
+                return;
+            }
+
+            var destinationDirectory = Path.GetDirectoryName(destination);
+            if (string.IsNullOrEmpty(destinationDirectory) || !Directory.Exists(destinationDirectory))
+            {
+                return;
+            }
+
+            File.Copy(source, destination);
         }
 
         /// <summary>
