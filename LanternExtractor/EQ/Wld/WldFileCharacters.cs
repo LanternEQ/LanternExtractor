@@ -188,12 +188,17 @@ namespace LanternExtractor.EQ.Wld
 
                         if (endsWithNumber)
                         {
-                            int id = Convert.ToInt32(cleanedName.Substring(cleanedName.Length - 2));
-                            cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
-
-                            if (cleanedName.Length != 3)
+                            var trailingDigits = 0;
+                            for (var index = cleanedName.Length - 1; index >= 0 && char.IsDigit(cleanedName[index]); index--)
                             {
-                                string modelType = cleanedName.Substring(cleanedName.Length - 3);
+                                trailingDigits++;
+                            }
+
+                            var digitsToTrim = Math.Min(trailingDigits, 2);
+                            cleanedName = cleanedName.Substring(0, cleanedName.Length - digitsToTrim);
+
+                            if (cleanedName.Length != 3 && cleanedName.Length > 2)
+                            {
                                 cleanedName = cleanedName.Substring(0, cleanedName.Length - 2);
                             }
 

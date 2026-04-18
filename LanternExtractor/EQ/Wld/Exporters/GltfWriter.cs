@@ -167,6 +167,12 @@ namespace LanternExtractor.EQ.Wld.Exporters
                     if (string.IsNullOrEmpty(imageFileNameWithoutExtension)) continue;
 
                     var imagePath = $"{textureImageFolder}{eqMaterial.GetFirstBitmapExportFilename()}";
+                    if (!File.Exists(imagePath))
+                    {
+                        _logger.LogWarning($"Missing texture image for material '{materialName}': {imagePath}. Using blank material.");
+                        Materials.Add(materialName, GetBlankMaterial());
+                        continue;
+                    }
 
                     ImageBuilder imageBuilder;
                     if (ShaderTypesThatNeedAlphaAddedToImage.Contains(eqMaterial.ShaderType))
@@ -331,8 +337,10 @@ namespace LanternExtractor.EQ.Wld.Exporters
             {
                 if (mesh.AnimatedVerticesReference != null)
                 {
-                    AddAnimatedMeshMorphTargets(mesh, gltfMesh, meshName, transformMatrix, gltfVertexPositionToWldVertexIndex);
-                    // mesh added to scene in ^ method
+                    _logger.LogWarning(
+                        $"Mesh '{meshName}' uses animated vertices. Exporting the base mesh without morph targets " +
+                        "because the current glTF morph-target path produces invalid output for some assets.");
+                    _scene.AddRigidMesh(gltfMesh, transformMatrix);
                 }
                 else
                 {
@@ -452,6 +460,11 @@ namespace LanternExtractor.EQ.Wld.Exporters
         {
             AddCombinedMeshToScene(false, null, skeletonModelBase);
             var outputFilePath = FixFilePath(fileName);
+            var outputDirectory = Path.GetDirectoryName(outputFilePath);
+            if (!string.IsNullOrEmpty(outputDirectory))
+            {
+                Directory.CreateDirectory(outputDirectory);
+            }
             var model = _scene.ToGltf2();
             if (_exportFormat == GltfExportFormat.GlTF)
             {
