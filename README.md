@@ -35,9 +35,22 @@ The intermediate format supports:
   - Texture mesh
   - Skeletal animations
 
+EQG archives (post-Velious zones, characters and items) are exported to glTF or OBJ:
+- Static models (`.mod`)
+- Skinned models (`.mds`, and `.mod` files with weighted bones)
+- Skeletal animations (`.ani`)
+- Terrain (`.ter`)
+- Zones (`.zon` v1) with object placements
+- Textures (`.dds` converted to PNG)
+
+EQG output follows the S3D layout: `Exports/<zone>/Zone/`, `Objects/` and `Characters/`, each with its own `Textures/`.
+EQG zones don't bundle their characters; extracting a zone also extracts the archives listed in its `<zone>_chr.txt` and `<zone>_assets.txt` into its `Characters/` folder.
+Set `ModelExportFormat = 1` for OBJ (bind pose, plus one OBJ per animation frame with `ExportAllAnimationFrames`) or `2` for glTF (includes skeletons and animations).
+Use `lantern.exe <name>.eqg` for a single archive or `lantern.exe eqg` to extract every EQG archive.
+
 ## What’s Next
   - Particle systems
-  - Post Velious zone support
+  - Post Velious terrain zones (`.zon` v4 / EQTZP)
 
 ## How To Use
 Please visit the [wiki](https://github.com/LanternEQ/LanternExtractor/wiki) for more info.

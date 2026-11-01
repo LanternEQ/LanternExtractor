@@ -12,6 +12,7 @@ RawS3DExtract = false
 
 # Sets the desired export format for models
 # 0 = Intermediate (Unity importer), 1 = OBJ, 2 = glTF
+# EQG archives support OBJ (1) and glTF (2). Intermediate (0) falls back to glTF for EQG.
 ModelExportFormat = 0
 
 # Extract the zone mesh with groups?

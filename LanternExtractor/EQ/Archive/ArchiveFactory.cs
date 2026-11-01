@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using LanternExtractor.Infrastructure.Logger;
 
@@ -66,6 +66,7 @@ namespace LanternExtractor.EQ.Archive
                 case LanternStrings.S3dFormatExtension:
                 case LanternStrings.PfsFormatExtension:
                 case LanternStrings.PakFormatExtension:
+                case LanternStrings.EqgFormatExtension:
                     return ArchiveType.Pfs;
             }
 

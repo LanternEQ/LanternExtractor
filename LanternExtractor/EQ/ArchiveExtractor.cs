@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using LanternExtractor.EQ.Archive;
+using LanternExtractor.EQ.Eqg;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -10,7 +11,12 @@ namespace LanternExtractor.EQ
 {
     public static class ArchiveExtractor
     {
-        public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
+        /// <param name="zoneShortName">
+        /// Overrides the export folder, used when extracting archives that a zone depends on (e.g. the
+        /// character archives listed in an EQG zone's _chr.txt) into that zone's folder
+        /// </param>
+        public static void Extract(string path, string rootFolder, ILogger logger, Settings settings,
+            string zoneShortName = null)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
 
@@ -20,7 +26,7 @@ namespace LanternExtractor.EQ
             }
 
             var archive = ArchiveFactory.GetArchive(path, logger);
-            string shortName = archiveName.Split('_')[0];
+            string shortName = zoneShortName ?? archiveName.Split('_')[0];
 
             if (!archive.Initialize())
             {
@@ -31,6 +37,13 @@ namespace LanternExtractor.EQ
             if (settings.RawS3dExtract)
             {
                 archive.WriteAllFiles(Path.Combine(rootFolder, archiveName));
+                return;
+            }
+
+            // EQG archives use the same PFS container but hold MOD/MDS/TER/ANI/ZON files instead of a WLD
+            if (EqFileHelper.IsEqgArchive(path))
+            {
+                EqgExtractor.Extract(archive, archiveName, rootFolder, logger, settings, zoneShortName);
                 return;
             }
 
@@ -237,8 +250,34 @@ namespace LanternExtractor.EQ
                 wldFile.Initialize(rootFolder, false);
                 archive.FilenameChanges = wldFile.FilenameChanges;
                 WriteWldTextures(archive, wldFile, texturePath, logger);
+                FixKnownMissingZoneTextures(rootFolder, texturePath);
                 wldFile.ExportData();
             }
+        }
+
+        private static void FixKnownMissingZoneTextures(string rootFolder, string texturePath)
+        {
+            var normalizedTexturePath = texturePath.Replace('\\', '/');
+            if (!normalizedTexturePath.EndsWith("fearplane/Zone/Textures/"))
+            {
+                return;
+            }
+
+            var source = Path.Combine(rootFolder, "fearplane", "Objects", "Textures", "maywall.png");
+            var destination = Path.Combine(rootFolder, "fearplane", "Zone", "Textures", "maywall.png");
+
+            if (!File.Exists(source) || File.Exists(destination))
+            {
+                return;
+            }
+
+            var destinationDirectory = Path.GetDirectoryName(destination);
+            if (string.IsNullOrEmpty(destinationDirectory) || !Directory.Exists(destinationDirectory))
+            {
+                return;
+            }
+
+            File.Copy(source, destination);
         }
 
         /// <summary>
