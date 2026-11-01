@@ -1,4 +1,4 @@
-namespace LanternExtractor
+﻿namespace LanternExtractor
 {
     /// <summary>
     /// A collection of Lantern related strings
@@ -19,6 +19,7 @@ namespace LanternExtractor
         public const string PfsFormatExtension = ".pfs";
         public const string PakFormatExtension = ".pak";
         public const string T3dFormatExtension = ".t3d";
+        public const string EqgFormatExtension = ".eqg";
         public const string SoundFormatExtension = ".eff";
     }
 }

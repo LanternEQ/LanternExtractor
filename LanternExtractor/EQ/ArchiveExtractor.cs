@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using LanternExtractor.EQ.Archive;
+using LanternExtractor.EQ.Eqg;
 using LanternExtractor.EQ.Sound;
 using LanternExtractor.EQ.Wld;
 using LanternExtractor.EQ.Wld.Helpers;
@@ -10,7 +11,12 @@ namespace LanternExtractor.EQ
 {
     public static class ArchiveExtractor
     {
-        public static void Extract(string path, string rootFolder, ILogger logger, Settings settings)
+        /// <param name="zoneShortName">
+        /// Overrides the export folder, used when extracting archives that a zone depends on (e.g. the
+        /// character archives listed in an EQG zone's _chr.txt) into that zone's folder
+        /// </param>
+        public static void Extract(string path, string rootFolder, ILogger logger, Settings settings,
+            string zoneShortName = null)
         {
             string archiveName = Path.GetFileNameWithoutExtension(path);
 
@@ -20,7 +26,7 @@ namespace LanternExtractor.EQ
             }
 
             var archive = ArchiveFactory.GetArchive(path, logger);
-            string shortName = archiveName.Split('_')[0];
+            string shortName = zoneShortName ?? archiveName.Split('_')[0];
 
             if (!archive.Initialize())
             {
@@ -31,6 +37,13 @@ namespace LanternExtractor.EQ
             if (settings.RawS3dExtract)
             {
                 archive.WriteAllFiles(Path.Combine(rootFolder, archiveName));
+                return;
+            }
+
+            // EQG archives use the same PFS container but hold MOD/MDS/TER/ANI/ZON files instead of a WLD
+            if (EqFileHelper.IsEqgArchive(path))
+            {
+                EqgExtractor.Extract(archive, archiveName, rootFolder, logger, settings, zoneShortName);
                 return;
             }
 

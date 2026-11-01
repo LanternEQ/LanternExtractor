@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -35,6 +35,9 @@ namespace LanternExtractor
                 case "sounds":
                     validFiles = GetValidSoundFiles(eqFiles);
                     break;
+                case "eqg":
+                    validFiles = eqFiles.Where(IsEqgArchive).ToList();
+                    break;
                 default:
                 {
                     validFiles = GetValidFiles(archiveName, directory);
@@ -52,7 +55,7 @@ namespace LanternExtractor
 
         private static List<string> GetAllValidFiles(string[] eqFiles)
         {
-            return eqFiles.Where(x => IsValidArchive(Path.GetFileName(x))).ToList();
+            return eqFiles.Where(x => IsValidArchive(Path.GetFileName(x)) || IsEqgArchive(x)).ToList();
         }
 
         private static List<string> GetValidZoneFiles(string[] eqFiles)
@@ -73,7 +76,8 @@ namespace LanternExtractor
         private static List<string> GetValidFiles(string archiveName, string directory)
         {
             var validFiles = new List<string>();
-            if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs") || archiveName.EndsWith(".t3d"))
+            if (archiveName.EndsWith(".s3d") || archiveName.EndsWith(".pfs") || archiveName.EndsWith(".t3d") ||
+                archiveName.EndsWith(LanternStrings.EqgFormatExtension))
             {
                 string archivePath = Path.Combine(directory, archiveName);
                 if (File.Exists(archivePath))
@@ -138,6 +142,14 @@ namespace LanternExtractor
                 {
                     validFiles.Add(extensionCharactersArchivePath);
                 }
+
+                // Post-Velious zones and models are stored in EQG archives
+                string eqgArchivePath =
+                    Path.Combine(directory, string.Concat(archiveName, LanternStrings.EqgFormatExtension));
+                if (File.Exists(eqgArchivePath))
+                {
+                    validFiles.Add(eqgArchivePath);
+                }
             }
 
             return validFiles;
@@ -172,6 +184,12 @@ namespace LanternExtractor
         {
             return IsValidArchive(archiveName) && !IsEquipmentArchive(archiveName) && !IsSkyArchive(archiveName) &&
                    !IsBitmapArchive(archiveName) && !IsCharacterArchive(archiveName);
+        }
+
+        public static bool IsEqgArchive(string archivePath)
+        {
+            return string.Equals(Path.GetExtension(archivePath), LanternStrings.EqgFormatExtension,
+                System.StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsEquipmentArchive(string archiveName)
